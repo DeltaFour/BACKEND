@@ -1,0 +1,6 @@
+@DeltaFour.API_HostAddress = http://localhost:5212
+
+GET {{DeltaFour.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
