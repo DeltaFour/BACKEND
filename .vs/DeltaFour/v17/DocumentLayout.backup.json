@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\Solution1\\",
+  "WorkspaceRootPath": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}|DeltaFour.Test\\DeltaFour.Test.csproj|c:\\users\\arthur\\desktop\\fatec\\5s\\pi\\backend\\solution1\\deltafour.test\\unittest1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}|DeltaFour.Test\\DeltaFour.Test.csproj|c:\\users\\arthur\\desktop\\fatec\\5s\\pi\\backend\\deltafour.test\\unittest1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}|DeltaFour.Test\\DeltaFour.Test.csproj|solutionrelative:deltafour.test\\unittest1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -28,9 +28,9 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "UnitTest1.cs",
-              "DocumentMoniker": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\Solution1\\DeltaFour.Test\\UnitTest1.cs",
+              "DocumentMoniker": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\DeltaFour.Test\\UnitTest1.cs",
               "RelativeDocumentMoniker": "DeltaFour.Test\\UnitTest1.cs",
-              "ToolTip": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\Solution1\\DeltaFour.Test\\UnitTest1.cs",
+              "ToolTip": "C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\DeltaFour.Test\\UnitTest1.cs",
               "RelativeToolTip": "DeltaFour.Test\\UnitTest1.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",

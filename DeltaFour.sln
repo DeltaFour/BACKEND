@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.Domain", "DeltaFour.Domain\DeltaFour.Domain.csproj", "{0D564968-82E8-4F6F-A407-787BE2B2F42D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.Domain", "DeltaFour.Domain\DeltaFour.Domain.csproj", "{0D564968-82E8-4F6F-A407-787BE2B2F42D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.Infrastructure", "DeltaFour.Infrastructure\DeltaFour.Infrastructure.csproj", "{76972877-23A2-49F9-B543-3AB4B721C280}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.Infrastructure", "DeltaFour.Infrastructure\DeltaFour.Infrastructure.csproj", "{76972877-23A2-49F9-B543-3AB4B721C280}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.Application", "DeltaFour.Application\DeltaFour.Application.csproj", "{90479C74-BE27-4EB6-BD87-4CCDEDD54B46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.Application", "DeltaFour.Application\DeltaFour.Application.csproj", "{90479C74-BE27-4EB6-BD87-4CCDEDD54B46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.API", "DeltaFour.API\DeltaFour.API.csproj", "{6D1349AA-DEE2-411D-88DD-7FCB2BEF70FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.API", "DeltaFour.API\DeltaFour.API.csproj", "{6D1349AA-DEE2-411D-88DD-7FCB2BEF70FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.Test", "DeltaFour.Test\DeltaFour.Test.csproj", "{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.Test", "DeltaFour.Test\DeltaFour.Test.csproj", "{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
