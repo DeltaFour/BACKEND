@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DeltaFour.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+058e820df535c6be1569ca533210b0c8562e2955")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5983b4bcaf1a91e71f312d48ec94c81d14b3bd55")]
 [assembly: System.Reflection.AssemblyProductAttribute("DeltaFour.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DeltaFour.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "Novo Perfil",
+    "Projects": [
+      {
+        "Path": "DeltaFour.Maui\\DeltaFour.Maui.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
