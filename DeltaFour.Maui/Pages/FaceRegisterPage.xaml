@@ -16,8 +16,8 @@
             HeightRequest="500"
             />
         <GraphicsView x:Name="Overlay"
-                      HorizontalOptions="Fill"
-                      VerticalOptions="Fill" />
+                      HeightRequest="500"
+                      WidthRequest="500" />
 
     </Grid>
 </ContentPage>
