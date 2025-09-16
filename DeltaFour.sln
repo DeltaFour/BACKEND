@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.API", "DeltaFour.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeltaFour.Test", "DeltaFour.Test\DeltaFour.Test.csproj", "{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeltaFour.CrossCutting", "DeltaFour.CrossCutting\DeltaFour.CrossCutting.csproj", "{0041050F-0CD1-4881-835C-C449F38D2F55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CB98AF7-EFAD-430D-B32E-1BA6FC3C9C4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0041050F-0CD1-4881-835C-C449F38D2F55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0041050F-0CD1-4881-835C-C449F38D2F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0041050F-0CD1-4881-835C-C449F38D2F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0041050F-0CD1-4881-835C-C449F38D2F55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

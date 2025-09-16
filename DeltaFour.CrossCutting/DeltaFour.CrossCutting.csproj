@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DeltaFour.Application\DeltaFour.Application.csproj" />
+    <ProjectReference Include="..\DeltaFour.Infrastructure\DeltaFour.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

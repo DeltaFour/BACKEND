@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DeltaFour.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+475d6edd7ea4d3a056db9a8fea543a4b8c1e4315")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ccdb38198c95de84362bc7c2bff192b29e2f03b")]
 [assembly: System.Reflection.AssemblyProductAttribute("DeltaFour.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DeltaFour.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
