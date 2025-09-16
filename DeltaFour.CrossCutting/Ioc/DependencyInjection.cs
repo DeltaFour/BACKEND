@@ -16,16 +16,17 @@ public static class DependencyInjection
 
         if (isTesting.ToLower().Equals("true"))
         {
-
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
         }
         else
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString, new ServerVersion(new Version(8, 0, 0));
+                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
         }
 
-        return service;
+        return services;
     }
 }

@@ -213,7 +213,7 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.Extensions.Configuration.Abstractions": {
+            "Microsoft.Extensions.Configuration": {
               "target": "Package",
               "version": "[8.0.0, )"
             }
