@@ -23,8 +23,10 @@ public static class DependencyInjection
         {
             var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 
+            //services.AddDbContext<AppDbContext>(options =>
+            //    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
             services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         }
 
         return services;
