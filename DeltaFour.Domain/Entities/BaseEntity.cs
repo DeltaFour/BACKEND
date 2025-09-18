@@ -1,4 +1,6 @@
-﻿namespace DeltaFour.Domain.Entities;
+﻿using System;
+
+namespace DeltaFour.Domain.Entities;
 
 public abstract class BaseEntity
 {
