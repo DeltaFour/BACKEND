@@ -1,6 +1,9 @@
 using DeltaFour.CrossCutting.Ioc;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
 
 builder.Services.AddControllers();
 builder.Services.AddInfrastructure(builder.Configuration);

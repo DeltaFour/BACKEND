@@ -21,7 +21,7 @@ public static class DependencyInjection
         }
         else
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
