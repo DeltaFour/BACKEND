@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DeltaFour.Domain.Entities
+﻿namespace DeltaFour.Domain.Entities
 {
     public class Role : BaseEntity
     {
@@ -15,5 +9,6 @@ namespace DeltaFour.Domain.Entities
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Company? Company { get; set; }
+        public User? User { get; set; }
     }
 }

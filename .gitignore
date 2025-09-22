@@ -13,6 +13,8 @@ DeltaFour.API/appsettings.Development.json
 *.user
 *.userosscache
 *.sln.docstates
+app.key
+app.pub
 
 # ASP.NET
 project.lock.json

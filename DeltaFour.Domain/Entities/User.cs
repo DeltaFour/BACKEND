@@ -4,6 +4,7 @@ public class User : BaseEntity
 {
     public string? Name { get; set; }
     public string? Email { get; set; }
+    public Guid? RoleId { get; set; }
     public string? Password { get; set; }
     public string? Cellphone { get; set; }
     public Guid CompanyId { get; set; }
@@ -14,6 +15,7 @@ public class User : BaseEntity
     public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
     public Guid CreatedBy { get; set; }
+    public Role? Role { get; set; }
     public UserAuth? UserAuth { get; set; }
     public Company? Company { get; set; }
 }

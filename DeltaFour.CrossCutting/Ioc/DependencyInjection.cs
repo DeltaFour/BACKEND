@@ -1,4 +1,7 @@
-﻿using DeltaFour.Infrastructure.Context;
+﻿using DeltaFour.Application.Service;
+using DeltaFour.Domain.IRepositories;
+using DeltaFour.Infrastructure.Context;
+using DeltaFour.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +28,9 @@ public static class DependencyInjection
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserAuthRepository, UserAuthRepository>();
+            services.AddScoped<AuthService>();
         }
 
         return services;

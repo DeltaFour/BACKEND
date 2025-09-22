@@ -39,8 +39,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
         builder
             .Property(u => u.LastLogin);
         builder
-            .Property(u => u.UpdatedAt)
-            .IsRequired();
+            .Property(u => u.UpdatedAt);
         builder
             .Property(u => u.UpdatedBy);
         builder
@@ -53,5 +52,11 @@ public class UserConfig : IEntityTypeConfiguration<User>
             .WithMany(c => c.Users)
             .IsRequired()
             .HasForeignKey(u => u.CompanyId);
+        builder.HasOne<UserAuth>(u => u.UserAuth)
+            .WithOne(ua => ua.User)
+            .HasForeignKey<UserAuth>(ua => ua.UserId);
+        builder.HasOne<Role>(u => u.Role)
+            .WithOne(r => r.User)
+            .HasForeignKey<User>(r => r.RoleId);
     }
 }
