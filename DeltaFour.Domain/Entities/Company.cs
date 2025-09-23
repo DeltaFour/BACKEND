@@ -10,5 +10,7 @@
         public Address? Address { get; set; }
         public List<User>? Users { get; set; }
         public List<Role>? Roles { get; set; }
+        public CompanyGeolocation? CompanyGeolocation { get; set; }
+        public List<CompanyWorkSchedule>? CompanyWorkSchedules { get; set; }
     }
 }
