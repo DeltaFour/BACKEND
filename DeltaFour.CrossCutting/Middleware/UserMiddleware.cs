@@ -1,4 +1,5 @@
-﻿using DeltaFour.Domain.IRepositories;
+﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.IRepositories;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -14,18 +15,11 @@ namespace DeltaFour.CrossCutting.Middleware
 
                 if (Guid.TryParse(userIdClaim, out var userId))
                 {
-                    var user = await userRepository.GetUserById(userId);
+                    User? user = await userRepository.Find(u => u.Id == userId);
 
-                    if (user != null && user.IsActive)
+                    if (user is { IsActive: true })
                     {
-                        var claims = new List<Claim>
-                        {
-                            new Claim("userId", user.Id.ToString()),
-                            new Claim("CompanyId", user.CompanyId.ToString()),
-                        };
-
-                        var identity = new ClaimsIdentity(claims, "Jwt");
-                        context.User = new ClaimsPrincipal(identity);
+                        context.SetObject("user", user);
                     }
                 }
             }

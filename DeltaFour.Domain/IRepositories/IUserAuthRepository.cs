@@ -1,11 +1,10 @@
 ﻿using DeltaFour.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IUserAuthRepository
+    public interface IUserAuthRepository : IBaseRepository<UserAuth>
     {
-        Task<UserAuth?> FindByUserId(Guid userId);
-        Task<UserAuth?> GetById(Guid userId);
         Task Create(UserAuth userAuth);
         Task Update(UserAuth userAuth);
         Task Delete(UserAuth userAuth);

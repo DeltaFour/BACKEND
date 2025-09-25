@@ -2,6 +2,7 @@
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
@@ -19,15 +20,9 @@ namespace DeltaFour.Infrastructure.Repositories
             return context.SaveChangesAsync();
         }
 
-        public async Task<User?> GetUserByEmail(string email)
+        public async Task<User?> Find(Expression<Func<User, bool>> predicate)
         {
-            return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await context.Users.FirstOrDefaultAsync(predicate);
         }
-
-        public async Task<User?> GetUserById(Guid id)
-        {
-            return await context.Users.FirstOrDefaultAsync(u => u.Id == id);
-        }
-
     }
 }

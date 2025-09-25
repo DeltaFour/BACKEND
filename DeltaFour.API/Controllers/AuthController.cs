@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Service;
+using DeltaFour.CrossCutting.Middleware;
 using DeltaFour.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 
@@ -47,8 +48,8 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             string cookieRefresh = Request.Cookies["RefreshToken"]!;
-            string userId = User.FindFirst("userId")!.Value;
-            string? jwt = await authService.RemakeToken(cookieRefresh, userId);
+            var user = HttpContext.GetObject<User>("user");
+            string? jwt = await authService.RemakeToken(cookieRefresh, user.Id.ToString());
             if (jwt != null)
             {
                 Response.Cookies.Append("Jwt", jwt, Cookie());

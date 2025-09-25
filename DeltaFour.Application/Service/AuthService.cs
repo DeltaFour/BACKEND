@@ -16,7 +16,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<User?> Login(LoginDto dto)
         {
-            User? user = await userRepository.GetUserByEmail(dto.Email);
+            User? user = await userRepository.Find(u => u.Email == dto.Email);
             if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
             {
                 return user;
@@ -56,7 +56,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<Guid> CreateRefreshToken(User user, string jwt)
         {
-            UserAuth? userAuth = await userAuthRepository.FindByUserId(user.Id);
+            UserAuth? userAuth = await userAuthRepository.Find(u=> u.UserId == user.Id);
             if (userAuth != null)
             {
                 await userAuthRepository.Delete(userAuth);
@@ -69,7 +69,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<bool> CheckSession(string refreshToken, string jwt)
         {
-            UserAuth? userAuth = await userAuthRepository.GetById(Guid.Parse(refreshToken));
+            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null && !userAuth.IsExpired())
             {
 
@@ -80,10 +80,10 @@ namespace DeltaFour.Application.Service
 
         public async Task<string?> RemakeToken(string refreshToken, string userId)
         {
-            UserAuth? userAuth = await userAuthRepository.GetById(Guid.Parse(refreshToken));
+            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
-                User user = await userRepository.GetUserById(Guid.Parse(userId)) ??
+                User user = await userRepository.Find(u => u.Id == Guid.Parse(userId)) ??
                             throw new BadHttpRequestException("Ops, algo deu errado");
                 return CreateToken(user);
             }
@@ -92,7 +92,7 @@ namespace DeltaFour.Application.Service
 
         public async Task Logout(string refreshToken)
         {
-            UserAuth? userAuth = await userAuthRepository.GetById(Guid.Parse(refreshToken));
+            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null)
             {
                 await userAuthRepository.Delete(userAuth);

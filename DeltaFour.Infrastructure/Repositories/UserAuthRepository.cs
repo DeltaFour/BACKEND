@@ -2,20 +2,16 @@
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
     public class UserAuthRepository(AppDbContext context) : IUserAuthRepository
     {
 
-        public async Task<UserAuth?> FindByUserId(Guid userId)
+        public async Task<UserAuth?> Find(Expression<Func<UserAuth, bool>> predicate)
         {
-            return await context.Auth.FirstOrDefaultAsync(x => x.UserId == userId);
-        }
-
-        public async Task<UserAuth?> GetById(Guid id)
-        {
-            return await context.Auth.FirstOrDefaultAsync(au => au.Id == id);
+            return await context.Auth.FirstOrDefaultAsync(predicate);
         }
 
         public async Task Create(UserAuth userAuth)
@@ -30,8 +26,7 @@ namespace DeltaFour.Infrastructure.Repositories
             await context.SaveChangesAsync();
 
         }
-
-
+        
         public async Task Update(UserAuth userAuth)
         {
             context.Auth.Update(userAuth);
