@@ -12,7 +12,7 @@ namespace DeltaFour.Application.Service
     public class AuthService(IUserRepository userRepository, IUserAuthRepository userAuthRepository)
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
-        private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.key");
+        private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
 
         public async Task<User?> Login(LoginDto dto)
         {
