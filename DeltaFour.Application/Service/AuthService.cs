@@ -1,7 +1,7 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.RsaKeys;
-using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,14 +9,14 @@ using System.Security.Cryptography;
 
 namespace DeltaFour.Application.Service
 {
-    public class AuthService(IUserRepository userRepository, IUserAuthRepository userAuthRepository)
+    public class AuthService(AllRepositories repositories)
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
-        private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.key");
+        private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
 
         public async Task<User?> Login(LoginDto dto)
         {
-            User? user = await userRepository.Find(u => u.Email == dto.Email);
+            User? user = await repositories.UserRepository.Find(u => u.Email == dto.Email);
             if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
             {
                 return user;
@@ -56,20 +56,20 @@ namespace DeltaFour.Application.Service
 
         public async Task<Guid> CreateRefreshToken(User user, string jwt)
         {
-            UserAuth? userAuth = await userAuthRepository.Find(u=> u.UserId == user.Id);
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(u=> u.UserId == user.Id);
             if (userAuth != null)
             {
-                await userAuthRepository.Delete(userAuth);
+                await repositories.UserAuthRepository.Delete(userAuth);
             }
 
             userAuth = new UserAuth(user.Id, jwt, DateTime.UtcNow.AddHours(24));
-            await userAuthRepository.Create(userAuth);
+            await repositories.UserAuthRepository.Create(userAuth);
             return userAuth.Id;
         }
 
         public async Task<bool> CheckSession(string refreshToken, string jwt)
         {
-            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null && !userAuth.IsExpired())
             {
 
@@ -80,10 +80,10 @@ namespace DeltaFour.Application.Service
 
         public async Task<string?> RemakeToken(string refreshToken, string userId)
         {
-            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
-                User user = await userRepository.Find(u => u.Id == Guid.Parse(userId)) ??
+                User user = await repositories.UserRepository.Find(u => u.Id == Guid.Parse(userId)) ??
                             throw new BadHttpRequestException("Ops, algo deu errado");
                 return CreateToken(user);
             }
@@ -92,10 +92,10 @@ namespace DeltaFour.Application.Service
 
         public async Task Logout(string refreshToken)
         {
-            UserAuth? userAuth = await userAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null)
             {
-                await userAuthRepository.Delete(userAuth);
+                await repositories.UserAuthRepository.Delete(userAuth);
             }
         }
 

@@ -11,7 +11,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.ToTable("company_geolocation");
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).HasColumnName("id");
-            builder.Property(x => x.Coordinates).HasColumnName("coordinates");
+            // builder.Property(x => x.Coordinates).HasColumnName("coordinates");
             builder.Property(x => x.RadiusMeters).HasColumnName("radius_meters");
             builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
             builder.Property(x => x.CreatedBy).HasColumnName("created_by").IsRequired();

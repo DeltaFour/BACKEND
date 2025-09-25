@@ -6,7 +6,7 @@ namespace DeltaFour.Domain.Entities
     {
         public Guid CompanyId { get; set; } 
         
-        public Point Coordinates { get; set; }
+        // public Point Coordinates { get; set; }
         
         public int RadiusMeters { get; set; }
         

@@ -1,17 +1,11 @@
 ﻿
 using DeltaFour.Domain.IRepositories;
+using DeltaFour.Infrastructure.Repositories;
 
 namespace DeltaFour.Application.Service
 {
-    public class UserService
+    public class UserService(AllRepositories repository)
     {
-        private readonly IUserRepository _userRepository;
         
-        public UserService(IUserRepository userRepository)
-        {
-            _userRepository = userRepository;
-        }
-
-
     }
 }

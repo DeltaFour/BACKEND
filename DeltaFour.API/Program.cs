@@ -15,7 +15,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// app.UseMiddleware<UserMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -24,6 +23,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
+app.UseMiddleware<UserMiddleware>();
 app.MapControllers();
 app.Run();

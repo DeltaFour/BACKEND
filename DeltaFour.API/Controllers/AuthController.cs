@@ -33,7 +33,7 @@ namespace DeltaFour.API.Controllers
 
         [HttpPost("check-session")]
         [Authorize]
-        public async Task<IActionResult> CheckSession()
+        public IActionResult CheckSession()
         {
             var user = HttpContext.User;
             if (user?.Identity?.IsAuthenticated == true)
