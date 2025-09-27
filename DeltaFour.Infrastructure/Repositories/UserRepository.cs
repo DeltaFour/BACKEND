@@ -8,19 +8,19 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class UserRepository(AppDbContext context) : IUserRepository
     {
-        public async Task Create(User user)
+        public async Task Create(Employee employee)
         {
-            context.Users.Add(user);
+            context.Users.Add(employee);
             await context.SaveChangesAsync();
         }
         
-        public Task Update(User user)
+        public Task Update(Employee employee)
         {
-            context.Users.Update(user);
+            context.Users.Update(employee);
             return context.SaveChangesAsync();
         }
 
-        public async Task<User?> Find(Expression<Func<User, bool>> predicate)
+        public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
         {
             return await context.Users.FirstOrDefaultAsync(predicate);
         }

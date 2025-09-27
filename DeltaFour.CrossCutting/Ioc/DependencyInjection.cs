@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DeltaFour.CrossCutting.Ioc;
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure
@@ -27,7 +28,8 @@ public static class DependencyInjection
             var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
+                    uoptions => uoptions.UseNetTopologySuite()));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserAuthRepository, UserAuthRepository>();
             services.AddScoped<AuthService>();

@@ -3,10 +3,10 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IUserAuthRepository : IBaseRepository<UserAuth>
+    public interface IUserAuthRepository : IBaseRepository<EmployeeAuth>
     {
-        Task Create(UserAuth userAuth);
-        Task Update(UserAuth userAuth);
-        Task Delete(UserAuth userAuth);
+        Task Create(EmployeeAuth employeeAuth);
+        Task Update(EmployeeAuth employeeAuth);
+        Task Delete(EmployeeAuth employeeAuth);
     }
 }

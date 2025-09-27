@@ -2,10 +2,10 @@
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IUserRepository :  IBaseRepository<User>
+    public interface IUserRepository :  IBaseRepository<Employee>
     {
-        Task Create(User user);
-        Task Update(User user);
+        Task Create(Employee employee);
+        Task Update(Employee employee);
          
     }
 }

@@ -11,7 +11,9 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.ToTable("action");
             builder.HasKey(a => a.Id);
             builder.Property(a => a.Id).HasColumnName("id");
-            builder.Property(a => a.Name).HasColumnName("name").IsRequired();
+            builder.Property(a => a.Name).HasColumnName("name").IsUnicode(false).HasMaxLength(255).IsRequired();
+            builder.HasMany(a => a.RolePermissions).WithOne(rp => rp.Action)
+                .HasForeignKey(rp => rp.ActionId);
         }
     }
 }
