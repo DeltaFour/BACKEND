@@ -12,7 +12,7 @@ namespace DeltaFour.Domain.Entities
         
         public int ToleranceMinutes { get; set; }
         
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Guid? UpdatedBy { get; set; }
         

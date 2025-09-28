@@ -12,7 +12,7 @@ namespace DeltaFour.Domain.Entities
         
         public bool IsActive { get; set; }
         
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Guid? UpdatedBy { get; set; }
         

@@ -6,7 +6,7 @@
         
         public string? FaceTemplate { get; set; }
         
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Guid? UpdatedBy { get; set; }
         

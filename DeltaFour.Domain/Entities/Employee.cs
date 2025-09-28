@@ -22,7 +22,7 @@ public class Employee : BaseEntity
     
     public DateTime? LastLogin { get; set; }
     
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
     
     public Guid? UpdatedBy { get; set; }
     

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class UserAuthRepository(AppDbContext context) : IUserAuthRepository
+    public class EmployeeAuthRepository(AppDbContext context) : IUserAuthRepository
     {
 
         public async Task<EmployeeAuth?> Find(Expression<Func<EmployeeAuth, bool>> predicate)

@@ -16,7 +16,7 @@ namespace DeltaFour.Domain.Entities
         
         public Guid? UpdatedBy { get; set; }
         
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Employee? Employee { get; set; }
         

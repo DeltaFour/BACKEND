@@ -30,15 +30,21 @@ public static class DependencyInjection
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
                     uoptions => uoptions.UseNetTopologySuite()));
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserAuthRepository, UserAuthRepository>();
+            services.AddScoped<IUserRepository, EmployeeRepository>();
+            services.AddScoped<IUserAuthRepository, EmployeeAuthRepository>();
             services.AddScoped<AuthService>();
             services.AddScoped<AllRepositories>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IActionRepository, ActionRepository>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
+            services.AddScoped<IEmployeeAttendanceRepository, EmployeeAttendanceRepository>();
+            services.AddScoped<IEmployeeShiftRepository, EmployeeShiftRepository>();
+            services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
+            services.AddScoped<IEmployeeFaceRepository, EmployeeFaceRepository>();
         }
-
         return services;
     }
 }

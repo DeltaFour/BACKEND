@@ -6,7 +6,7 @@ namespace DeltaFour.Infrastructure.Context;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Employee> Users { get; set; }
+    public DbSet<Employee> Employees { get; set; }
 
     public DbSet<Company> Companies { get; set; }
     

@@ -1,6 +1,7 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
@@ -9,13 +10,14 @@ namespace DeltaFour.Infrastructure.Repositories
     {
         public async Task<Company?> Find(Expression<Func<Company, bool>> predicate)
         {
-            return await context.Companies.FindAsync(predicate);
+            return await context.Companies.FirstOrDefaultAsync(predicate);
         }
 
         public async Task<List<Company>> FindAll()
         {
-            return context.Companies.ToList();
+            return await context.Companies.ToListAsync();
         }
+        
         public async Task Create(Company company)
         {
             context.Companies.Add(company);

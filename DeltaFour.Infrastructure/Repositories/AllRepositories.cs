@@ -9,15 +9,21 @@ namespace DeltaFour.Infrastructure.Repositories
         private IUserAuthRepository? _userAuthRepository;
         private ICompanyRepository? _companyRepository;
         private IRoleRepository? _roleRepository;
+        private IRolePermissionRepository? _rolePermissionRepository;
+        private IActionRepository? _actionRepository;
+        private ILocationRepository? _locationRepository;
+        private IWorkShiftRepository? _workShiftRepository;
+        private IEmployeeAttendanceRepository? _employeeAttendanceRepository;
+        private IEmployeeShiftRepository? _employeeShiftRepository;
 
         public IUserRepository UserRepository
         {
-            get { return _userRepository ??= new UserRepository(context); }
+            get { return _userRepository ??= new EmployeeRepository(context); }
         }
 
         public IUserAuthRepository UserAuthRepository
         {
-            get { return _userAuthRepository ??= new UserAuthRepository(context); }
+            get { return _userAuthRepository ??= new EmployeeAuthRepository(context); }
         }
 
         public ICompanyRepository CompanyRepository
@@ -28,6 +34,36 @@ namespace DeltaFour.Infrastructure.Repositories
         public IRoleRepository RoleRepository
         {
             get { return _roleRepository ??= new RoleRepository(context); } 
+        }
+
+        public IRolePermissionRepository RolePermissionRepository
+        {
+            get { return _rolePermissionRepository ??= new RolePermissionRepository(context); }
+        }
+
+        public IActionRepository ActionRepository
+        {
+            get { return _actionRepository ??= new ActionRepository(context); }
+        }
+
+        public ILocationRepository LocationRepository
+        {
+            get { return _locationRepository ??= new LocationRepository(context); }
+        }
+
+        public IWorkShiftRepository WorkShiftRepository
+        {
+            get { return _workShiftRepository ??= new WorkShiftRepository(context); }
+        }
+
+        public IEmployeeAttendanceRepository EmployeeAttendanceRepository
+        {
+            get { return _employeeAttendanceRepository ??= new EmployeeAttendanceRepository(context); }
+        }
+
+        public IEmployeeShiftRepository EmployeeShiftRepository
+        {
+            get { return _employeeShiftRepository ??= new EmployeeShiftRepository(context); }
         }
     }
 }

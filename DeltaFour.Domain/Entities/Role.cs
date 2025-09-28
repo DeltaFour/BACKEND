@@ -12,7 +12,7 @@
         
         public Guid? UpdatedBy { get; set; }
         
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Company? Company { get; set; }
         

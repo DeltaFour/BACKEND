@@ -6,28 +6,32 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class UserRepository(AppDbContext context) : IUserRepository
+    public class EmployeeRepository(AppDbContext context) : IUserRepository
     {
+        public async Task<List<Employee>> GetAll()
+        {
+            return await context.Employees.ToListAsync();
+        }
         public async Task Create(Employee employee)
         {
-            context.Users.Add(employee);
+            context.Employees.Add(employee);
             await context.SaveChangesAsync();
         }
         
         public Task Update(Employee employee)
         {
-            context.Users.Update(employee);
+            context.Employees.Update(employee);
             return context.SaveChangesAsync();
         }
         public async Task Delete(Employee employee)
         {
-            context.Users.Remove(employee);
+            context.Employees.Remove(employee);
             await context.SaveChangesAsync();
         }
 
         public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
         {
-            return await context.Users.FirstOrDefaultAsync(predicate);
+            return await context.Employees.FirstOrDefaultAsync(predicate);
         }
     }
 }

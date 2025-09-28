@@ -1,6 +1,7 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
@@ -9,7 +10,7 @@ namespace DeltaFour.Infrastructure.Repositories
     {
         public async Task<RolePermission?> Find(Expression<Func<RolePermission, bool>> predicate)
         {
-            return await context.RolePermissions.FindAsync(predicate);
+            return await context.RolePermissions.FirstOrDefaultAsync(predicate);
         }
         
         public async Task Create(RolePermission rolePermission)
