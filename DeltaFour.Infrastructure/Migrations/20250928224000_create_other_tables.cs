@@ -146,18 +146,6 @@ namespace DeltaFour.Infrastructure.Migrations
                 table: "address",
                 newName: "created_at");
 
-            migrationBuilder.AlterColumn<Guid>(
-                name: "address_id",
-                table: "company",
-                type: "char(36)",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
-                collation: "ascii_general_ci",
-                oldClrType: typeof(Guid),
-                oldType: "char(36)",
-                oldNullable: true)
-                .OldAnnotation("Relational:Collation", "ascii_general_ci");
-
             migrationBuilder.CreateTable(
                 name: "action",
                 columns: table => new
@@ -207,7 +195,7 @@ namespace DeltaFour.Infrastructure.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     email = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    role_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    role_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     cellphone = table.Column<string>(type: "varchar(14)", maxLength: 14, nullable: true)
@@ -216,7 +204,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     is_confirmed = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     is_allowed_by_pass_coord = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    last_login = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    last_login = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     updated_by = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     created_by = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
@@ -235,8 +223,7 @@ namespace DeltaFour.Infrastructure.Migrations
                         name: "FK_employee_role_role_id",
                         column: x => x.role_id,
                         principalTable: "role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -390,7 +377,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     shift_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     employee_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     start_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    end_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    end_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     created_by = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     updated_by = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
@@ -477,8 +464,7 @@ namespace DeltaFour.Infrastructure.Migrations
                 table: "company",
                 column: "address_id",
                 principalTable: "address",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "id");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_role_company_company_id",
@@ -649,16 +635,6 @@ namespace DeltaFour.Infrastructure.Migrations
                 name: "created_at",
                 table: "address",
                 newName: "CreatedAt");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "AddressId",
-                table: "company",
-                type: "char(36)",
-                nullable: true,
-                collation: "ascii_general_ci",
-                oldClrType: typeof(Guid),
-                oldType: "char(36)")
-                .OldAnnotation("Relational:Collation", "ascii_general_ci");
 
             migrationBuilder.CreateTable(
                 name: "user",

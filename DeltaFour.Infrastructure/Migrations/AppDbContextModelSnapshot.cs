@@ -104,7 +104,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     b.Property<Guid?>("AddressId")
-                        .IsRequired()
                         .HasColumnType("char(36)")
                         .HasColumnName("address_id");
 
@@ -233,7 +232,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnName("is_confirmed");
 
                     b.Property<DateTime?>("LastLogin")
-                        .IsRequired()
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_login");
 
@@ -252,7 +250,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnName("password");
 
                     b.Property<Guid?>("RoleId")
-                        .IsRequired()
                         .HasColumnType("char(36)")
                         .HasColumnName("role_id");
 
@@ -407,7 +404,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnName("employee_id");
 
                     b.Property<DateTime?>("EndDate")
-                        .IsRequired()
                         .HasColumnType("datetime(6)")
                         .HasColumnName("end_date");
 
@@ -578,9 +574,7 @@ namespace DeltaFour.Infrastructure.Migrations
                 {
                     b.HasOne("DeltaFour.Domain.Entities.Address", "Address")
                         .WithOne("Company")
-                        .HasForeignKey("DeltaFour.Domain.Entities.Company", "AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DeltaFour.Domain.Entities.Company", "AddressId");
 
                     b.Navigation("Address");
                 });
@@ -606,9 +600,7 @@ namespace DeltaFour.Infrastructure.Migrations
 
                     b.HasOne("DeltaFour.Domain.Entities.Role", "Role")
                         .WithOne("Employee")
-                        .HasForeignKey("DeltaFour.Domain.Entities.Employee", "RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DeltaFour.Domain.Entities.Employee", "RoleId");
 
                     b.Navigation("Company");
 

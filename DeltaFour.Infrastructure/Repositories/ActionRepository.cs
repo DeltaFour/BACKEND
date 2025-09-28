@@ -2,7 +2,7 @@
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Action = System.Action;
+using Action = DeltaFour.Domain.Entities.Action;
 
 namespace DeltaFour.Infrastructure.Repositories
 {

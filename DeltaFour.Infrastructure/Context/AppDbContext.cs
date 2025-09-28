@@ -1,6 +1,6 @@
 ﻿using DeltaFour.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Action = System.Action;
+using Action = DeltaFour.Domain.Entities.Action;
 
 namespace DeltaFour.Infrastructure.Context;
 

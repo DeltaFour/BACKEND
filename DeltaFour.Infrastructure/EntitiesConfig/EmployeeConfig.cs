@@ -18,13 +18,13 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");
         builder.Property(e => e.IsConfirmed).IsRequired().HasColumnName("is_confirmed");
         builder.Property(e => e.IsAllowedBypassCoord).IsRequired().HasColumnName("is_allowed_by_pass_coord");
-        builder.Property(e => e.LastLogin).IsRequired().HasColumnName("last_login");
+        builder.Property(e => e.LastLogin).HasColumnName("last_login");
         builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
         builder.Property(e => e.CreatedBy).IsRequired().HasColumnName("created_by");
         builder.Property(e => e.CreatedAt).IsRequired().HasColumnName("created_at");
         builder.Property(e => e.CompanyId).HasColumnName("company_id").IsRequired();
-        builder.Property(e => e.RoleId).HasColumnName("role_id").IsRequired();
+        builder.Property(e => e.RoleId).HasColumnName("role_id");
         builder.HasOne<Company>(e => e.Company).WithMany(c => c.Employees)
             .HasForeignKey(e => e.CompanyId);
         builder.HasOne<EmployeeAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)

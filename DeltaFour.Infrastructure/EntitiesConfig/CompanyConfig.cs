@@ -16,7 +16,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(c => c.IsActive).IsRequired().HasColumnName("is_active");
             builder.Property(c => c.CreatedAt).IsRequired().HasColumnName("created_at");
             builder.Property(c => c.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(c => c.AddressId).HasColumnName("address_id").IsRequired();
+            builder.Property(c => c.AddressId).HasColumnName("address_id");
             builder.HasMany(c => c.Employees).WithOne(u => u.Company).HasForeignKey(u => u.CompanyId);
             builder.HasOne<Address>(c => c.Address).WithOne(a => a.Company).HasForeignKey<Company>(c => c.AddressId);
             builder.HasMany(c => c.Roles).WithOne(r => r.Company).HasForeignKey(r => r.CompanyId);
