@@ -19,6 +19,11 @@ namespace DeltaFour.Infrastructure.Repositories
             context.Users.Update(employee);
             return context.SaveChangesAsync();
         }
+        public async Task Delete(Employee employee)
+        {
+            context.Users.Remove(employee);
+            await context.SaveChangesAsync();
+        }
 
         public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
         {
