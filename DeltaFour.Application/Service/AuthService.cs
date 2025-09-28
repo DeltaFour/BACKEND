@@ -43,8 +43,6 @@ namespace DeltaFour.Application.Service
                 Claims = signingKeys,
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddMinutes(5),
-                Issuer = "http://localhost:5212",
-                Audience = "http://localhost:5212",
                 SigningCredentials = signingCredentials,
                 EncryptingCredentials = encryptingCredentials
             };
@@ -66,18 +64,7 @@ namespace DeltaFour.Application.Service
             await userAuthRepository.Create(userAuth);
             return userAuth.Id;
         }
-
-        public async Task<bool> CheckSession(string refreshToken, string jwt)
-        {
-            UserAuth? userAuth = await userAuthRepository.GetById(Guid.Parse(refreshToken));
-            if (userAuth != null && !userAuth.IsExpired())
-            {
-
-            }
-
-            return false;
-        }
-
+        
         public async Task<string?> RemakeToken(string refreshToken, string userId)
         {
             UserAuth? userAuth = await userAuthRepository.GetById(Guid.Parse(refreshToken));
