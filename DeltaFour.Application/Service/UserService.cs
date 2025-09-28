@@ -11,7 +11,5 @@ namespace DeltaFour.Application.Service
         {
             _userRepository = userRepository;
         }
-
-
     }
 }

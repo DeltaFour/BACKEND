@@ -9,7 +9,6 @@ namespace DeltaFour.CrossCutting.Ioc
 {
     public static class JwtConfiguration
     {
-        
         public static IServiceCollection AddConfigJwt
         (
             this IServiceCollection service,
@@ -18,16 +17,16 @@ namespace DeltaFour.CrossCutting.Ioc
         {
             var rsaPublicKey = GetRsaKeys.GetPublicKey("../app.pub");
             var rsaPrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
+            bool validateLifeTime = bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_LIFETIME")!);
+            bool requireExpirationTime = bool.Parse(Environment.GetEnvironmentVariable("REQUIRE_EXPIRATION_TIME")!);
+            bool validateIssuerSigningKey =
+                bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_ISSUER_SIGNING_KEY")!);
 
             var validationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                RequireExpirationTime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = "http://localhost:5212",
-                ValidAudience = "http://localhost:5212",
+                ValidateLifetime = validateLifeTime,
+                RequireExpirationTime = requireExpirationTime,
+                ValidateIssuerSigningKey = validateIssuerSigningKey,
                 IssuerSigningKey = new RsaSecurityKey(rsaPublicKey),
                 TokenDecryptionKey = new RsaSecurityKey(rsaPrivateKey)
             };
@@ -48,6 +47,7 @@ namespace DeltaFour.CrossCutting.Ioc
                         {
                             context.Token = context.Request.Cookies["Jwt"];
                         }
+
                         return Task.CompletedTask;
                     }
                 };
