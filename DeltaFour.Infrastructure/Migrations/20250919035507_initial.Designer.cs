@@ -4,6 +4,7 @@ using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DeltaFour.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919035507_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,9 +190,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<Guid?>("RoleId")
-                        .HasColumnType("char(36)");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .IsRequired()
                         .HasColumnType("datetime(6)");
@@ -200,9 +200,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("RoleId")
-                        .IsUnique();
 
                     b.ToTable("user", (string)null);
                 });
@@ -259,13 +256,7 @@ namespace DeltaFour.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DeltaFour.Domain.Entities.Role", "Role")
-                        .WithOne("User")
-                        .HasForeignKey("DeltaFour.Domain.Entities.User", "RoleId");
-
                     b.Navigation("Company");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.UserAuth", b =>
@@ -289,11 +280,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Navigation("Roles");
 
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("DeltaFour.Domain.Entities.Role", b =>
-                {
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.User", b =>

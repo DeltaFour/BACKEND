@@ -1,0 +1,82 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using DeltaFour.Application.Dtos;
+using DeltaFour.Application.Service;
+using DeltaFour.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
+
+namespace DeltaFour.API.Controllers
+{
+    [ApiController]
+    [Route("api/auth")]
+    public class AuthController(AuthService authService) : Controller
+    {
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            var user = await authService.Login(loginDto);
+            if (user == null)
+            {
+                return BadRequest("Ops, Usuario não existe");
+            }
+
+            string jwt = authService.CreateToken(user);
+            Guid refreshToken = await authService.CreateRefreshToken(user, jwt);
+
+            CookieOptions options = Cookie();
+
+            Response.Cookies.Append("Jwt", jwt, options);
+            Response.Cookies.Append("RefreshToken", refreshToken.ToString(), options);
+            return Ok();
+        }
+
+        [HttpPost("check-session")]
+        [Authorize]
+        public async Task<IActionResult> CheckSession()
+        {
+            var user = HttpContext.User;
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                return NoContent();
+            }
+            return Forbid();
+        }
+
+        [HttpPost("refresh-token")]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
+        {
+            string cookieRefresh = Request.Cookies["RefreshToken"]!;
+            string userId = User.FindFirst("userId")!.Value;
+            string? jwt = await authService.RemakeToken(cookieRefresh, userId);
+            if (jwt != null)
+            {
+                Response.Cookies.Append("Jwt", jwt, Cookie());
+                return NoContent();
+            }
+            return Forbid();
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var refreshToken = Request.Cookies["RefreshToken"];
+            await authService.Logout(refreshToken!);
+            Response.Cookies.Delete("Jwt");
+            Response.Cookies.Delete("RefreshToken");
+            return NoContent();
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public CookieOptions Cookie()
+        {
+            var cookie = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+            };
+
+            return cookie;
+        }
+    }
+}

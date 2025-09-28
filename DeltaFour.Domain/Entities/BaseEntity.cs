@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace DeltaFour.Domain.Entities;
+﻿namespace DeltaFour.Domain.Entities;
 
 public abstract class BaseEntity
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } =  Guid.NewGuid();
     public DateTime CreatedAt{ get; set; }
 }

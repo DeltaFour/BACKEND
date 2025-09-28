@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.20" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DeltaFour.Domain\DeltaFour.Domain.csproj" />
     <ProjectReference Include="..\DeltaFour.Infrastructure\DeltaFour.Infrastructure.csproj" />
   </ItemGroup>
