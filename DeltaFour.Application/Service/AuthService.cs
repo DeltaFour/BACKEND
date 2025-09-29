@@ -43,8 +43,6 @@ namespace DeltaFour.Application.Service
                 Claims = signingKeys,
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddMinutes(5),
-                Issuer = "http://localhost:5212",
-                Audience = "http://localhost:5212",
                 SigningCredentials = signingCredentials,
                 EncryptingCredentials = encryptingCredentials
             };
@@ -78,6 +76,7 @@ namespace DeltaFour.Application.Service
             return false;
         }
 
+        
         public async Task<string?> RemakeToken(string refreshToken, string userId)
         {
             EmployeeAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
