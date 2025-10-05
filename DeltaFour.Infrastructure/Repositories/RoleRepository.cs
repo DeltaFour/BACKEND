@@ -13,22 +13,19 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.Roles.FirstOrDefaultAsync(predicate);
         }
         
-        public async Task Create(Role role)
+        public void Create(Role role)
         {
             context.Roles.Add(role);
-            await context.SaveChangesAsync();
         }
         
-        public async Task Update(Role role)
+        public void Update(Role role)
         {
             context.Roles.Update(role);
-            await context.SaveChangesAsync();
         }
         
-        public async Task Delete(Role role)
+        public void Delete(Role role)
         {
             context.Roles.Remove(role);
-            await context.SaveChangesAsync();
         }
     }
 }

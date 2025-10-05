@@ -4,10 +4,10 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IWorkShiftRepository : IBaseRepository<WorkShift>
     {
-        Task Create(WorkShift workShift);
+        void Create(WorkShift workShift);
         
-        Task Update(WorkShift workShift);
+        void Update(WorkShift workShift);
         
-        Task Delete(WorkShift workShift);
+        void Delete(WorkShift workShift);
     }
 }

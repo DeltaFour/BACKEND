@@ -13,22 +13,19 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.RolePermissions.FirstOrDefaultAsync(predicate);
         }
         
-        public async Task Create(RolePermission rolePermission)
+        public void Create(RolePermission rolePermission)
         {
             context.RolePermissions.Add(rolePermission);
-            await context.SaveChangesAsync();
         }
         
-        public async Task Delete(RolePermission rolePermission)
+        public void Delete(RolePermission rolePermission)
         {
             context.RolePermissions.Remove(rolePermission);
-            await context.SaveChangesAsync();
         }
         
-        public async Task DeleteAll(List<RolePermission> rolePermissions)
+        public void DeleteAll(List<RolePermission> rolePermissions)
         {
             context.RolePermissions.RemoveRange(rolePermissions);
-            await context.SaveChangesAsync();
         }
     }
 }

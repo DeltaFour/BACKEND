@@ -4,10 +4,10 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IRoleRepository : IBaseRepository<Role>
     {
-        Task Create(Role role);
+        void Create(Role role);
         
-        Task Update(Role role);
+        void Update(Role role);
         
-        Task Delete(Role role);
+        void Delete(Role role);
     }
 }

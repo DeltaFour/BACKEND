@@ -5,8 +5,8 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class AllRepositories(AppDbContext context)
     {
-        private IUserRepository? _userRepository;
-        private IUserAuthRepository? _userAuthRepository;
+        private IEmployeeRepository? _userRepository;
+        private IEmployeeAuthRepository? _userAuthRepository;
         private ICompanyRepository? _companyRepository;
         private IRoleRepository? _roleRepository;
         private IRolePermissionRepository? _rolePermissionRepository;
@@ -16,12 +16,12 @@ namespace DeltaFour.Infrastructure.Repositories
         private IEmployeeAttendanceRepository? _employeeAttendanceRepository;
         private IEmployeeShiftRepository? _employeeShiftRepository;
 
-        public IUserRepository UserRepository
+        public IEmployeeRepository EmployeeRepository
         {
             get { return _userRepository ??= new EmployeeRepository(context); }
         }
 
-        public IUserAuthRepository UserAuthRepository
+        public IEmployeeAuthRepository EmployeeAuthRepository
         {
             get { return _userAuthRepository ??= new EmployeeAuthRepository(context); }
         }
@@ -64,6 +64,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public IEmployeeShiftRepository EmployeeShiftRepository
         {
             get { return _employeeShiftRepository ??= new EmployeeShiftRepository(context); }
+        }
+
+        public async Task Save()
+        {
+            await context.SaveChangesAsync();
         }
     }
 }

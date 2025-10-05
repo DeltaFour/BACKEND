@@ -30,8 +30,8 @@ public static class DependencyInjection
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
                     uoptions => uoptions.UseNetTopologySuite()));
-            services.AddScoped<IUserRepository, EmployeeRepository>();
-            services.AddScoped<IUserAuthRepository, EmployeeAuthRepository>();
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IEmployeeAuthRepository, EmployeeAuthRepository>();
             services.AddScoped<AuthService>();
             services.AddScoped<AllRepositories>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();

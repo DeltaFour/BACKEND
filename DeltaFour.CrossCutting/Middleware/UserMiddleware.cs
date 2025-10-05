@@ -1,13 +1,12 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 namespace DeltaFour.CrossCutting.Middleware
 {
     public class UserMiddleware(RequestDelegate next)
     {
-        public async Task Invoke(HttpContext context, IUserRepository userRepository)
+        public async Task Invoke(HttpContext context, IEmployeeRepository employeeRepository)
         {
             if (context.User?.Identity?.IsAuthenticated ?? false)
             {
@@ -15,7 +14,7 @@ namespace DeltaFour.CrossCutting.Middleware
 
                 if (Guid.TryParse(userIdClaim, out var userId))
                 {
-                    Employee? user = await userRepository.Find(u => u.Id == userId);
+                    Employee? user = await employeeRepository.Find(u => u.Id == userId);
 
                     if (user is { IsActive: true })
                     {

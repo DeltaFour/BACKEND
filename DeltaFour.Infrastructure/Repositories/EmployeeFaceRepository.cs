@@ -12,25 +12,21 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.EmployeeFaces.FirstOrDefaultAsync(predicate);
         }
-        public async Task Create(EmployeeFace employeeFace)
+        public void Create(EmployeeFace employeeFace)
         {
             context.EmployeeFaces.Add(employeeFace);
-            await context.SaveChangesAsync();
         }
-        public async Task Delete(EmployeeFace employeeFace)
+        public void Delete(EmployeeFace employeeFace)
         {
             context.EmployeeFaces.Remove(employeeFace);
-            await context.SaveChangesAsync();
         }
-        public async Task CreateAll(List<EmployeeFace> employees)
+        public void CreateAll(List<EmployeeFace> employees)
         {
             context.EmployeeFaces.AddRange(employees);
-            await context.SaveChangesAsync();
         }
-        public async Task DeleteAll(List<EmployeeFace> employees)
+        public void DeleteAll(List<EmployeeFace> employees)
         {
             context.EmployeeFaces.RemoveRange(employees);
-            await context.SaveChangesAsync();
         }
     }
 }

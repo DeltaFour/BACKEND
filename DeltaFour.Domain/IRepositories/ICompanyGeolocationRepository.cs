@@ -4,6 +4,6 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface ICompanyGeolocationRepository : IBaseRepository<CompanyGeolocation>
     {
-        Task Create(CompanyGeolocation companyGeolocation);
+        void Create(CompanyGeolocation companyGeolocation);
     }
 }

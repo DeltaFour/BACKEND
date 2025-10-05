@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class EmployeeAuthRepository(AppDbContext context) : IUserAuthRepository
+    public class EmployeeAuthRepository(AppDbContext context) : IEmployeeAuthRepository
     {
 
         public async Task<EmployeeAuth?> Find(Expression<Func<EmployeeAuth, bool>> predicate)
@@ -14,23 +14,20 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.Auth.FirstOrDefaultAsync(predicate);
         }
 
-        public async Task Create(EmployeeAuth employeeAuth)
+        public void Create(EmployeeAuth employeeAuth)
         {
             context.Auth.Add(employeeAuth);
-            await context.SaveChangesAsync();
         }
 
-        public async Task Delete(EmployeeAuth employeeAuth)
+        public void Delete(EmployeeAuth employeeAuth)
         {
             context.Auth.Remove(employeeAuth);
-            await context.SaveChangesAsync();
 
         }
         
-        public async Task Update(EmployeeAuth employeeAuth)
+        public void Update(EmployeeAuth employeeAuth)
         {
             context.Auth.Update(employeeAuth);
-            await context.SaveChangesAsync();
         }
     }
 }

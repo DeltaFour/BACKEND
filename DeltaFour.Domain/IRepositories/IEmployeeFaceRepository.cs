@@ -4,12 +4,12 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IEmployeeFaceRepository : IBaseRepository<EmployeeFace>
     {
-        Task Create(EmployeeFace employeeFace);
+        void Create(EmployeeFace employeeFace);
         
-        Task Delete(EmployeeFace employeeFace);
+        void Delete(EmployeeFace employeeFace);
         
-        Task CreateAll(List<EmployeeFace> employees);
+        void CreateAll(List<EmployeeFace> employees);
         
-        Task DeleteAll(List<EmployeeFace> employees);
+        void DeleteAll(List<EmployeeFace> employees);
     }
 }

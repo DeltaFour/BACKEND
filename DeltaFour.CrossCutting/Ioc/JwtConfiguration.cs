@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
 
 namespace DeltaFour.CrossCutting.Ioc
 {
@@ -21,9 +20,13 @@ namespace DeltaFour.CrossCutting.Ioc
             bool requireExpirationTime = bool.Parse(Environment.GetEnvironmentVariable("REQUIRE_EXPIRATION_TIME")!);
             bool validateIssuerSigningKey =
                 bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_ISSUER_SIGNING_KEY")!);
+            bool issuer = bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_ISSUER")!);
+            bool audience = bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_AUDIENCE")!);
 
             var validationParameters = new TokenValidationParameters
             {
+                ValidateIssuer = issuer,
+                ValidateAudience = audience,
                 ValidateLifetime = validateLifeTime,
                 RequireExpirationTime = requireExpirationTime,
                 ValidateIssuerSigningKey = validateIssuerSigningKey,
@@ -48,6 +51,11 @@ namespace DeltaFour.CrossCutting.Ioc
                             context.Token = context.Request.Cookies["Jwt"];
                         }
 
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("Falha de autenticação: " + context.Exception.Message);
                         return Task.CompletedTask;
                     }
                 };

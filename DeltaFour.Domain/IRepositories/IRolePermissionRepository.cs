@@ -4,8 +4,8 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IRolePermissionRepository : IBaseRepository<RolePermission>
     {
-        Task Create(RolePermission rolePermission);
-        Task Delete(RolePermission rolePermission);
-        Task DeleteAll(List<RolePermission> rolePermissions);
+        void Create(RolePermission rolePermission);
+        void Delete(RolePermission rolePermission);
+        void DeleteAll(List<RolePermission> rolePermissions);
     }
 }

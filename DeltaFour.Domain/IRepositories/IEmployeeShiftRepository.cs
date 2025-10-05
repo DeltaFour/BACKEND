@@ -4,10 +4,10 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IEmployeeShiftRepository : IBaseRepository<EmployeeShift>
     {
-        Task Create(EmployeeShift employeeAttendance);
+        void Create(EmployeeShift employeeAttendance);
         
-        Task Update(EmployeeShift employeeAttendance);
+        void Update(EmployeeShift employeeAttendance);
         
-        Task Delete(EmployeeShift employeeAttendance);
+        void Delete(EmployeeShift employeeAttendance);
     }
 }

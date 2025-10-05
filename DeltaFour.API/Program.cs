@@ -1,7 +1,6 @@
 using DeltaFour.CrossCutting.Ioc;
 using DeltaFour.CrossCutting.Middleware;
 using DotNetEnv;
-using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +22,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<UserMiddleware>();
 app.MapControllers();
+app.UseMiddleware<UserMiddleware>();
 app.Run();

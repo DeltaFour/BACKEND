@@ -18,22 +18,19 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.Companies.ToListAsync();
         }
         
-        public async Task Create(Company company)
+        public void Create(Company company)
         {
             context.Companies.Add(company);
-            await context.SaveChangesAsync();
         }
         
-        public async Task Update(Company company)
+        public void Update(Company company)
         {
             context.Companies.Update(company);
-            await context.SaveChangesAsync();
         }
         
-        public async Task Delete(Company company)
+        public void Delete(Company company)
         {
             context.Companies.Remove(company);
-            await context.SaveChangesAsync();
         }
     }
 }

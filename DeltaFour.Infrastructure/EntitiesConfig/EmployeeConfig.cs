@@ -28,10 +28,13 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
         builder.HasOne<Company>(e => e.Company).WithMany(c => c.Employees)
             .HasForeignKey(e => e.CompanyId);
         builder.HasOne<EmployeeAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)
-            .HasForeignKey<EmployeeAuth>(ea => ea.EmployeeId);
+            .HasForeignKey<EmployeeAuth>(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Role>(e => e.Role).WithOne(r => r.Employee).HasForeignKey<Employee>(e => e.RoleId);
-        builder.HasMany(e => e.EmployeeShifts).WithOne(es => es.Employee).HasForeignKey(es => es.EmployeeId);
+        builder.HasMany(e => e.EmployeeShifts).WithOne(es => es.Employee).HasForeignKey(es => es.EmployeeId)
+            .OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(e => e.EmployeeAttendances).WithOne(ea => ea.Employee)
-            .HasForeignKey(ea => ea.EmployeeId);
+            .HasForeignKey(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(e => e.EmployeeFaces).WithOne(e => e.Employee)
+            .HasForeignKey(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
     }
 }

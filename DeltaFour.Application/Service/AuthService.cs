@@ -16,7 +16,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<Employee?> Login(LoginDto dto)
         {
-            Employee? user = await repositories.UserRepository.Find(u => u.Email == dto.Email);
+            Employee? user = await repositories.EmployeeRepository.Find(u => u.Email == dto.Email);
             if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
             {
                 return user;
@@ -54,35 +54,24 @@ namespace DeltaFour.Application.Service
 
         public async Task<Guid> CreateRefreshToken(Employee employee, string jwt)
         {
-            EmployeeAuth? userAuth = await repositories.UserAuthRepository.Find(u=> u.EmployeeId == employee.Id);
+            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(u=> u.EmployeeId == employee.Id);
             if (userAuth != null)
             {
-                await repositories.UserAuthRepository.Delete(userAuth);
+                repositories.EmployeeAuthRepository.Delete(userAuth);
             }
 
             userAuth = new EmployeeAuth(employee.Id, jwt, DateTime.UtcNow.AddHours(24));
-            await repositories.UserAuthRepository.Create(userAuth);
+            repositories.EmployeeAuthRepository.Create(userAuth);
+            await repositories.Save();
             return userAuth.Id;
         }
 
-        public async Task<bool> CheckSession(string refreshToken, string jwt)
-        {
-            EmployeeAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
-            if (userAuth != null && !userAuth.IsExpired())
-            {
-
-            }
-
-            return false;
-        }
-
-        
         public async Task<string?> RemakeToken(string refreshToken, string userId)
         {
-            EmployeeAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
-                Employee employee = await repositories.UserRepository.Find(u => u.Id == Guid.Parse(userId)) ??
+                Employee employee = await repositories.EmployeeRepository.Find(u => u.Id == Guid.Parse(userId)) ??
                             throw new BadHttpRequestException("Ops, algo deu errado");
                 return CreateToken(employee);
             }
@@ -91,10 +80,11 @@ namespace DeltaFour.Application.Service
 
         public async Task Logout(string refreshToken)
         {
-            EmployeeAuth? userAuth = await repositories.UserAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
             if (userAuth != null)
             {
-                await repositories.UserAuthRepository.Delete(userAuth);
+                repositories.EmployeeAuthRepository.Delete(userAuth);
+                await repositories.Save();
             }
         }
 

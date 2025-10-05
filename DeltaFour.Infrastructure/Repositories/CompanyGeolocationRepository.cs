@@ -12,10 +12,9 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.CompanyGeolocations.FirstOrDefaultAsync(predicate);
         }
-        public async Task Create(CompanyGeolocation companyGeolocation)
+        public void Create(CompanyGeolocation companyGeolocation)
         {
             context.CompanyGeolocations.Add(companyGeolocation);
-            await context.SaveChangesAsync();
         }
     }
 }
