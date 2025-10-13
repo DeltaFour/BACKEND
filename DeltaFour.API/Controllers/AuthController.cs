@@ -9,20 +9,20 @@ namespace DeltaFour.API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController(AuthService authService) : Controller
+    public class AuthController(AuthService service) : Controller
     {
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var user = await authService.Login(loginDto);
+            var user = await service.Login(loginDto);
             if (user == null)
             {
                 return BadRequest("Ops, Usuario não existe");
             }
 
-            string jwt = authService.CreateToken(user);
-            Guid refreshToken = await authService.CreateRefreshToken(user, jwt);
+            string jwt = service.CreateToken(user);
+            Guid refreshToken = await service.CreateRefreshToken(user, jwt);
 
             CookieOptions options = Cookie();
 
@@ -48,8 +48,8 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             var cookieRefresh = Request.Cookies["RefreshToken"]!;
-            var user = HttpContext.GetObject<Employee>("user");
-            var jwt = await authService.RemakeToken(cookieRefresh, user.Id.ToString());
+            var user = HttpContext.GetObject<Employee>();
+            var jwt = await service.RemakeToken(cookieRefresh, user.Id.ToString());
             if (jwt != null)
             {
                 Response.Cookies.Append("Jwt", jwt, Cookie());
@@ -62,7 +62,7 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> Logout()
         {
             var refreshToken = Request.Cookies["RefreshToken"];
-            await authService.Logout(refreshToken!);
+            await service.Logout(refreshToken!);
             Response.Cookies.Delete("Jwt");
             Response.Cookies.Delete("RefreshToken");
             return NoContent();

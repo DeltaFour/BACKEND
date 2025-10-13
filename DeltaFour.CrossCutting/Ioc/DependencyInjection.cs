@@ -33,6 +33,8 @@ public static class DependencyInjection
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IEmployeeAuthRepository, EmployeeAuthRepository>();
             services.AddScoped<AuthService>();
+            services.AddScoped<EmployeeService>();
+            services.AddScoped<CompanyService>();
             services.AddScoped<AllRepositories>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();

@@ -14,6 +14,12 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(a => a.Name).HasColumnName("name").IsUnicode(false).HasMaxLength(255).IsRequired();
             builder.HasMany(a => a.RolePermissions).WithOne(rp => rp.Action)
                 .HasForeignKey(rp => rp.ActionId);
+            builder.HasData(
+                new Action { Name = "list" }, 
+                new Action { Name = "create" }, 
+                new Action { Name = "update" },
+                new Action { Name = "delete" }
+                );
         }
     }
 }
