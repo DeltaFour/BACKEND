@@ -4,7 +4,7 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IEmployeeRepository :  IBaseRepository<Employee>
     {
-        Task<List<Employee>> GetAll();
+        Task<List<Employee>> GetAll(Guid companyId);
         
         void Create(Employee employee);
         

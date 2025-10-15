@@ -8,15 +8,17 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class EmployeeRepository(AppDbContext context) : IEmployeeRepository
     {
-        public async Task<List<Employee>> GetAll()
+        public async Task<List<Employee>> GetAll(Guid companyId)
         {
-            return await context.Employees.ToListAsync();
+            return await context.Employees.Where(e => e.IsActive == true && e.CompanyId == companyId)
+                .Include(e => e.Role)
+                .ToListAsync();
         }
         public void Create(Employee employee)
         {
             context.Employees.Add(employee);
         }
-        
+
         public void Update(Employee employee)
         {
             context.Employees.Update(employee);

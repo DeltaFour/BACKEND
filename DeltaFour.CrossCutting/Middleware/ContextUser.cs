@@ -16,7 +16,7 @@ namespace DeltaFour.CrossCutting.Middleware
             context.User = new ClaimsPrincipal(identity);
         }
 
-        public static T GetObject<T>(this HttpContext context)
+        public static T GetUserAuthenticated<T>(this HttpContext context)
         {
             var value = context.User.FindFirst("user")!.Value;
             return JsonConvert.DeserializeObject<T>(value)!;

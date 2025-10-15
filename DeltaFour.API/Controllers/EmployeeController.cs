@@ -12,17 +12,18 @@ namespace DeltaFour.API.Controllers
     public class EmployeeController(EmployeeService service) : Controller
     {
         [HttpGet]
-        public IActionResult Index()
+        public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
         {
-            return View();
+            var employee = HttpContext.GetUserAuthenticated<Employee>();
+            return Ok(await service.GetAllByCompany(employee.CompanyId));
         }
 
         [HttpPost("create")]
         [Authorize]
-        public async Task<IActionResult> create([FromBody] EmployeeCreateDto employeeCreateDto, List<IFormFile> files)
+        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto, List<IFormFile> files) 
         {
-            var employee = HttpContext.GetObject<Employee>();
-            await service.create(employeeCreateDto, files, employee);
+            var employee = HttpContext.GetUserAuthenticated<Employee>();
+            await service.Create(employeeCreateDto, files, employee);
             return Ok();
         }
     }

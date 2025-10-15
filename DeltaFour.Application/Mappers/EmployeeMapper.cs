@@ -21,5 +21,11 @@ namespace DeltaFour.Application.Mappers
                 CreatedBy = createdBy.Id,
             };
         }
+
+        public static EmployeeResponseDto fromListEmployee(Employee e)
+        {
+            return new EmployeeResponseDto(e.Id, e.Name, e.Email, e.Role.Name, e.IsActive, e.IsAllowedBypassCoord, 
+                e.LastLogin);
+        }
     }
 }

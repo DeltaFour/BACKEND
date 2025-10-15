@@ -48,7 +48,7 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             var cookieRefresh = Request.Cookies["RefreshToken"]!;
-            var user = HttpContext.GetObject<Employee>();
+            var user = HttpContext.GetUserAuthenticated<Employee>();
             var jwt = await service.RemakeToken(cookieRefresh, user.Id.ToString());
             if (jwt != null)
             {
