@@ -20,13 +20,7 @@ namespace DeltaFour.Application.Dtos
         public String? CellPhone { get; set; }
         
         [Required]
-        public Guid ShiftId { get; set; }
-        
-        [Required]
-        public DateTime StartDate { get; set; }
-        
-        [Required]
-        public DateTime EndDate { get; set; }
+        public List<EmployeeShiftDto> EmployeeShift { get; set; }
         
         [Required]
         public Boolean IsAllowedBypassCoord { get; set; }

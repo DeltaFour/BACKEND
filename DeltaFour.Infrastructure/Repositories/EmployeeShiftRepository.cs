@@ -12,6 +12,9 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.EmployeeShifts.FirstOrDefaultAsync(predicate);
         }
+        
+        
+        
         public void Create(EmployeeShift employeeShift)
         {
             context.EmployeeShifts.Add(employeeShift);

@@ -6,6 +6,8 @@
 
         public String Name { get; set; }
 
+        public String? Cellphone { get; set; }
+        
         public String Email { get; set; }
 
         public String RoleName { get; set; }
@@ -21,7 +23,8 @@
             Guid id,
             String name,
             String email,
-            String roleName,
+            String? cellphone,
+            String? roleName,
             Boolean isActive,
             Boolean isAllowedBypassCoord,
             DateTime? lastLogin
@@ -30,6 +33,7 @@
             Id = id;
             Name = name;
             Email = email;
+            Cellphone = cellphone;
             RoleName = roleName;
             IsActive = isActive;
             IsAllowedBypassCoord = isAllowedBypassCoord;

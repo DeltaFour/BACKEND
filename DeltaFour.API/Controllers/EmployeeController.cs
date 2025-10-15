@@ -26,5 +26,12 @@ namespace DeltaFour.API.Controllers
             await service.Create(employeeCreateDto, files, employee);
             return Ok();
         }
+
+        public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
+        {
+            var employee = HttpContext.GetUserAuthenticated<Employee>();
+            await service.Update(employeeUpdateDto, employee.CompanyId);
+            return Ok();
+        }
     }
 }

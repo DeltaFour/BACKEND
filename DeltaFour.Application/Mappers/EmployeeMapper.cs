@@ -5,7 +5,7 @@ namespace DeltaFour.Application.Mappers
 {
     public static class EmployeeMapper
     {
-        public static Employee fromCreateDto(EmployeeCreateDto dto, Guid roleId, Employee createdBy)
+        public static Employee FromCreateDto(EmployeeCreateDto dto, Guid roleId, Employee createdBy)
         {
             return new Employee()
             {
@@ -22,10 +22,15 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        public static EmployeeResponseDto fromListEmployee(Employee e)
+        public static EmployeeResponseDto FromListEmployee(Employee e)
         {
-            return new EmployeeResponseDto(e.Id, e.Name, e.Email, e.Role.Name, e.IsActive, e.IsAllowedBypassCoord, 
-                e.LastLogin);
+            return new EmployeeResponseDto(e.Id, e.Name!, e.Email!, e.Cellphone, e.Role!.Name, e.IsActive,
+                e.IsAllowedBypassCoord, e.LastLogin);
+        }
+
+        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e)
+        {
+            
         }
     }
 }

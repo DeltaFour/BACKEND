@@ -22,14 +22,15 @@ namespace DeltaFour.Application.Service
                 List<EmployeeResponseDto> list = new List<EmployeeResponseDto>();
                 foreach (Employee employee in employees)
                 {
-                    list.Add(EmployeeMapper.fromListEmployee(employee));
+                    list.Add(EmployeeMapper.FromListEmployee(employee));
                 }
 
                 return list;
             }
+
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
-        
+
         public async Task Create(EmployeeCreateDto dto, List<IFormFile> files, Employee userAuthenticated)
         {
             if (await repository.EmployeeRepository.Find(e =>
@@ -38,7 +39,7 @@ namespace DeltaFour.Application.Service
                 Role? role = await repository.RoleRepository.Find(r => r.Name == dto.RoleName);
                 if (role != null)
                 {
-                    Employee employee = EmployeeMapper.fromCreateDto(dto, role.Id, userAuthenticated);
+                    Employee employee = EmployeeMapper.FromCreateDto(dto, role.Id, userAuthenticated);
                     repository.EmployeeRepository.Create(employee);
                     if (files.Count > 0)
                     {
@@ -60,8 +61,22 @@ namespace DeltaFour.Application.Service
                             }
                         }
                     }
+
+                    List<EmployeeShift> employeeShifts = new List<EmployeeShift>();
+                    foreach (var shift in dto.EmployeeShift)
+                    {
+                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, employee.Id));
+                    }
+                    
+
+                    await repository.Save();
                 }
             }
+        }
+
+        public async Task Update(EmployeeUpdateDto dto, Guid companyId)
+        {
+
         }
     }
 }
