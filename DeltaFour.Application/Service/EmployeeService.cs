@@ -33,8 +33,8 @@ namespace DeltaFour.Application.Service
 
         public async Task Create(EmployeeCreateDto dto, List<IFormFile> files, Employee userAuthenticated)
         {
-            if (await repository.EmployeeRepository.Find(e =>
-                    e.Email == userAuthenticated.Email && e.CompanyId == userAuthenticated.CompanyId) == null)
+            if (await repository.EmployeeRepository.FindAny(e =>
+                    e.Email == userAuthenticated.Email && e.CompanyId == userAuthenticated.CompanyId))
             {
                 Role? role = await repository.RoleRepository.Find(r => r.Name == dto.RoleName);
                 if (role != null)
@@ -67,8 +67,8 @@ namespace DeltaFour.Application.Service
                     {
                         employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, employee.Id));
                     }
-                    
 
+                    repository.EmployeeShiftRepository.CreateAll(employeeShifts);
                     await repository.Save();
                 }
             }
@@ -76,7 +76,7 @@ namespace DeltaFour.Application.Service
 
         public async Task Update(EmployeeUpdateDto dto, Guid companyId)
         {
-
+             
         }
     }
 }

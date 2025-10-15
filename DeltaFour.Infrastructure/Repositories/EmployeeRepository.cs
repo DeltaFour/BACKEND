@@ -14,6 +14,12 @@ namespace DeltaFour.Infrastructure.Repositories
                 .Include(e => e.Role)
                 .ToListAsync();
         }
+        
+        public async Task<bool> FindAny(Expression<Func<Employee, bool>> predicate)
+        {
+            return await context.Employees.AnyAsync(predicate);
+        }
+        
         public void Create(Employee employee)
         {
             context.Employees.Add(employee);

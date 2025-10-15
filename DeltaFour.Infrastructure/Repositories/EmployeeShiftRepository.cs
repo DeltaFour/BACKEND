@@ -13,16 +13,21 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.EmployeeShifts.FirstOrDefaultAsync(predicate);
         }
         
-        
-        
         public void Create(EmployeeShift employeeShift)
         {
             context.EmployeeShifts.Add(employeeShift);
         }
+        
+        public void CreateAll(List<EmployeeShift> employeeShifts)
+        {
+            context.EmployeeShifts.AddRange(employeeShifts);
+        }
+        
         public void Update(EmployeeShift employeeShift)
         {
             context.EmployeeShifts.Update(employeeShift);
         }
+        
         public void Delete(EmployeeShift employeeShift)
         {
             context.EmployeeShifts.Remove(employeeShift);

@@ -6,6 +6,8 @@ namespace DeltaFour.Domain.IRepositories
     {
         void Create(EmployeeShift employeeAttendance);
         
+        void CreateAll(List<EmployeeShift> employeeShifts);
+        
         void Update(EmployeeShift employeeAttendance);
         
         void Delete(EmployeeShift employeeAttendance);
