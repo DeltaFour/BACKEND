@@ -18,7 +18,7 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.GetAllByCompany(employee.CompanyId));
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto, List<IFormFile> files) 
         {
@@ -27,10 +27,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
+        [HttpPatch]
+        [Authorize]
         public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
         {
             var employee = HttpContext.GetUserAuthenticated<Employee>();
-            await service.Update(employeeUpdateDto, employee.CompanyId);
+            await service.Update(employeeUpdateDto, employee);
             return Ok();
         }
     }

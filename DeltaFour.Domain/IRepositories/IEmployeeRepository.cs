@@ -9,6 +9,8 @@ namespace DeltaFour.Domain.IRepositories
         
         Task<Boolean> FindAny(Expression<Func<Employee, bool>> predicate);
         
+        Task<Employee?> FindIncluding(Guid id);
+        
         void Create(Employee employee);
         
         void Update(Employee employee);

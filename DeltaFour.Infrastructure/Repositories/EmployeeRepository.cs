@@ -14,12 +14,17 @@ namespace DeltaFour.Infrastructure.Repositories
                 .Include(e => e.Role)
                 .ToListAsync();
         }
-        
+
         public async Task<bool> FindAny(Expression<Func<Employee, bool>> predicate)
         {
             return await context.Employees.AnyAsync(predicate);
         }
-        
+        public async Task<Employee?> FindIncluding(Guid id)
+        {
+            return await context.Employees.Where(e => e.Id == id)
+                .Include(e => e.EmployeeShifts).SingleOrDefaultAsync();
+        }
+
         public void Create(Employee employee)
         {
             context.Employees.Add(employee);

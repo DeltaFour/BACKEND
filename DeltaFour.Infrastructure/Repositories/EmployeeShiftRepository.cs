@@ -32,5 +32,13 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.EmployeeShifts.Remove(employeeShift);
         }
+        public void UpdateAll(List<EmployeeShift> employeeShifts)
+        {
+            context.EmployeeShifts.UpdateRange(employeeShifts);
+        }
+        public void DeleteAll(List<EmployeeShift> employeeShifts)
+        {
+            context.EmployeeShifts.RemoveRange(employeeShifts);
+        }
     }
 }

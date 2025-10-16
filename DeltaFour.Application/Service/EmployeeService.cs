@@ -65,7 +65,7 @@ namespace DeltaFour.Application.Service
                     List<EmployeeShift> employeeShifts = new List<EmployeeShift>();
                     foreach (var shift in dto.EmployeeShift)
                     {
-                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, employee.Id));
+                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, employee.Id, userAuthenticated.Id));
                     }
 
                     repository.EmployeeShiftRepository.CreateAll(employeeShifts);
@@ -74,9 +74,45 @@ namespace DeltaFour.Application.Service
             }
         }
 
-        public async Task Update(EmployeeUpdateDto dto, Guid companyId)
+        public async Task Update(EmployeeUpdateDto dto, Employee userAuthenticated)
         {
-             
+            Employee? employee = await repository.EmployeeRepository.FindIncluding(dto.Id);
+            if (employee != null)
+            {
+                EmployeeMapper.UpdateDataEmployeeByUpdateDto(dto, employee, userAuthenticated.Id);
+                repository.EmployeeRepository.Update(employee);
+
+                List<EmployeeShift> employeeShiftsCreate = new List<EmployeeShift>();
+                foreach (var shift in dto.EmployeeShift)
+                {
+                    if (shift.Id == null)
+                    {
+                        employeeShiftsCreate.Add(
+                            ShiftMapper.FromCreateEmployeeDto(shift, employee.Id, userAuthenticated.Id));
+                    }
+                    else
+                    {
+                        ShiftMapper.UpdateEmployeeShift(employee.EmployeeShifts!
+                            .Find(es => es.Id == shift.Id)!, shift, userAuthenticated.Id);
+                    }
+                }
+
+                List<EmployeeShift> employeeShiftsRemove = new List<EmployeeShift>();
+                foreach (var shift in employee.EmployeeShifts!)
+                {
+                    if (!dto.EmployeeShift.Exists(shiftDto => shiftDto.Id == shift.Id))
+                    {
+                        employeeShiftsRemove.Add(shift);
+                    }
+                }
+
+                employee.EmployeeShifts.RemoveAll(ex => employeeShiftsRemove
+                    .Exists(exRemove => exRemove.Id == ex.Id));
+
+                repository.EmployeeShiftRepository.CreateAll(employeeShiftsCreate);
+                repository.EmployeeShiftRepository.UpdateAll(employee.EmployeeShifts);
+                repository.EmployeeShiftRepository.DeleteAll(employeeShiftsRemove);
+            }
         }
     }
 }

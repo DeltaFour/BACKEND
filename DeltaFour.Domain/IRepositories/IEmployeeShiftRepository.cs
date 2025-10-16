@@ -11,5 +11,9 @@ namespace DeltaFour.Domain.IRepositories
         void Update(EmployeeShift employeeAttendance);
         
         void Delete(EmployeeShift employeeAttendance);
+        
+        void UpdateAll(List<EmployeeShift> employeeShifts);
+        
+        void DeleteAll(List<EmployeeShift> employeeShifts);
     }
 }

@@ -28,9 +28,14 @@ namespace DeltaFour.Application.Mappers
                 e.IsAllowedBypassCoord, e.LastLogin);
         }
 
-        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e)
+        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e, Guid userAuthenticatedId)
         {
-            
+            e.Name = dto.Name;
+            e.RoleId = dto.RoleId;
+            e.Cellphone = dto.CellPhone;
+            e.IsAllowedBypassCoord = dto.IsAllowedBypassCoord;
+            e.UpdatedBy = userAuthenticatedId;
+            e.UpdatedAt = DateTime.UtcNow;
         }
     }
 }
