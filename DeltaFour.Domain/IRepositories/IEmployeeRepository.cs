@@ -1,11 +1,12 @@
 ﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
 using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
     public interface IEmployeeRepository :  IBaseRepository<Employee>
     {
-        Task<List<Employee>> GetAll(Guid companyId);
+        Task<List<EmployeeResponseDto>> GetAll(Guid companyId);
         
         Task<Boolean> FindAny(Expression<Func<Employee, bool>> predicate);
         
@@ -15,6 +16,6 @@ namespace DeltaFour.Domain.IRepositories
         
         void Update(Employee employee);
         
-        void Delete(Employee employee);
+        Task<Employee?> FindForUserAuthenticated(Guid employeeId);
     }
 }

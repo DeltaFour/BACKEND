@@ -32,7 +32,7 @@ public class Employee : BaseEntity
     
     public EmployeeAuth? EmployeeAuth { get; set; }
     
-    public Company? Company { get; set; }
+    public Company Company { get; set; }
     
     public List<EmployeeShift>? EmployeeShifts { get; set; }
     

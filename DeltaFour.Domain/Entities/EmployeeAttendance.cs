@@ -12,7 +12,7 @@ namespace DeltaFour.Domain.Entities
         
         public Coordinates Coord { get; set; }
         
-        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
         
         public Guid CreatedBy { get; set; }
          

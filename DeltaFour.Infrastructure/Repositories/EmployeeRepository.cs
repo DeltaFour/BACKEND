@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
+using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -8,11 +9,30 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class EmployeeRepository(AppDbContext context) : IEmployeeRepository
     {
-        public async Task<List<Employee>> GetAll(Guid companyId)
+        public async Task<List<EmployeeResponseDto>> GetAll(Guid companyId)
         {
             return await context.Employees.Where(e => e.IsActive == true && e.CompanyId == companyId)
-                .Include(e => e.Role)
-                .ToListAsync();
+                .Select(e => new EmployeeResponseDto()
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Cellphone = e.Cellphone,
+                    Email = e.Email,
+                    RoleName = e.Role!.Name,
+                    IsActive = e.IsActive,
+                    IsAllowedBypassCoord = e.IsAllowedBypassCoord,
+                    LastLogin = e.LastLogin,
+                    ShiftDto = e.EmployeeShifts!.Select(s => new EmployeeResponseShiftsDto()
+                    {
+                        Id = s.Id,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate,
+                        WorkShiftType = s.WorkShift!.ShiftType,
+                        WorkShiftStartTime = s.WorkShift.StartTime,
+                        WorkShiftEndTime = s.WorkShift.EndTime,
+                        WorkShiftToleranceMinutes = s.WorkShift.ToleranceMinutes
+                    }).ToList()
+                }).ToListAsync();
         }
 
         public async Task<bool> FindAny(Expression<Func<Employee, bool>> predicate)
@@ -34,9 +54,13 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.Employees.Update(employee);
         }
-        public void Delete(Employee employee)
+
+        public async Task<Employee?> FindForUserAuthenticated(Guid employeeId)
         {
-            context.Employees.Remove(employee);
+            return await context.Employees.Where(e => e.Id == employeeId)
+                .Include(e => e.EmployeeShifts!).ThenInclude(es => es.WorkShift!)
+                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
+                .SingleOrDefaultAsync();
         }
 
         public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)

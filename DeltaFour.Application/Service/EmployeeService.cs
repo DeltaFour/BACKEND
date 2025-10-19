@@ -1,8 +1,14 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
+using System.Net;
+using Coordinates = DeltaFour.Domain.Entities.Coordinates;
 
 namespace DeltaFour.Application.Service
 {
@@ -16,16 +22,10 @@ namespace DeltaFour.Application.Service
 
         public async Task<List<EmployeeResponseDto>> GetAllByCompany(Guid companyId)
         {
-            List<Employee> employees = await repository.EmployeeRepository.GetAll(companyId);
+            List<EmployeeResponseDto> employees = await repository.EmployeeRepository.GetAll(companyId);
             if (employees.Count != 0)
             {
-                List<EmployeeResponseDto> list = new List<EmployeeResponseDto>();
-                foreach (Employee employee in employees)
-                {
-                    list.Add(EmployeeMapper.FromListEmployee(employee));
-                }
-
-                return list;
+                return employees;
             }
 
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
@@ -112,7 +112,52 @@ namespace DeltaFour.Application.Service
                 repository.EmployeeShiftRepository.CreateAll(employeeShiftsCreate);
                 repository.EmployeeShiftRepository.UpdateAll(employee.EmployeeShifts);
                 repository.EmployeeShiftRepository.DeleteAll(employeeShiftsRemove);
+
+                await repository.Save();
             }
+        }
+
+        public async Task Delete(Guid employeeId)
+        {
+            Employee? employee = await repository.EmployeeRepository.Find(e => e.Id == employeeId);
+            if (employee != null)
+            {
+                employee.IsActive = false;
+                repository.EmployeeRepository.Update(employee);
+                await repository.Save();
+            }
+        }
+
+        public async Task<Boolean> PunchIn(PunchDto dto, Employee user)
+        {
+            if (!user.IsAllowedBypassCoord && dto.latitude > 0 && dto.longitude > 0)
+            {
+                var geoFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857);
+
+                var userPoint = geoFactory.CreatePoint(new Coordinate(dto.longitude, dto.latitude));
+                var companyPoint = geoFactory.CreatePoint(new Coordinate(
+                    user.Company.CompanyGeolocation!.Coord.Longitude,
+                    user.Company.CompanyGeolocation!.Coord.Latitude));
+
+                Double distance = userPoint.Distance(companyPoint);
+                if (distance > user.Company.CompanyGeolocation.RadiusMeters)
+                {
+                    return false;
+                }
+            }
+            
+            EmployeeAttendance employeeAttendance = new EmployeeAttendance()
+            {
+                EmployeeId = user.Id,
+                PunchTime = DateTime.Now,
+                PunchType = dto.Type,
+                Coord = new Coordinates(dto.longitude, dto.latitude),
+                CreatedBy = user.Id,
+            };
+            repository.EmployeeAttendanceRepository.Create(employeeAttendance);
+            await repository.Save();
+            
+            return true;
         }
     }
 }

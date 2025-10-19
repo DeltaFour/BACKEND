@@ -14,7 +14,7 @@ namespace DeltaFour.CrossCutting.Middleware
 
                 if (Guid.TryParse(userIdClaim, out var userId))
                 {
-                    Employee? user = await employeeRepository.Find(u => u.Id == userId);
+                    Employee? user = await employeeRepository.FindForUserAuthenticated(userId);
 
                     if (user is { IsActive: true })
                     {

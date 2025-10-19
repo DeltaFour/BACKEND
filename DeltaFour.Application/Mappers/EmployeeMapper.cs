@@ -22,12 +22,6 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        public static EmployeeResponseDto FromListEmployee(Employee e)
-        {
-            return new EmployeeResponseDto(e.Id, e.Name!, e.Email!, e.Cellphone, e.Role!.Name, e.IsActive,
-                e.IsAllowedBypassCoord, e.LastLogin);
-        }
-
         public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e, Guid userAuthenticatedId)
         {
             e.Name = dto.Name;
