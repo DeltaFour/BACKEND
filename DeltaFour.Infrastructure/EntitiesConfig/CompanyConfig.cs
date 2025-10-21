@@ -14,8 +14,12 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(c => c.Name).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("name");
             builder.Property(c => c.Cnpj).IsRequired().HasMaxLength(18).HasColumnName("cnpj");
             builder.Property(c => c.IsActive).IsRequired().HasColumnName("is_active");
-            builder.Property(c => c.CreatedAt).IsRequired().HasColumnName("created_at");
-            builder.Property(c => c.CreatedBy).HasColumnName("created_by").IsRequired();
+            builder
+                .Property(c => c.CreatedAt)
+                .IsRequired()
+                .HasDefaultValue(DateTime.UtcNow)
+                .HasColumnName("created_at");
+            builder.Property(c => c.CreatedBy).HasColumnName("created_by");
             builder.Property(c => c.UpdatedAt).HasColumnName("updated_at");
             builder.Property(c => c.UpdatedBy).HasColumnName("updated_by");
             builder.Property(c => c.AddressId).HasColumnName("address_id");

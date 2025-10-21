@@ -60,6 +60,7 @@ namespace DeltaFour.CrossCutting.Ioc
                     }
                 };
             });
+
             return service;
         }
     }

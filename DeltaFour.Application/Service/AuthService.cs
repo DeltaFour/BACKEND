@@ -17,6 +17,7 @@ namespace DeltaFour.Application.Service
         public async Task<Employee?> Login(LoginDto dto)
         {
             Employee? user = await repositories.EmployeeRepository.Find(u => u.Email == dto.Email);
+
             if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
             {
                 return user;
@@ -25,18 +26,19 @@ namespace DeltaFour.Application.Service
             return null;
         }
 
-        public string CreateToken(Employee employee)
+        public async Task<string> CreateToken(Employee employee)
         {
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
             var rsaPublicKey = new RsaSecurityKey(PublicKey);
             var signingCredentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
             var encryptingCredentials = new EncryptingCredentials(rsaPublicKey,SecurityAlgorithms.RsaOAEP,
                 SecurityAlgorithms.Aes256CbcHmacSha512);
+            var role = await repositories.RoleRepository.Find(role => role.Id == employee.RoleId);
             IDictionary<string, object> signingKeys = new Dictionary<string, object>()
             {
                 { "userId", employee.Id },
                 { "CompanyId", employee.CompanyId },
-
+                { "Role", role.Name }
             };
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
@@ -44,7 +46,7 @@ namespace DeltaFour.Application.Service
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = signingCredentials,
-                EncryptingCredentials = encryptingCredentials
+                EncryptingCredentials = encryptingCredentials,
             };
             
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);
@@ -73,7 +75,7 @@ namespace DeltaFour.Application.Service
             {
                 Employee employee = await repositories.EmployeeRepository.Find(u => u.Id == Guid.Parse(userId)) ??
                             throw new BadHttpRequestException("Ops, algo deu errado");
-                return CreateToken(employee);
+                return await CreateToken(employee);
             }
             return null;
         }

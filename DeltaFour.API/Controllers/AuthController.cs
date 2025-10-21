@@ -21,7 +21,7 @@ namespace DeltaFour.API.Controllers
                 return BadRequest("Ops, Usuario não existe");
             }
 
-            string jwt = authService.CreateToken(user);
+            string jwt = await authService.CreateToken(user);
             Guid refreshToken = await authService.CreateRefreshToken(user, jwt);
 
             CookieOptions options = Cookie();

@@ -3,7 +3,7 @@ using DeltaFour.Infrastructure.Context;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class AllRepositories(AppDbContext context)
+    public class AllRepositories(AppDbContext context) : IUnitOfWork
     {
         private IEmployeeRepository? _userRepository;
         private IEmployeeAuthRepository? _userAuthRepository;

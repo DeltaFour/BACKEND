@@ -21,8 +21,12 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.LastLogin).HasColumnName("last_login");
         builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");
-        builder.Property(e => e.CreatedBy).IsRequired().HasColumnName("created_by");
-        builder.Property(e => e.CreatedAt).IsRequired().HasColumnName("created_at");
+        builder.Property(e => e.CreatedBy).HasColumnName("created_by");
+        builder
+            .Property(e => e.CreatedAt)
+            .IsRequired()
+            .HasDefaultValue(DateTime.UtcNow)
+            .HasColumnName("created_at");
         builder.Property(e => e.CompanyId).HasColumnName("company_id").IsRequired();
         builder.Property(e => e.RoleId).HasColumnName("role_id");
         builder.HasOne<Company>(e => e.Company).WithMany(c => c.Employees)

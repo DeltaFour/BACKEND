@@ -13,11 +13,13 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.Companies.FirstOrDefaultAsync(predicate);
         }
 
-        public async Task<List<Company>> FindAll()
+        public async Task<List<TResult>> FindAll<TResult>(Expression<Func<Company, TResult>> selector)
         {
-            return await context.Companies.ToListAsync();
+            return await context.Companies
+                .Select(selector)
+                .ToListAsync();
         }
-        
+
         public void Create(Company company)
         {
             context.Companies.Add(company);

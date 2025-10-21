@@ -10,11 +10,14 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
         {
             builder.ToTable("role");
             builder.HasKey(r => r.Id);
-            builder.Property(r => r.Name).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("name")
-                .IsRequired();
+            builder.Property(r => r.Name).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("name");
             builder.Property(r => r.IsActive).IsRequired().HasColumnName("is_active");
-            builder.Property(r => r.CreatedBy).IsRequired().HasColumnName("created_by");
-            builder.Property(r => r.CreatedAt).IsRequired().HasColumnName("created_at");
+            builder
+                .Property(r => r.CreatedAt)
+                .IsRequired()
+                .HasDefaultValue(DateTime.UtcNow)
+                .HasColumnName("created_at");
+            builder.Property(c => c.CreatedBy).HasColumnName("created_by");
             builder.Property(r => r.UpdatedBy).HasColumnName("updated_by");
             builder.Property(r => r.UpdatedAt).HasColumnName("updated_at");
             builder.Property(r => r.CompanyId).HasColumnName("company_id").IsRequired();

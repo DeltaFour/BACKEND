@@ -1,4 +1,6 @@
-﻿namespace DeltaFour.Domain.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace DeltaFour.Domain.Entities
 {
     public class Role : BaseEntity
     {
@@ -15,7 +17,8 @@
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
         public Company? Company { get; set; }
-        
+
+        [JsonIgnore]
         public Employee? Employee { get; set; }
         
         public List<RolePermission>? RolePermissions { get; set; }
