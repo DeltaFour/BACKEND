@@ -12,6 +12,8 @@ namespace DeltaFour.Domain.Entities
         
         public int ToleranceMinutes { get; set; }
         
+        public Guid CompanyId { get; set; }
+        
         public DateTime? UpdatedAt { get; set; }
         
         public Guid? UpdatedBy { get; set; }
@@ -19,5 +21,7 @@ namespace DeltaFour.Domain.Entities
         public Guid CreatedBy { get; set; }
         
         public List<EmployeeShift>? EmployeeShifts { get; set; }
+        
+        public Company Company { get; set; }
     }
 }

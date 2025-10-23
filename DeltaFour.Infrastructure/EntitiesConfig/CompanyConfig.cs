@@ -27,6 +27,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
                 .OnDelete(DeleteBehavior.Cascade);
             builder.HasOne(c => c.CompanyGeolocation).WithOne(cgl => cgl.Company)
                 .HasForeignKey<CompanyGeolocation>(cgl => cgl.CompanyId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(c => c.WorkShifts).WithOne(ws => ws.Company).HasForeignKey(s => s.CompanyId);
         }
     }
 }

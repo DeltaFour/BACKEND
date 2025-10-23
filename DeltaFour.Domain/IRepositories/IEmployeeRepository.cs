@@ -15,7 +15,5 @@ namespace DeltaFour.Domain.IRepositories
         void Create(Employee employee);
         
         void Update(Employee employee);
-        
-        Task<Employee?> FindForUserAuthenticated(Guid employeeId);
-    }
+        }
 }

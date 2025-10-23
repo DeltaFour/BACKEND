@@ -55,14 +55,6 @@ namespace DeltaFour.Infrastructure.Repositories
             context.Employees.Update(employee);
         }
 
-        public async Task<Employee?> FindForUserAuthenticated(Guid employeeId)
-        {
-            return await context.Employees.Where(e => e.Id == employeeId)
-                .Include(e => e.EmployeeShifts!).ThenInclude(es => es.WorkShift!)
-                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
-                .SingleOrDefaultAsync();
-        }
-
         public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
         {
             return await context.Employees.FirstOrDefaultAsync(predicate);

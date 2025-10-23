@@ -24,5 +24,15 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.WorkShifts.Remove(workShift);
         }
+        
+        public async Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId)
+        {
+            var query = from ws in context.WorkShifts
+                join es in context.EmployeeShifts on ws.Id equals es.ShiftId
+                where ws.StartTime <= timePunch && ws.EndTime >= timePunch && es.EmployeeId == employeeId
+                && ws.CompanyId == companyId
+                    select ws;
+            return await query.FirstOrDefaultAsync();
+        }
     }
 }

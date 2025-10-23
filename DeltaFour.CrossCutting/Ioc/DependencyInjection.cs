@@ -35,6 +35,7 @@ public static class DependencyInjection
             services.AddScoped<AuthService>();
             services.AddScoped<EmployeeService>();
             services.AddScoped<CompanyService>();
+            services.AddScoped<WorkShiftService>();
             services.AddScoped<AllRepositories>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();

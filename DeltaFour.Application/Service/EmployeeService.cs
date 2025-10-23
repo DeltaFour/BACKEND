@@ -130,34 +130,40 @@ namespace DeltaFour.Application.Service
 
         public async Task<Boolean> PunchIn(PunchDto dto, Employee user)
         {
-            if (!user.IsAllowedBypassCoord && dto.latitude > 0 && dto.longitude > 0)
+            WorkShift? workShift =
+                await repository.WorkShiftRepository.GetByTimeAndEmployeeId(dto.TimePunched, user.Id, user.CompanyId);
+            if (workShift != null && DateTime.UtcNow.Subtract(dto.TimePunched).Minutes < -workShift.ToleranceMinutes)
             {
-                var geoFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857);
-
-                var userPoint = geoFactory.CreatePoint(new Coordinate(dto.longitude, dto.latitude));
-                var companyPoint = geoFactory.CreatePoint(new Coordinate(
-                    user.Company.CompanyGeolocation!.Coord.Longitude,
-                    user.Company.CompanyGeolocation!.Coord.Latitude));
-
-                Double distance = userPoint.Distance(companyPoint);
-                if (distance > user.Company.CompanyGeolocation.RadiusMeters)
+                if (!user.IsAllowedBypassCoord && dto.latitude > 0 && dto.longitude > 0)
                 {
-                    return false;
+                    var geoFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857);
+
+                    var userPoint = geoFactory.CreatePoint(new Coordinate(dto.longitude, dto.latitude));
+                    var companyPoint = geoFactory.CreatePoint(new Coordinate(
+                        user.Company.CompanyGeolocation!.Coord.Longitude,
+                        user.Company.CompanyGeolocation!.Coord.Latitude));
+
+                    Double distance = userPoint.Distance(companyPoint);
+                    if (distance > user.Company.CompanyGeolocation.RadiusMeters)
+                    {
+                        return false;
+                    }
                 }
+
+                EmployeeAttendance employeeAttendance = new EmployeeAttendance()
+                {
+                    EmployeeId = user.Id,
+                    PunchTime = dto.TimePunched,
+                    PunchType = dto.Type,
+                    Coord = new Coordinates(dto.longitude, dto.latitude),
+                    CreatedBy = user.Id,
+                };
+                repository.EmployeeAttendanceRepository.Create(employeeAttendance);
+                await repository.Save();
+
+                return true;
             }
-            
-            EmployeeAttendance employeeAttendance = new EmployeeAttendance()
-            {
-                EmployeeId = user.Id,
-                PunchTime = DateTime.Now,
-                PunchType = dto.Type,
-                Coord = new Coordinates(dto.longitude, dto.latitude),
-                CreatedBy = user.Id,
-            };
-            repository.EmployeeAttendanceRepository.Create(employeeAttendance);
-            await repository.Save();
-            
-            return true;
+            return false;
         }
     }
 }

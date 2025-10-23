@@ -11,5 +11,8 @@ namespace DeltaFour.Application.Dtos
         
         [Required]
         public PunchType Type { get; set; }
+        
+        [Required]
+        public DateTime TimePunched { get; set; }
     }
 }

@@ -9,5 +9,7 @@ namespace DeltaFour.Domain.IRepositories
         void Update(WorkShift workShift);
         
         void Delete(WorkShift workShift);
+
+        Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId);
     }
 }
