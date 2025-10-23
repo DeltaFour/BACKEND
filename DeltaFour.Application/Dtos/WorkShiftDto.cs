@@ -6,7 +6,7 @@ namespace DeltaFour.Application.Dtos
     public class WorkShiftDto
     {
         [Required]
-        public ShiftType shiftType { get; set; }
+        public ShiftType ShiftType { get; set; }
         
         [Required]
         public DateTime StartDate  { get; set; }
