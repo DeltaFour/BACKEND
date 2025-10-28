@@ -3,9 +3,9 @@
 using AndroidX.Activity;
 using AndroidX.Camera.View;
 using AndroidX.Lifecycle;
-using Microsoft.Maui.Handlers;
 using DeltaFour.Maui.Controls;
 using DeltaFour.Maui.Platforms.Android.Services;
+using Microsoft.Maui.Handlers;
 
 namespace DeltaFour.Maui.Handlers
 {

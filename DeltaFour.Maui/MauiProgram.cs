@@ -4,7 +4,6 @@ using DeltaFour.Maui.Controls;
 #if ANDROID
 using DeltaFour.Maui.Handlers;
 #endif
-using DeltaFour.Maui.Pages;
 using Microsoft.Extensions.Logging;
 
 public static class MauiProgram

@@ -1,15 +1,14 @@
 ﻿#if ANDROID
-using AndroidX.Camera.Core.ResolutionSelector;
 using Android.Content;
-using AndroidX.Lifecycle;
-using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.Core;
+using AndroidX.Camera.Core.ResolutionSelector;
+using AndroidX.Camera.Lifecycle;
 using AndroidX.Camera.View;
 using AndroidX.Core.Content;
+using AndroidX.Lifecycle;
+using DeltaFour.Maui.Controls;
 using Java.Lang;
 using Java.Util.Concurrent;
-using Android.Util;
-using DeltaFour.Maui.Controls;
 namespace DeltaFour.Maui.Platforms.Android.Services
 {
     public partial class CameraService
@@ -31,7 +30,7 @@ namespace DeltaFour.Maui.Platforms.Android.Services
                 status = await Permissions.RequestAsync<Permissions.Camera>();
             return status == PermissionStatus.Granted;
         }
-        private static readonly global::Android.Util.Size ScreenSize = new (640, 480);
+        private static readonly global::Android.Util.Size ScreenSize = new(640, 480);
         public void StartCameraAsync(
                     PreviewView pv,
                     Context ctx,
@@ -85,5 +84,5 @@ namespace DeltaFour.Maui.Platforms.Android.Services
         }
 
     }
-    }
+}
 #endif

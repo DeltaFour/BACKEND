@@ -8,6 +8,7 @@ namespace DeltaFour.Maui
         {
             InitializeComponent();
             Routing.RegisterRoute("FaceRegisterPage", typeof(FaceRegisterPage));
+            Routing.RegisterRoute("EmployeResumePage", typeof(EmployeResume));
         }
     }
 }

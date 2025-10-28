@@ -2,69 +2,124 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DeltaFour.Maui.MainPage"
+             Shell.NavBarIsVisible="False"
              Title="Login">
 
-    <!-- Grid raiz ocupa a tela -->
-    <Grid Padding="30">
+    <Grid RowSpacing="0" Padding="0" BackgroundColor="White">
+        <Grid.Resources>
+            <Color x:Key="PrimaryBlue">#087ABC</Color>
+            <Color x:Key="Ink">#1A1A1A</Color>
+        </Grid.Resources>
 
-        <!-- Formulário centralizado -->
-        <Grid RowSpacing="16"
-              ColumnDefinitions="*"
-              HorizontalOptions="Center"
-              VerticalOptions="Center"
-              WidthRequest="360">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="280"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource PrimaryBlue}">
+            <Path VerticalOptions="End"
+              HorizontalOptions="Fill"
+              HeightRequest="120"
+              Fill="White"
+              Aspect="Fill"
+              Margin="-2,0,-2,-1"
+              Data="M0,0 L0,50 C90,90 270,10 360,60 L360,120 L0,120 Z"/>
+        </Grid>
+
+        <Grid Grid.Row="1"
+          Margin="0,-84,0,0"
+          Padding="30"
+          HorizontalOptions="Center"
+          WidthRequest="360"
+          RowSpacing="16"
+          ColumnDefinitions="*">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="20"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Row="0" Text="Acessar conta" FontSize="24" FontAttributes="Bold" />
+            <Label Grid.Row="1"
+               Text="Acessar conta"
+               FontSize="24"
+               FontAttributes="Bold"
+               TextColor="{StaticResource Ink}"
+               VerticalOptions="Start"/>
 
-            <Entry Grid.Row="1"
-                   x:Name="UsernameEntry"
-                   Placeholder="E-mail ou usuário"
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="UsernameEntry"
+                   Visual="Default"
+                   Placeholder="E-mail"
                    Keyboard="Email"
-                   ReturnType="Next" />
-
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
-                <Entry x:Name="PasswordEntry"
-                       Placeholder="Senha"
-                       IsPassword="True"
-                       ReturnType="Done" />
-                <Button x:Name="TogglePasswordButton"
-                        Grid.Column="1"
-                        Text="Mostrar"
-                        Padding="10,6"
-                        Clicked="OnTogglePassword"
-                        SemanticProperties.Hint="Mostrar ou ocultar senha" />
+                   ReturnType="Next"
+                   TextColor="{StaticResource Ink}"
+                   PlaceholderColor="#9AA0A6"/>
             </Grid>
 
-            <HorizontalStackLayout Grid.Row="3" Spacing="8">
-                <CheckBox x:Name="RememberCheck" />
-                <Label Text="Lembrar-me" VerticalTextAlignment="Center" />
-            </HorizontalStackLayout>
+            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="PasswordEntry"
+                   Visual="Default"
+                   Placeholder="Senha"
+                   IsPassword="True"
+                   ReturnType="Done"
+                   TextColor="{StaticResource Ink}"
+                   PlaceholderColor="#9AA0A6"/>
+                <Button x:Name="TogglePasswordButton"
+                    Grid.Column="1"
+                    Text="Mostrar"
+                    Clicked="OnTogglePassword"
+                    SemanticProperties.Hint="Mostrar ou ocultar senha"
+                    BackgroundColor="Transparent"
+                    TextColor="{StaticResource PrimaryBlue}"
+                    Padding="10,6"
+                    CornerRadius="18"
+                    BorderColor="Transparent"
+                    VerticalOptions="Center"/>
+            </Grid>
 
-            <Button Grid.Row="4"
-                    x:Name="LoginButton"
-                    Text="Entrar"
-                    Clicked="OnLoginClicked" />
+            <Grid Grid.Row="4"
+                    ColumnDefinitions="Auto,Auto"
+                    ColumnSpacing="8"
+                     HorizontalOptions="Start"
+                  VerticalOptions="Start">
+                
+                <CheckBox x:Name="RememberCheck"
+                         Color="{StaticResource PrimaryBlue}"
+                         VerticalOptions="Center"/>
+                <Label Grid.Column="1"
+                         Text="Lembrar-me"
+                          TextColor="{StaticResource Ink}"
+                          VerticalTextAlignment="Center"/>
+            </Grid>
 
-            <ActivityIndicator Grid.Row="5"
-                               x:Name="BusyIndicator"
-                               IsVisible="False"
-                               IsRunning="False" />
+            <Label Grid.Row="5"
+               x:Name="ErrorLabel"
+               TextColor="Red"
+               IsVisible="False"
+               VerticalOptions="Start"/>
 
-            <Label Grid.Row="6"
-                   x:Name="ErrorLabel"
-                   TextColor="Red"
-                   IsVisible="False" />
+            <Button Grid.Row="6"
+                x:Name="LoginButton"
+                Text="Entrar"
+                Clicked="OnLoginClicked"
+                HeightRequest="52"
+                CornerRadius="26"
+                BackgroundColor="{StaticResource PrimaryBlue}"
+                TextColor="White"
+                FontAttributes="Bold"/>
+
+            <ActivityIndicator Grid.Row="7"
+                           x:Name="BusyIndicator"
+                           IsVisible="False"
+                           IsRunning="False"
+                           Color="{StaticResource PrimaryBlue}"/>
         </Grid>
-
     </Grid>
+
 </ContentPage>

@@ -45,12 +45,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Pages\EmployeResumePage.xaml.cs">
+      <DependentUpon>EmployeResumePage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Pages\FaceAuthPage.xaml.cs">
       <DependentUpon>FaceAuthPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <MauiXaml Update="Pages\EmployeResumePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Pages\FaceAuthPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

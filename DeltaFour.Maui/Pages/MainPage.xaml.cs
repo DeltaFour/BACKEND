@@ -39,7 +39,7 @@ public partial class MainPage : ContentPage
             // TODO: autenticar
             await Task.Delay(500);
 
-   
+
         }
         catch (Exception ex)
         {

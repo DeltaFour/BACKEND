@@ -9,11 +9,15 @@
     Title="DeltaFour.Maui">
     <TabBar>
         <ShellContent
-        Title="Home"
+        Title="Login"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
         <ShellContent
-       Title="Face"
+         Title="Home"
+         ContentTemplate="{DataTemplate pages:EmployeResume}"
+         Route="EmployeResumePage" />
+        <ShellContent
+       Title="AuthFace"
        ContentTemplate="{DataTemplate pages:FaceRegisterPage}"
        Route="FaceRegisterPage" />
 
