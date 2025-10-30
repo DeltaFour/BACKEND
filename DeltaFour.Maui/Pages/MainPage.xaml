@@ -5,9 +5,9 @@
              Shell.NavBarIsVisible="False"
              Title="Login">
 
-    <Grid RowSpacing="0" Padding="0" BackgroundColor="White">
+    <Grid RowSpacing="0" Padding="0" BackgroundColor="#F5F8FB">
         <Grid.Resources>
-            <Color x:Key="PrimaryBlue">#087ABC</Color>
+            <Color x:Key="PrimaryBlue">#1e2d69</Color>
             <Color x:Key="Ink">#1A1A1A</Color>
         </Grid.Resources>
 
@@ -20,18 +20,18 @@
             <Path VerticalOptions="End"
               HorizontalOptions="Fill"
               HeightRequest="120"
-              Fill="White"
+              Fill="#F5F8FB"
               Aspect="Fill"
               Margin="-2,0,-2,-1"
-              Data="M0,0 L0,50 C90,90 270,10 360,60 L360,120 L0,120 Z"/>
+              Data="M24,40 H336 A24,24 0 0 1 360,64 V120 H0 V64 A24,24 0 0 1 24,40 Z"/>
         </Grid>
 
         <Grid Grid.Row="1"
           Margin="0,-84,0,0"
-          Padding="30"
+          Padding="20"
           HorizontalOptions="Center"
-          WidthRequest="360"
-          RowSpacing="16"
+          WidthRequest="390"
+          RowSpacing="18"
           ColumnDefinitions="*">
 
             <Grid.RowDefinitions>
@@ -40,7 +40,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="20"/>
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -84,13 +84,15 @@
             </Grid>
 
             <Grid Grid.Row="4"
+                   Margin="-8,-15,0,0"
                     ColumnDefinitions="Auto,Auto"
-                    ColumnSpacing="8"
                      HorizontalOptions="Start"
-                  VerticalOptions="Start">
+                  VerticalOptions="Start"
+                  >
                 
                 <CheckBox x:Name="RememberCheck"
                          Color="{StaticResource PrimaryBlue}"
+                          BackgroundColor="#F5F8FB"
                          VerticalOptions="Center"/>
                 <Label Grid.Column="1"
                          Text="Lembrar-me"
@@ -98,18 +100,13 @@
                           VerticalTextAlignment="Center"/>
             </Grid>
 
-            <Label Grid.Row="5"
-               x:Name="ErrorLabel"
-               TextColor="Red"
-               IsVisible="False"
-               VerticalOptions="Start"/>
 
-            <Button Grid.Row="6"
+            <Button Grid.Row="5"
                 x:Name="LoginButton"
                 Text="Entrar"
                 Clicked="OnLoginClicked"
-                HeightRequest="52"
-                CornerRadius="26"
+                HeightRequest="50"
+                CornerRadius="16"
                 BackgroundColor="{StaticResource PrimaryBlue}"
                 TextColor="White"
                 FontAttributes="Bold"/>

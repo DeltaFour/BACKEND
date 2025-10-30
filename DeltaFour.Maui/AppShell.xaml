@@ -6,18 +6,20 @@
     xmlns:local="clr-namespace:DeltaFour.Maui"
     xmlns:pages="clr-namespace:DeltaFour.Maui.Pages"
     Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="#F5F8FB"
+    Shell.TabBarTitleColor="#1e2d69"
     Title="DeltaFour.Maui">
     <TabBar>
         <ShellContent
-        Title="Login"
+        Title="L\/"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
         <ShellContent
-         Title="Home"
+         Title="\H\"
          ContentTemplate="{DataTemplate pages:EmployeResume}"
          Route="EmployeResumePage" />
         <ShellContent
-       Title="AuthFace"
+       Title="\A"
        ContentTemplate="{DataTemplate pages:FaceRegisterPage}"
        Route="FaceRegisterPage" />
 

@@ -19,15 +19,13 @@ public partial class MainPage : ContentPage
 
     async void OnLoginClicked(object? sender, EventArgs e)
     {
-        ErrorLabel.IsVisible = false;
 
         var user = UsernameEntry.Text?.Trim();
         var pass = PasswordEntry.Text;
 
         if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
         {
-            ErrorLabel.Text = "Preencha usuário e senha.";
-            ErrorLabel.IsVisible = true;
+           await DisplayAlert("Erro", "Preencha os campos!", "ok");
             return;
         }
 
@@ -43,8 +41,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
-            ErrorLabel.Text = $"Falha ao entrar: {ex.Message}";
-            ErrorLabel.IsVisible = true;
+          await DisplayAlert("Erro", ex.Message, "ok");
         }
         finally
         {

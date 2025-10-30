@@ -4,8 +4,38 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:c="clr-namespace:DeltaFour.Maui.Controls"
+    xmlns:local="clr-namespace:DeltaFour.Maui.Local"
     Shell.NavBarIsVisible="False"
     Shell.TabBarIsVisible="True"
     Title="Cadastro Facial">
-    <c:CameraView x:Name="Preview" IsActive="True" Lens="Front"/>
+
+    <Grid>
+        <c:CameraView x:Name="Preview"
+                      IsActive="True"
+                      Lens="Front" />
+
+        <GraphicsView
+            Drawable="{x:Static local:FaceOverlayDrawable.Instance}"
+            HorizontalOptions="Fill"
+            VerticalOptions="Fill" />
+
+        <VerticalStackLayout
+            Spacing="8"
+            Padding="16,48,16,15"
+            HorizontalOptions="Fill"
+            VerticalOptions="Start"
+            BackgroundColor="#1e2d69"
+            >
+            
+            <Label Text="Registrar ponto eletrônico"
+                   TextColor="#F5F8FB"
+                   FontSize="20"
+                   FontAttributes="Bold" />
+            <Label Text="Aponte a câmera para o rosto e mantenha dentro da área."
+                   TextColor="#CCFFFFFF"
+                   FontSize="14"
+                   LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+
+    </Grid>
 </ContentPage>
