@@ -10,9 +10,13 @@
     Title="Cadastro Facial">
 
     <Grid>
-        <c:CameraView x:Name="Preview"
+
+            <c:CameraView x:Name="Preview"
                       IsActive="True"
-                      Lens="Front" />
+                      Lens="Front"
+                      Margin="0,116,0,0"
+                      HeightRequest="666"
+                      />
 
         <GraphicsView
             Drawable="{x:Static local:FaceOverlayDrawable.Instance}"

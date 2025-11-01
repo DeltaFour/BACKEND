@@ -9,11 +9,11 @@
     Shell.TabBarBackgroundColor="#F5F8FB"
     Shell.TabBarTitleColor="#1e2d69"
     Title="DeltaFour.Maui">
-    <TabBar>
         <ShellContent
         Title="L\/"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
+    <TabBar>
         <ShellContent
          Title="\H\"
          ContentTemplate="{DataTemplate pages:EmployeResume}"

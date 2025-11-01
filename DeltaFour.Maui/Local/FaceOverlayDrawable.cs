@@ -18,10 +18,10 @@ public class FaceOverlayDrawable : IDrawable
         path.AppendRectangle(dirtyRect);                 
         path.AppendEllipse(x, y, ellipseWidth, ellipseHeight); 
 
-        canvas.FillColor = new Color(0, 0, 0, 0.4f);
+        canvas.FillColor = new Color(0, 0, 0, 0.5f);
         canvas.FillPath(path, WindingMode.EvenOdd);     
 
-        canvas.StrokeColor = new Color(255,255,255,0.4f);
+        canvas.StrokeColor = new Color(255,255,255,0.1f);
         canvas.StrokeSize = 1;
         canvas.DrawEllipse(x, y, ellipseWidth, ellipseHeight);
     }

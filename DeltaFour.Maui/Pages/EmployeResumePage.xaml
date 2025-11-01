@@ -6,44 +6,17 @@
              Shell.NavBarIsVisible="False"
              Title="Resumo">
 
-    <ContentPage.Resources>
-        <Color x:Key="Surface">#F5F8FB</Color>
-        <Color x:Key="Card">#FFFFFF</Color>
-        <Color x:Key="Primary">#1e2d69</Color>
-        <Color x:Key="Muted">#8EA0B3</Color>
-
-        <Style TargetType="Frame" x:Key="CardFrame">
-            <Setter Property="BackgroundColor" Value="{StaticResource Card}"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="HasShadow" Value="False"/>
-            <Setter Property="BorderColor" Value="#FFFFFF"/>
-        </Style>
-
-        <Style TargetType="Label" x:Key="CardTitle">
-            <Setter Property="FontSize" Value="22"/>
-            <Setter Property="FontAttributes" Value="Bold"/>
-            <Setter Property="FontFamily" Value="Empty"/>
-            <Setter Property="TextColor" Value="#0F172A"/>
-        </Style>
-
-        <Style TargetType="Label" x:Key="CardCaption">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="TextColor" Value="{StaticResource Muted}"/>
-        </Style>
-    </ContentPage.Resources>
-
     <ScrollView BackgroundColor="{StaticResource Surface}">
         <VerticalStackLayout Padding="20" Spacing="20">
 
-            <Label Text="Olá Usuário!" Style="{StaticResource CardTitle}"/>
+            <Label Text="{Binding GreetingText}" Style="{StaticResource CardTitle}"/>
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
 
                 <Frame Grid.Row="0" Grid.Column="0" Style="{StaticResource CardFrame}">
                     <HorizontalStackLayout>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="08:45 BRT" Style="{StaticResource CardTitle}"/>
+                            <Label Text="{Binding StartTimeBrt}" Style="{StaticResource CardTitle}"/>
                             <Label Text="Início do expediente" Style="{StaticResource CardCaption}"/>
                         </VerticalStackLayout>
                         <Path Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
@@ -58,7 +31,7 @@
                 <Frame Grid.Row="0" Grid.Column="1" Style="{StaticResource CardFrame}">
                     <HorizontalStackLayout>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="17:00 BRT" Style="{StaticResource CardTitle}"/>
+                            <Label Text="{Binding EndTimeBrt}" Style="{StaticResource CardTitle}"/>
                             <Label Text="Fim do expediente" Style="{StaticResource CardCaption}"/>
                         </VerticalStackLayout>
                         <Path Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v280h-80v-280H200v560h280v80H200Zm360 0v-80h144L332-572l56-56 372 371v-143h80v280H560Z"
@@ -73,7 +46,7 @@
                 <Frame Grid.Row="1" Grid.Column="0" Style="{StaticResource CardFrame}">
                     <HorizontalStackLayout>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="Diurno" Style="{StaticResource CardTitle}"/>
+                            <Label Text="{Binding ShiftTypeText}" Style="{StaticResource CardTitle}"/>
                             <Label Text="Tipo do expediente" Style="{StaticResource CardCaption}"/>
                         </VerticalStackLayout>
                         <Path Data="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z"
@@ -88,7 +61,7 @@
                 <Frame Grid.Row="1" Grid.Column="1" Style="{StaticResource CardFrame}">
                     <HorizontalStackLayout>
                         <VerticalStackLayout Spacing="6">
-                            <Label Text="06/12/25" Style="{StaticResource CardTitle}"/>
+                            <Label Text="{Binding StartedOnDate}" Style="{StaticResource CardTitle}"/>
                             <Label Text="Começou em" Style="{StaticResource CardCaption}"/>
                         </VerticalStackLayout>
                         <Path Data="M200-640h560v-80H200v80Zm0 0v-80 80Zm0 560q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v227q-19-9-39-15t-41-9v-43H200v400h252q7 22 16.5 42T491-80H200Zm520 40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Zm67-105 28-28-75-75v-112h-40v128l87 87Z"
@@ -102,7 +75,7 @@
             </Grid>
 
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                <Label Text="Registrar ponto" FontSize="18" FontAttributes="Bold" FontFamily="Empty"/>
+                <Label x:Name="LblHoje" FontSize="18" FontAttributes="Bold" FontFamily="OpenSansRegular"/>
             </Grid>
 
             <Frame Style="{StaticResource CardFrame}" Margin="0,6">
@@ -113,8 +86,9 @@
                       ColumnSpacing="6">
 
                     <Label Grid.Row="0" Grid.ColumnSpan="3"
-                           Text="Agora, Trabalhando"
-                           FontAttributes="Bold"/>
+                           FontAttributes="Bold"
+                           Text="Trabalhando em"
+                           />
 
                     <Path Grid.Row="1" Grid.Column="0"
                           Data="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z"
@@ -124,14 +98,14 @@
                           VerticalOptions="Center"/>
 
                     <Label Grid.Row="1" Grid.Column="1"
-                           Text="Das 8:45 Até as 17:00"
+                           Text="{Binding WorkWindowText}"
                            FontAttributes="Bold"
                            FontSize="12"
                            TextColor="{StaticResource Primary}"
                            VerticalTextAlignment="Center"/>
 
                     <Label Grid.Row="0" Grid.Column="2"
-                           Text="Empresa Nome"
+                           Text="{Binding CompanyNameText}"
                            FontSize="12"
                            TextColor="{StaticResource Muted}"
                            HorizontalTextAlignment="End"
@@ -146,14 +120,14 @@
                                VerticalTextAlignment="Center"/>
 
                         <Frame Padding="6,2"
-                               BackgroundColor="#1A17BC08"
+                               BackgroundColor="{Binding StatusFrameBackground}"
                                BorderColor="#0505050F"
                     
                                CornerRadius="2"
                                HasShadow="False"
                                VerticalOptions="Center">
-                            <Label Text="Deu Entrada"
-                                   TextColor="#4D9C24"
+                            <Label Text="{Binding StatusText}"
+                                   TextColor="{Binding StatusColor}"
                                    FontAttributes="Bold"
                                    FontSize="12"/>
                         </Frame>
@@ -161,22 +135,23 @@
 
                     <BoxView Grid.Row="2" Grid.ColumnSpan="3"
                              HeightRequest="1"
-                             Opacity="0.05"
-                             Color="#0F050505"/>
+                             Color="#F5F8FB"
+                             />
 
                     <Button Grid.Row="3"
                             Grid.ColumnSpan="3"
-                            Text="Dar Saída"
+                            Text="{Binding ActionButtonText}"
                             HeightRequest="50"
                             CornerRadius="16"
-                            BackgroundColor="#962020"
+                            BackgroundColor="{Binding ActionButtonBackground}"
                             TextColor="White"
-                            FontAttributes="Bold"/>
+                            FontAttributes="Bold"
+                            Clicked="OnActionButtonClicked"/>
                 </Grid>
             </Frame>
 
             <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                <Label Text="Atividade recente" FontSize="18" FontAttributes="Bold" FontFamily="Empty"/>
+                <Label Text="Atividade recente" FontSize="18" FontAttributes="Bold" FontFamily="OpenSansRegular"/>
             </Grid>
 
             <Frame Style="{StaticResource CardFrame}" Margin="0,6">
@@ -200,6 +175,7 @@
                            Text="Entrada"
                            FontAttributes="Bold"/>
                     <Label Grid.Column="2"
+                           FontAttributes="Bold"
                            Text="08:42 BRT"
                            HorizontalTextAlignment="End"/>
 
