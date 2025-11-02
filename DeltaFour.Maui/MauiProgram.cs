@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using DeltaFour.Maui;
+using DeltaFour.Maui.Services;
 using DeltaFour.Maui.Controls;
 #if ANDROID
 using DeltaFour.Maui.Handlers;
@@ -25,6 +26,9 @@ public static class MauiProgram
             handlers.AddHandler(typeof(CameraView), typeof(CameraViewHandler));
 #endif
         });
+        builder.Services.AddSingleton<ISession, Session>();
+        builder.Services.AddSingleton<AppShell>();
+        builder.Services.AddTransient<MainPage>();
         return builder.Build();
     }
 }

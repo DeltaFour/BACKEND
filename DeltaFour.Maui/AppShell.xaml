@@ -13,7 +13,7 @@
         Title="L\/"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
-    <TabBar>
+    <TabBar Route="MainTabs">
         <ShellContent
          Title="\H\"
          ContentTemplate="{DataTemplate pages:EmployeResume}"

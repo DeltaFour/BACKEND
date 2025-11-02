@@ -2,11 +2,16 @@
 {
     public partial class App : Application
     {
-        public App()
+        readonly IServiceProvider sp;
+        public App(IServiceProvider sp)
         {
             InitializeComponent();
-
-            MainPage = new AppShell();
+            this.sp = sp;
+            MainPage = new NavigationPage(sp.GetRequiredService<MainPage>());
+        }
+        public void EnterShell()
+        {
+            MainPage = sp.GetRequiredService<AppShell>();
         }
     }
 }
