@@ -7,7 +7,7 @@
         {
             InitializeComponent();
             this.sp = sp;
-            MainPage = new NavigationPage(sp.GetRequiredService<MainPage>());
+            MainPage = new NavigationPage(sp.GetRequiredService<LoginPage>());
         }
         public void EnterShell()
         {

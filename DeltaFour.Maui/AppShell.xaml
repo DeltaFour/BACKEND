@@ -11,8 +11,8 @@
     Title="DeltaFour.Maui">
         <ShellContent
         Title="L\/"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="LoginPage" />
     <TabBar Route="MainTabs">
         <ShellContent
          Title="\H\"

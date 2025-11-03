@@ -14,11 +14,11 @@ using Platform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace DeltaFour.Maui;
 
-public partial class MainPage : ContentPage
+public partial class LoginPage : ContentPage
 {
     bool _hidePassword = true;
     private ISession? session;
-    public MainPage()
+    public LoginPage()
     {
         InitializeComponent();
         HandlerChanged += OnHandlerChanged;
@@ -107,7 +107,6 @@ public partial class MainPage : ContentPage
             session.IsAuthenticated = true;
             ((App)Application.Current).EnterShell();
             await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
-
         }
         catch (Exception ex)
         {
@@ -118,6 +117,8 @@ public partial class MainPage : ContentPage
             BusyIndicator.IsRunning = false;
             BusyIndicator.IsVisible = false;
             LoginButton.IsEnabled = true;
+            UsernameEntry.Text = "";
+            PasswordEntry.Text = "";
         }
     }
 }

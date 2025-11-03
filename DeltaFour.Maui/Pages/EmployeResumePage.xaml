@@ -4,29 +4,35 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    Shell.NavBarIsVisible="False"
-    Title="Resumo">
+    Shell.NavBarIsVisible="True"
+    Shell.BackgroundColor="{StaticResource Surface}"
+        >
+    <Shell.TitleView>
+        <Grid Padding="0,15,0,0">
+            <Label Style="{StaticResource CardTitle}">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Olá " />
+                        <Span Text="{Binding GreetingText}" TextColor="{StaticResource Primary}" />
+                        <Span Text="!" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+        </Grid>
+    </Shell.TitleView>
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Order="Secondary" Text="Configurações" />
+        <ToolbarItem Order="Secondary" Text="Sair" Clicked="OnLogoutClicked"/>
+    </ContentPage.ToolbarItems>
     <Grid
         Padding="20"
         RowSpacing="20"
         BackgroundColor="{StaticResource Surface}"
-        RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+        RowDefinitions="Auto,Auto,Auto,Auto,*">
         
-        <Label Style="{StaticResource CardTitle}" Grid.Row="0">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="Olá " />
-                    <Span Text="{Binding GreetingText}"
-                          TextColor="{StaticResource Primary}"
-                          FontAttributes="Bold" />
-                    <Span Text="!" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
-
         <Grid
-            Grid.Row="1"
+            Grid.Row="0"
             ColumnDefinitions="*,*"
             RowDefinitions="Auto,Auto"
             ColumnSpacing="14"
@@ -201,7 +207,7 @@
         </Grid>
 
         <Grid
-            Grid.Row="2"
+            Grid.Row="1"
             ColumnDefinitions="*,Auto"
             Margin="0,8,0,0">
             <Label
@@ -212,7 +218,7 @@
         </Grid>
 
         <Frame
-            Grid.Row="3"
+            Grid.Row="2"
             Style="{StaticResource CardFrame}"
             Margin="0,6">
             <Grid
@@ -301,9 +307,8 @@
             </Grid>
         </Frame>
 
-        <!-- Título Atividade recente -->
         <Grid
-            Grid.Row="4"
+            Grid.Row="3"
             ColumnDefinitions="*,Auto"
             Margin="0,8,0,0">
             <Label
@@ -313,15 +318,15 @@
                 FontSize="18" />
         </Grid>
 
-        <!-- Lista Atividade recente -->
         <CollectionView
-            Grid.Row="5"
+            Grid.Row="4"
             x:Name="RecentList"
             ItemsSource="{Binding RecentItems}"
             SelectionMode="None"
             ItemsUpdatingScrollMode="KeepScrollOffset"
             VerticalScrollBarVisibility="Never"
-            HorizontalOptions="Fill">
+            HorizontalOptions="Fill"
+            >
 
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="2" />

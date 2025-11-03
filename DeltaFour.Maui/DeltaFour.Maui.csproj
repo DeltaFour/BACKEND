@@ -51,6 +51,9 @@
     <Compile Update="Pages\FaceAuthPage.xaml.cs">
       <DependentUpon>FaceAuthPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Pages\LoginPage.xaml.cs">
+      <DependentUpon>LoginPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

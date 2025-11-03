@@ -28,7 +28,7 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton<ISession, Session>();
         builder.Services.AddSingleton<AppShell>();
-        builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<LoginPage>();
         return builder.Build();
     }
 }
