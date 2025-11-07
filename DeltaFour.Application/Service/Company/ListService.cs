@@ -9,8 +9,9 @@ public class ListService(IUnitOfWork unitOfWork)
 
     public async Task<ListCompaniesResponse> Get()
     {
-        var companies = await _unitOfWork.CompanyRepository.FindAll(c => new GetCompaniesItemResponse 
+        var companies = await _unitOfWork.CompanyRepository.FindAll(c => new GetCompaniesItemResponse
         { 
+            Id = c.Id,
             Name = c.Name,
             Cnpj = c.Cnpj,
             IsActive = c.IsActive,
