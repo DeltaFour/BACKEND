@@ -19,6 +19,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(ea => ea.PunchType) .HasConversion(
                 v => v.ToString(), v => (PunchType)Enum.Parse(typeof(PunchType), v)
             ).HasColumnName("punch_type").IsRequired();
+            builder.Property(ea => ea.ShiftType).HasColumnName("shift_type").IsRequired();
             builder.Property(ea => ea.Coord).HasConversion(
                     v => new Point(v.Longitude, v.Latitude) { SRID = 4326 },
                     v => new Coordinates(v.Y, v.X)).IsRequired().HasColumnType("point")

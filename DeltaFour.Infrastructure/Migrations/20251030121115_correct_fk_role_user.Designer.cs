@@ -4,6 +4,7 @@ using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 
@@ -12,13 +13,15 @@ using NetTopologySuite.Geometries;
 namespace DeltaFour.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030121115_correct_fk_role_user")]
+    partial class correct_fk_role_user
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -44,22 +47,22 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("101d686e-54ae-4628-a1dd-79d7dbda296f"),
+                            Id = new Guid("3d112c4a-88dc-4c32-abfe-689658d98483"),
                             Name = "list"
                         },
                         new
                         {
-                            Id = new Guid("2d09d882-7fe5-4bee-8083-db08d6caa38f"),
+                            Id = new Guid("4049f1e3-580e-4330-8b34-c786954309a1"),
                             Name = "create"
                         },
                         new
                         {
-                            Id = new Guid("0b355454-a2ee-4cab-b8dd-1838fef61b8a"),
+                            Id = new Guid("bee6edd1-4ed8-4c95-aea5-4a94bcd45b9c"),
                             Name = "update"
                         },
                         new
                         {
-                            Id = new Guid("84c692c7-e1ee-4e3a-af91-bb7dc3d783aa"),
+                            Id = new Guid("9c4ac70b-eb5c-4718-9da4-9d7ef6eeab34"),
                             Name = "delete"
                         });
                 });
@@ -89,8 +92,7 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("district");
 
-                    b.Property<int?>("Number")
-                        .IsRequired()
+                    b.Property<int>("Number")
                         .HasColumnType("int")
                         .HasColumnName("number");
 
@@ -333,10 +335,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("punch_type");
 
-                    b.Property<int>("ShiftType")
-                        .HasColumnType("int")
-                        .HasColumnName("shift_type");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("updated_at");
@@ -486,17 +484,17 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("29fc6aac-1abd-401d-a6be-ba42dff17435"),
+                            Id = new Guid("9508a2c0-877d-4422-884b-2fd0613b74b8"),
                             Name = "company"
                         },
                         new
                         {
-                            Id = new Guid("6e2437a6-4e55-4d0e-baa2-97063f7287cb"),
+                            Id = new Guid("54a72b0d-81a6-45c6-8483-3c86f268cad4"),
                             Name = "employee"
                         },
                         new
                         {
-                            Id = new Guid("8d9e390e-cd19-430c-a752-b38efe4bf611"),
+                            Id = new Guid("9299bb9e-7059-4bd8-ab12-28a1d433e723"),
                             Name = "work"
                         });
                 });

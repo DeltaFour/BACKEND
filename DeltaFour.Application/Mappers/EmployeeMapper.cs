@@ -1,11 +1,12 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
 
 namespace DeltaFour.Application.Mappers
 {
     public static class EmployeeMapper
     {
-        public static Employee FromCreateDto(EmployeeCreateDto dto, Guid roleId, Employee createdBy)
+        public static Employee FromCreateDto(EmployeeCreateDto dto, Guid roleId, UserContext createdBy)
         {
             return new Employee()
             {

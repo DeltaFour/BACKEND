@@ -31,7 +31,8 @@ namespace DeltaFour.CrossCutting.Ioc
                 RequireExpirationTime = requireExpirationTime,
                 ValidateIssuerSigningKey = validateIssuerSigningKey,
                 IssuerSigningKey = new RsaSecurityKey(rsaPublicKey),
-                TokenDecryptionKey = new RsaSecurityKey(rsaPrivateKey)
+                ClockSkew = TimeSpan.Zero,
+                // TokenDecryptionKey = new RsaSecurityKey(rsaPrivateKey)
             };
             service.AddSingleton(validationParameters);
 

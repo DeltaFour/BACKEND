@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
+using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -24,14 +25,28 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.WorkShifts.Remove(workShift);
         }
-        
+
+        public async Task<List<WorkShiftResponseDto>> FindAll(Expression<Func<WorkShift, bool>> predicate)
+        {
+            return await context.WorkShifts.Where(predicate)
+                .Select(ws => new WorkShiftResponseDto()
+                {
+                    Id = ws.Id,
+                    ShiftType = ws.ShiftType,
+                    StartTime = ws.StartTime,
+                    EndTime = ws.EndTime,
+                    ToleranceMinutes = ws.ToleranceMinutes
+                })
+                .ToListAsync();
+        }
+
         public async Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId)
         {
             var query = from ws in context.WorkShifts
                 join es in context.EmployeeShifts on ws.Id equals es.ShiftId
                 where ws.StartTime <= timePunch && ws.EndTime >= timePunch && es.EmployeeId == employeeId
-                && ws.CompanyId == companyId
-                    select ws;
+                      && ws.CompanyId == companyId
+                select ws;
             return await query.FirstOrDefaultAsync();
         }
     }

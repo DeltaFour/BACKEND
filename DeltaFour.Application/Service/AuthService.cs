@@ -1,11 +1,14 @@
 ﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Application.Mappers;
 using DeltaFour.Application.RsaKeys;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 namespace DeltaFour.Application.Service
 {
@@ -14,9 +17,10 @@ namespace DeltaFour.Application.Service
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
 
-        public async Task<Employee?> Login(LoginDto dto)
+        public async Task<TreatedUserInformationDto?> Login(LoginDto dto)
         {
-            Employee? user = await repositories.EmployeeRepository.Find(u => u.Email == dto.Email);
+            TreatedUserInformationDto? user =
+                await repositories.EmployeeRepository.FindUserInformation(dto.Email, dto.TimeLogged);
             if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
             {
                 return user;
@@ -25,17 +29,22 @@ namespace DeltaFour.Application.Service
             return null;
         }
 
-        public string CreateToken(Employee employee)
+        public UserInfoLoginDto MapUserInfo(TreatedUserInformationDto dto)
+        {
+            return AuthMapper.MapUserToUserInfoLoginDto(dto);
+        }
+
+        public string CreateToken(TreatedUserInformationDto employee)
         {
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
             var rsaPublicKey = new RsaSecurityKey(PublicKey);
             var signingCredentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
-            var encryptingCredentials = new EncryptingCredentials(rsaPublicKey,SecurityAlgorithms.RsaOAEP,
+            var encryptingCredentials = new EncryptingCredentials(rsaPublicKey, SecurityAlgorithms.RsaOAEP,
                 SecurityAlgorithms.Aes256CbcHmacSha512);
+            UserContext context = AuthMapper.UserContext(employee);
             IDictionary<string, object> signingKeys = new Dictionary<string, object>()
             {
-                { "userId", employee.Id },
-                { "CompanyId", employee.CompanyId },
+                { "user", JsonConvert.SerializeObject(context) },
 
             };
             var tokenDescriptor = new SecurityTokenDescriptor()
@@ -44,17 +53,17 @@ namespace DeltaFour.Application.Service
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = signingCredentials,
-                EncryptingCredentials = encryptingCredentials
+                // EncryptingCredentials = encryptingCredentials
             };
-            
+
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<Guid> CreateRefreshToken(Employee employee, string jwt)
+        public async Task<Guid> CreateRefreshToken(TreatedUserInformationDto employee, string jwt)
         {
-            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(u=> u.EmployeeId == employee.Id);
+            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(u => u.EmployeeId == employee.Id);
             if (userAuth != null)
             {
                 repositories.EmployeeAuthRepository.Delete(userAuth);
@@ -66,21 +75,26 @@ namespace DeltaFour.Application.Service
             return userAuth.Id;
         }
 
-        public async Task<string?> RemakeToken(string refreshToken, string userId)
+        public async Task<string?> RemakeToken(string refreshToken, string token)
         {
-            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            EmployeeAuth? userAuth =
+                await repositories.EmployeeAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
-                Employee employee = await repositories.EmployeeRepository.Find(u => u.Id == Guid.Parse(userId)) ??
-                            throw new BadHttpRequestException("Ops, algo deu errado");
-                return CreateToken(employee);
+
+                Employee employee =
+                    await repositories.EmployeeRepository.Find(u => u.Id == GetUserIdFromToken(token)) ??
+                    throw new BadHttpRequestException("Ops, algo deu errado");
+                return CreateToken(AuthMapper.FromEmployeeToTreatedUserInfo(employee));
             }
+
             return null;
         }
 
         public async Task Logout(string refreshToken)
         {
-            EmployeeAuth? userAuth = await repositories.EmployeeAuthRepository.Find(ua => ua.Id ==Guid.Parse(refreshToken));
+            EmployeeAuth? userAuth =
+                await repositories.EmployeeAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
             if (userAuth != null)
             {
                 repositories.EmployeeAuthRepository.Delete(userAuth);
@@ -88,12 +102,12 @@ namespace DeltaFour.Application.Service
             }
         }
 
-        public static RSA GetPrivateKey(string caminho)
+        private Guid GetUserIdFromToken(string cookieToken)
         {
-            var rsa = RSA.Create();
-            var primaryKey = File.ReadAllText(caminho);
-            rsa.ImportFromPem(primaryKey);
-            return rsa;
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(cookieToken);
+            UserContext user = JsonConvert.DeserializeObject<UserContext>(token.Claims.First().Value)!;
+            return user.Id;
         }
     }
 

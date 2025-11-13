@@ -10,6 +10,8 @@ namespace DeltaFour.Domain.Entities
         
         public PunchType PunchType { get; set; }
         
+        public ShiftType ShiftType { get; set; }
+        
         public Coordinates Coord { get; set; }
         
         public DateTime? UpdatedAt { get; set; }

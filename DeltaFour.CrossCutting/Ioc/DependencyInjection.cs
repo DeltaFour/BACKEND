@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Application.Service;
+using DeltaFour.Application.Utils;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using DeltaFour.Infrastructure.Repositories;
@@ -47,6 +48,7 @@ public static class DependencyInjection
             services.AddScoped<IEmployeeShiftRepository, EmployeeShiftRepository>();
             services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
             services.AddScoped<IEmployeeFaceRepository, EmployeeFaceRepository>();
+            services.AddScoped<PythonExe>();
         }
         return services;
     }

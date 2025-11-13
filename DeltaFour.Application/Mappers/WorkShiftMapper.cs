@@ -5,7 +5,7 @@ namespace DeltaFour.Application.Mappers
 {
     public static class WorkShiftMapper
     {
-        public static WorkShift CreateFromDto(WorkShiftDto dto, Employee user)
+        public static WorkShift CreateFromDto(WorkShiftDto dto, UserContext user)
         {
             return new WorkShift()
             {
@@ -18,7 +18,7 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        public static void UpdateDataWorkShift(WorkShift workShift, WorkShiftUpdateDto dto, Employee user)
+        public static void UpdateDataWorkShift(WorkShift workShift, WorkShiftUpdateDto dto, UserContext user)
         {
             workShift.ShiftType = dto.ShiftType;
             workShift.StartTime = workShift.StartTime;

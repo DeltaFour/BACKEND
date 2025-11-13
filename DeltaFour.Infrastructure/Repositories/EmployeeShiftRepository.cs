@@ -27,6 +27,11 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.EmployeeShifts.Update(employeeShift);
         }
+
+        public async Task<Boolean> FindAny(Expression<Func<EmployeeShift, bool>> predicate)
+        {
+            return await context.EmployeeShifts.AnyAsync(predicate);
+        }
         
         public void Delete(EmployeeShift employeeShift)
         {

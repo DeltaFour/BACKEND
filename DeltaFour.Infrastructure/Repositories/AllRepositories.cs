@@ -15,6 +15,7 @@ namespace DeltaFour.Infrastructure.Repositories
         private IWorkShiftRepository? _workShiftRepository;
         private IEmployeeAttendanceRepository? _employeeAttendanceRepository;
         private IEmployeeShiftRepository? _employeeShiftRepository;
+        private IEmployeeFaceRepository? _employeeFaceRepository;
 
         public IEmployeeRepository EmployeeRepository
         {
@@ -64,6 +65,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public IEmployeeShiftRepository EmployeeShiftRepository
         {
             get { return _employeeShiftRepository ??= new EmployeeShiftRepository(context); }
+        }
+
+        public IEmployeeFaceRepository EmployeeFaceRepository
+        {
+            get { return _employeeFaceRepository ??= new EmployeeFaceRepository(context); }
         }
 
         public async Task Save()

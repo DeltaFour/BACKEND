@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
@@ -11,6 +12,8 @@ namespace DeltaFour.Domain.IRepositories
         void Update(EmployeeShift employeeAttendance);
         
         void Delete(EmployeeShift employeeAttendance);
+
+        Task<Boolean> FindAny(Expression<Func<EmployeeShift, bool>> predicate);
         
         void UpdateAll(List<EmployeeShift> employeeShifts);
         

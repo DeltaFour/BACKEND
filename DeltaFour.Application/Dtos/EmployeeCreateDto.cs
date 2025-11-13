@@ -23,6 +23,9 @@ namespace DeltaFour.Application.Dtos
         public List<EmployeeShiftDto> EmployeeShift { get; set; }
         
         [Required]
+        public String ImageBase64 { get; set; }
+        
+        [Required]
         public Boolean IsAllowedBypassCoord { get; set; }
     }
 }

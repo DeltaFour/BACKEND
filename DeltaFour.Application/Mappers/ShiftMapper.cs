@@ -12,7 +12,7 @@ namespace DeltaFour.Application.Mappers
                 EmployeeId = employeeId,
                 ShiftId = dto.ShiftId,
                 StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
+                EndDate = dto.EndDate!,
                 CreatedBy = userAuthenticatedId,
             };
         }

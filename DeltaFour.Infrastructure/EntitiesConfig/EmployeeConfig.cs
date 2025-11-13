@@ -15,7 +15,7 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.Email).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("email");
         builder.Property(e => e.Password).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("password");
         builder.Property(e => e.Cellphone).HasMaxLength(14).HasColumnName("cellphone");
-        builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");
+        builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");  
         builder.Property(e => e.IsConfirmed).IsRequired().HasColumnName("is_confirmed");
         builder.Property(e => e.IsAllowedBypassCoord).IsRequired().HasColumnName("is_allowed_by_pass_coord");
         builder.Property(e => e.LastLogin).HasColumnName("last_login");
@@ -29,7 +29,7 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
             .HasForeignKey(e => e.CompanyId);
         builder.HasOne<EmployeeAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)
             .HasForeignKey<EmployeeAuth>(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne<Role>(e => e.Role).WithOne(r => r.Employee).HasForeignKey<Employee>(e => e.RoleId);
+        builder.HasOne(e => e.Role).WithMany(r => r.Employee).HasForeignKey(e => e.RoleId);
         builder.HasMany(e => e.EmployeeShifts).WithOne(es => es.Employee).HasForeignKey(es => es.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasMany(e => e.EmployeeAttendances).WithOne(ea => ea.Employee)

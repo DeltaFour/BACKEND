@@ -1,4 +1,6 @@
 ﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
@@ -9,6 +11,8 @@ namespace DeltaFour.Domain.IRepositories
         void Update(WorkShift workShift);
         
         void Delete(WorkShift workShift);
+        
+        Task<List<WorkShiftResponseDto>> FindAll(Expression<Func<WorkShift, bool>> predicate);
 
         Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId);
     }

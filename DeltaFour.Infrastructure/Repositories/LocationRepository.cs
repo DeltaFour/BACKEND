@@ -13,7 +13,7 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context.Locations.FirstOrDefaultAsync(predicate); 
         }
 
-        public async Task<List<Location>> FindAll(Expression<Func<List<Location>, bool>> predicate)
+        public async Task<List<Location>> FindAll(Expression<Func<Location, bool>> predicate)
         {
             return await context.Locations.ToListAsync();
         }

@@ -11,9 +11,14 @@ namespace DeltaFour.Domain.IRepositories
         Task<Boolean> FindAny(Expression<Func<Employee, bool>> predicate);
         
         Task<Employee?> FindIncluding(Guid id);
+
+        Task<Employee?> FindForPunchIn(Guid id);
         
         void Create(Employee employee);
+
+        Task<TreatedUserInformationDto?> FindUserInformation(String email, DateTime date);
         
         void Update(Employee employee);
-        }
+
+    }
 }

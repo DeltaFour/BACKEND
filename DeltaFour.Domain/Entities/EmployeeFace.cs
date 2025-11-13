@@ -1,10 +1,10 @@
 ﻿namespace DeltaFour.Domain.Entities
 {
-    public class EmployeeFace(Guid employeeId, string? faceTemplate, Guid createdBy) : BaseEntity
+    public class EmployeeFace(Guid employeeId, string faceTemplate, Guid createdBy) : BaseEntity
     {
         public Guid EmployeeId { get; set; } = employeeId;
 
-        public string? FaceTemplate { get; set; } = faceTemplate;
+        public string FaceTemplate { get; set; } = faceTemplate;
 
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         

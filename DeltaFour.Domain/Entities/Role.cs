@@ -16,7 +16,7 @@
         
         public Company? Company { get; set; }
         
-        public Employee? Employee { get; set; }
+        public List<Employee>? Employee { get; set; }
         
         public List<RolePermission>? RolePermissions { get; set; }
     }

@@ -11,9 +11,8 @@ namespace DeltaFour.API.Controllers
     [Route("api/auth")]
     public class AuthController(AuthService service) : Controller
     {
-
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<UserInfoLoginDto>> Login([FromBody] LoginDto loginDto)
         {
             var user = await service.Login(loginDto);
             if (user == null)
@@ -28,11 +27,10 @@ namespace DeltaFour.API.Controllers
 
             Response.Cookies.Append("Jwt", jwt, options);
             Response.Cookies.Append("RefreshToken", refreshToken.ToString(), options);
-            return Ok();
+            return Ok(service.MapUserInfo(user));
         }
 
         [HttpPost("check-session")]
-        [Authorize]
         public IActionResult CheckSession()
         {
             var user = HttpContext.User;
@@ -44,12 +42,11 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost("refresh-token")]
-        [Authorize]
         public async Task<IActionResult> RefreshToken()
         {
             var cookieRefresh = Request.Cookies["RefreshToken"]!;
-            var user = HttpContext.GetUserAuthenticated<Employee>();
-            var jwt = await service.RemakeToken(cookieRefresh, user.Id.ToString());
+            String cookieToken = Request.Cookies["Jwt"]!;
+            var jwt = await service.RemakeToken(cookieRefresh,cookieToken);
             if (jwt != null)
             {
                 Response.Cookies.Append("Jwt", jwt, Cookie());

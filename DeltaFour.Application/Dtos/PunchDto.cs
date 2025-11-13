@@ -14,5 +14,12 @@ namespace DeltaFour.Application.Dtos
         
         [Required]
         public DateTime TimePunched { get; set; }
+        
+        [Required]
+        public ShiftType ShiftType { get; set; }
+        
+        [Required]
+        public String ImageBase64 { get; set; }
+        
     }
 }

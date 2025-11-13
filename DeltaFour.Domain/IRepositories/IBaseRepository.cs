@@ -6,7 +6,7 @@ namespace DeltaFour.Domain.IRepositories
     {
         Task<T?> Find(Expression<Func<T, bool>> predicate);
 
-        Task<List<T>> FindAll(Expression<Func<List<T>, bool>> predicate)
+        Task<List<T>> FindAll(Expression<Func<T, bool>> predicate)
         {
             return Task.FromResult(new List<T>());
         }

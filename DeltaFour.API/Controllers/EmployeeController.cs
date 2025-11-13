@@ -2,6 +2,7 @@
 using DeltaFour.Application.Service;
 using DeltaFour.CrossCutting.Middleware;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +11,23 @@ namespace DeltaFour.API.Controllers
 {
     [Route("api/employee")]
     [Authorize]
+    [ApiController]
     public class EmployeeController(EmployeeService service) : Controller
     {
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
         {
-            var employee = HttpContext.GetUserAuthenticated<Employee>();
+            var employee = HttpContext.GetUserAuthenticated<UserContext>();
             return Ok(await service.GetAllByCompany(employee.CompanyId));
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto, List<IFormFile> files)
+        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
         {
-            var employee = HttpContext.GetUserAuthenticated<Employee>();
-            await service.Create(employeeCreateDto, files, employee);
+            var employee = HttpContext.GetUserAuthenticated<UserContext>(); 
+            await service.Create(employeeCreateDto, employee);
             return Ok();
         }
 
@@ -32,12 +35,12 @@ namespace DeltaFour.API.Controllers
         [Authorize]
         public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
         {
-            var employee = HttpContext.GetUserAuthenticated<Employee>();
+            var employee = HttpContext.GetUserAuthenticated<UserContext>();
             await service.Update(employeeUpdateDto, employee);
             return Ok();
         }
 
-        [HttpDelete]
+        [HttpDelete("{employeeId}")]
         [Authorize]
         public async Task<IActionResult> Delete(Guid employeeId)
         {
@@ -45,18 +48,28 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
+        [HttpGet("allowed-punch")]
+        [Authorize]
+        public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
+        {   
+            var user =  HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(service.CanPunchIn(dto, user)); 
+        }
+
         [HttpPost("punch-in")]
         [Authorize]
-        public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto, [FromBody] IFormFile file)
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> PunchIn
+            ([FromForm] PunchDto punchDto)
         {
-            var user = HttpContext.GetUserAuthenticated<Employee>();
-
-            if (await service.PunchIn(punchDto, user))
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            PunchInResponse response = await service.PunchIn(punchDto, user);
+            if (response == PunchInResponse.SCC)
             {
-                return Ok();
+                return Ok(response.Message());
             }
-            
-            return Forbid();
+
+            return Unauthorized(response.Message());
         }
     }
 }

@@ -2,9 +2,9 @@
 
 public class Employee : BaseEntity
 {
-    public String? Name { get; set; }
+    public String Name { get; set; }
     
-    public string? Email { get; set; }
+    public string Email { get; set; }
     
     public Guid? RoleId { get; set; }
     

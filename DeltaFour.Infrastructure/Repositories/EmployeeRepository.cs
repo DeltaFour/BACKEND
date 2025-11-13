@@ -45,9 +45,51 @@ namespace DeltaFour.Infrastructure.Repositories
                 .Include(e => e.EmployeeShifts).SingleOrDefaultAsync();
         }
 
+        public async Task<Employee?> FindForPunchIn(Guid id)
+        {
+            return await context.Employees.Where(e => e.Id == id).Include(e => e.EmployeeFaces)
+                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation).FirstOrDefaultAsync();
+        }
+
         public void Create(Employee employee)
         {
             context.Employees.Add(employee);
+        }
+        public async Task<TreatedUserInformationDto?> FindUserInformation(String email, DateTime time)
+        {
+            return await context.Employees.Where(e => e.Email == email).Select(e => new TreatedUserInformationDto()
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Email = e.Email,
+                RoleId = e.RoleId,
+                IsAllowedBypassCoord = e.IsAllowedBypassCoord,
+                IsActive = e.IsActive,
+                IsConfirmed = e.IsConfirmed,
+                Password = e.Password!,
+                CompanyId = e.CompanyId,
+                CompanyName = e.Company.Name,
+                EmployeeShift =
+                    e.EmployeeShifts!.Where(es => es.WorkShift!.StartTime < time && time < es.WorkShift.EndTime)
+                        .Select(es => new EmployeeShiftInformationDto()
+                        {
+                            StartDate = es.StartDate,
+                            ShiftType = es.WorkShift!.ShiftType,
+                            StartTime = es.WorkShift.StartTime,
+                            EndTime = es.WorkShift.EndTime
+                        }).FirstOrDefault(),
+                LastPunchType = e.EmployeeAttendances!.OrderBy(ea => ea.CreatedAt).Last().PunchType,
+                LastsEmployeeAttendances = e.EmployeeAttendances!.OrderByDescending(ea => ea.CreatedAt).Select(ea =>
+                        new LastEmployeeAttendancesDto()
+                        {
+                            PunchType = ea.PunchType,
+                            ShiftType = ea.ShiftType,
+                            PunchTime = ea.PunchTime,
+                            PunchDate = ea.CreatedAt
+                        })
+                    // .Take(10)
+                    .ToList()
+            }).FirstOrDefaultAsync();
         }
 
         public void Update(Employee employee)
