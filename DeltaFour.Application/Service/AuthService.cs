@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace DeltaFour.Application.Service
 {
@@ -21,7 +22,14 @@ namespace DeltaFour.Application.Service
         {
             TreatedUserInformationDto? user =
                 await repositories.EmployeeRepository.FindUserInformation(dto.Email, dto.TimeLogged);
-            if (user is { IsActive: true, IsConfirmed: true } && user.Password == dto.Password)
+            using var hash = SHA256.Create();
+            byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+            var hashPassowrd = new StringBuilder();
+            foreach (byte b in bytes)
+            {
+                hashPassowrd.Append(b.ToString("x2"));
+            }
+            if (user is { IsActive: true, IsConfirmed: true } && user.Password.Equals(hashPassowrd.ToString()))
             {
                 return user;
             }

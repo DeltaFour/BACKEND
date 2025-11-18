@@ -16,7 +16,7 @@ namespace DeltaFour.Domain.IRepositories
         
         void Create(Employee employee);
 
-        Task<TreatedUserInformationDto?> FindUserInformation(String email, DateTime date);
+        Task<TreatedUserInformationDto?> FindUserInformation(String email, TimeOnly date);
         
         void Update(Employee employee);
 

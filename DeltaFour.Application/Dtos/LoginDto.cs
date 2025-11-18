@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DeltaFour.Application.Dtos
 {
@@ -10,7 +11,7 @@ namespace DeltaFour.Application.Dtos
         [Required]
         public string Password { get; set; }
         
-        [Required]
-        public DateTime TimeLogged { get; set; }
+        [JsonRequired]
+        public TimeOnly TimeLogged { get; set; }
     }
 }

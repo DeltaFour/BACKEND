@@ -40,13 +40,21 @@ namespace DeltaFour.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId)
+        public async Task<WorkShiftPunchDto?> GetByTimeAndEmployeeId
+            (TimeOnly timePunch, Guid employeeId, Guid companyId)
         {
             var query = from ws in context.WorkShifts
                 join es in context.EmployeeShifts on ws.Id equals es.ShiftId
-                where ws.StartTime <= timePunch && ws.EndTime >= timePunch && es.EmployeeId == employeeId
+                where timePunch.IsBetween(ws.StartTime.AddMinutes(-ws.ToleranceMinutes),
+                          ws.EndTime.AddMinutes(ws.ToleranceMinutes)) &&
+                      es.EmployeeId == employeeId
                       && ws.CompanyId == companyId
-                select ws;
+                select new WorkShiftPunchDto()
+                {
+                    StartTime = ws.StartTime,
+                    EndTime = ws.EndTime,
+                    ToleranceMinutes = ws.ToleranceMinutes
+                };
             return await query.FirstOrDefaultAsync();
         }
     }

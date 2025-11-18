@@ -10,8 +10,8 @@ namespace DeltaFour.Application.Mappers
             return new WorkShift()
             {
                 ShiftType = dto.ShiftType,
-                StartTime = dto.StartDate,
-                EndTime = dto.EndDate,
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
                 ToleranceMinutes = dto.ToleranceMinutes,
                 CompanyId = user.CompanyId,
                 CreatedBy = user.Id,

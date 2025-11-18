@@ -26,7 +26,6 @@ namespace DeltaFour.Application.Mappers
         public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e, Guid userAuthenticatedId)
         {
             e.Name = dto.Name;
-            e.RoleId = dto.RoleId;
             e.Cellphone = dto.CellPhone;
             e.IsAllowedBypassCoord = dto.IsAllowedBypassCoord;
             e.UpdatedBy = userAuthenticatedId;

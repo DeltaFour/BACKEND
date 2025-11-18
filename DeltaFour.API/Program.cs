@@ -8,9 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-Runtime.PythonDLL = Environment.GetEnvironmentVariable("PYTHONNET_PYDLL");
+String pythonHome = Environment.GetEnvironmentVariable("PYTHON_HOME")!;
 
+// Environment.SetEnvironmentVariable("PYTHONHOME", pythonHome);
+// Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonHome}\\Lib;{pythonHome}\\DLLs");
+
+Runtime.PythonDLL = @"C:\\Users\\Arthur\\AppData\\Local\\Programs\\Python\\Python310\\python310.dll";
 PythonEngine.Initialize();
+PythonEngine.BeginAllowThreads();
 
 builder.Services.AddControllers()
      .AddJsonOptions(options =>

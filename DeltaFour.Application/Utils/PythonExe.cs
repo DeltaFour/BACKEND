@@ -6,7 +6,7 @@ namespace DeltaFour.Application.Utils
     {
         static PythonExe()
         {
-            Path = "FunctionPython/extract_embedding.py";
+            Path = @"C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\FunctionPython";
         }
 
         private static readonly String Path;
@@ -14,7 +14,9 @@ namespace DeltaFour.Application.Utils
         {
             using (Py.GIL())
             {
-                dynamic faceUtils = Py.Import(System.IO.Path.GetFileNameWithoutExtension(Path));
+                dynamic sys = Py.Import("sys");
+                sys.path.append(Path);
+                dynamic faceUtils = Py.Import("extract_embedding");
                 dynamic result = faceUtils.calculate_similarity(embedding1.ToArray(), embedding2.ToArray());
                 return (double?)result;
             }
@@ -22,9 +24,13 @@ namespace DeltaFour.Application.Utils
         
         public List<double>? ExtractEmbedding(byte[] base64Image)
         {
+            // PythonEngine.Initialize();
+            
             using (Py.GIL())
             {
-                dynamic faceUtils = Py.Import(System.IO.Path.GetFileNameWithoutExtension(Path));
+                dynamic sys = Py.Import("sys");
+                sys.path.append(Path);
+                dynamic faceUtils = Py.Import("extract_embedding");
                 dynamic result = faceUtils.extract_embedding(base64Image);
                 if (result == null)
                     return null;

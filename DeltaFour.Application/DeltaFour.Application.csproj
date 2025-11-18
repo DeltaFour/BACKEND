@@ -21,4 +21,8 @@
     <ProjectReference Include="..\DeltaFour.Infrastructure\DeltaFour.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Utils\extract_embedding.py" />
+  </ItemGroup>
+
 </Project>

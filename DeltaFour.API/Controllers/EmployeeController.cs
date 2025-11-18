@@ -53,14 +53,12 @@ namespace DeltaFour.API.Controllers
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
         {   
             var user =  HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(service.CanPunchIn(dto, user)); 
+            return Ok(await service.CanPunchIn(dto, user)); 
         }
 
         [HttpPost("punch-in")]
         [Authorize]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> PunchIn
-            ([FromForm] PunchDto punchDto)
+            public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
             PunchInResponse response = await service.PunchIn(punchDto, user);

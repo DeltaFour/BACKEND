@@ -12,9 +12,9 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
         
         public ShiftType? WorkShiftType {get; set;}
         
-        public DateTime? WorkShiftStartTime { get; set; }
+        public TimeOnly? WorkShiftStartTime { get; set; }
         
-        public DateTime? WorkShiftEndTime { get; set; }
+        public TimeOnly? WorkShiftEndTime { get; set; }
         
         public int? WorkShiftToleranceMinutes { get; set; }
     }

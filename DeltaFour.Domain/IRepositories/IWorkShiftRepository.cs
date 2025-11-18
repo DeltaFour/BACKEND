@@ -14,6 +14,6 @@ namespace DeltaFour.Domain.IRepositories
         
         Task<List<WorkShiftResponseDto>> FindAll(Expression<Func<WorkShift, bool>> predicate);
 
-        Task<WorkShift?> GetByTimeAndEmployeeId(DateTime timePunch, Guid employeeId, Guid companyId);
+        Task<WorkShiftPunchDto?> GetByTimeAndEmployeeId(TimeOnly timePunch, Guid employeeId, Guid companyId);
     }
 }

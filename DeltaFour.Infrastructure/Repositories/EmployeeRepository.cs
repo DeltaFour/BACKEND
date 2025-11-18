@@ -55,7 +55,7 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.Employees.Add(employee);
         }
-        public async Task<TreatedUserInformationDto?> FindUserInformation(String email, DateTime time)
+        public async Task<TreatedUserInformationDto?> FindUserInformation(String email, TimeOnly time)
         {
             return await context.Employees.Where(e => e.Email == email).Select(e => new TreatedUserInformationDto()
             {
@@ -70,7 +70,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 CompanyId = e.CompanyId,
                 CompanyName = e.Company.Name,
                 EmployeeShift =
-                    e.EmployeeShifts!.Where(es => es.WorkShift!.StartTime < time && time < es.WorkShift.EndTime)
+                    e.EmployeeShifts!.Where(es => time.IsBetween(es.WorkShift!.StartTime, es.WorkShift!.EndTime))
                         .Select(es => new EmployeeShiftInformationDto()
                         {
                             StartDate = es.StartDate,

@@ -19,7 +19,7 @@ namespace DeltaFour.Application.Service
     {
         static EmployeeService()
         {
-            ImageFolder = "Image";
+            ImageFolder = "../Image";
         }
 
         private static readonly String ImageFolder;
@@ -59,7 +59,7 @@ namespace DeltaFour.Application.Service
                     String imageForDecode = dto.ImageBase64.Split(',')[1];
 
                     String fileName = Path.GetFileName(
-                        $"{userAuthenticated.CompanyId}_{Guid.NewGuid()}_{dto.Name}.{imageType}");
+                        $"{userAuthenticated.CompanyId}_{employee.Id}_{dto.Name}.{imageType}");
                     String filePath = Path.Combine(ImageFolder, fileName);
 
                     byte[] imageBytes = Convert.FromBase64String(imageForDecode);
@@ -70,7 +70,6 @@ namespace DeltaFour.Application.Service
                     EmployeeFace employeeFace =
                         new EmployeeFace(employee.Id, embeddingSerialized, userAuthenticated.Id);
                     repository.EmployeeFaceRepository.Create(employeeFace);
-
 
                     await File.WriteAllBytesAsync(filePath, imageBytes);
 
@@ -95,6 +94,7 @@ namespace DeltaFour.Application.Service
                 repository.EmployeeRepository.Update(employee);
 
                 List<EmployeeShift> employeeShiftsCreate = new List<EmployeeShift>();
+                List<EmployeeShift> employeeShiftsUpdate = new List<EmployeeShift>();
                 foreach (var shift in dto.EmployeeShift)
                 {
                     if (shift.Id == null)
@@ -104,8 +104,10 @@ namespace DeltaFour.Application.Service
                     }
                     else
                     {
-                        ShiftMapper.UpdateEmployeeShift(employee.EmployeeShifts!
-                            .Find(es => es.Id == shift.Id)!, shift, userAuthenticated.Id);
+                        var employeeShift = employee.EmployeeShifts!
+                            .Find(es => es.Id == shift.Id)!;
+                        ShiftMapper.UpdateEmployeeShift(employeeShift, shift, userAuthenticated.Id);
+                        employeeShiftsUpdate.Add(employeeShift);
                     }
                 }
 
@@ -118,12 +120,15 @@ namespace DeltaFour.Application.Service
                     }
                 }
 
-                employee.EmployeeShifts.RemoveAll(ex => employeeShiftsRemove
-                    .Exists(exRemove => exRemove.Id == ex.Id));
+                if (employeeShiftsRemove.Count > 0)
+                {
+                    employee.EmployeeShifts.RemoveAll(ex => employeeShiftsRemove
+                        .Exists(exRemove => exRemove.Id == ex.Id));
+                    repository.EmployeeShiftRepository.DeleteAll(employeeShiftsRemove);
+                }
 
                 repository.EmployeeShiftRepository.CreateAll(employeeShiftsCreate);
-                repository.EmployeeShiftRepository.UpdateAll(employee.EmployeeShifts);
-                repository.EmployeeShiftRepository.DeleteAll(employeeShiftsRemove);
+                repository.EmployeeShiftRepository.UpdateAll(employeeShiftsUpdate);
 
                 await repository.Save();
                 return;
@@ -148,9 +153,15 @@ namespace DeltaFour.Application.Service
 
         public async Task<Boolean> CanPunchIn(CanPunchDto dto, UserContext user)
         {
-            WorkShift? workShift =
+            WorkShiftPunchDto? workShift =
                 await repository.WorkShiftRepository.GetByTimeAndEmployeeId(dto.TimePunched, user.Id, user.CompanyId);
-            if (workShift != null && DateTime.UtcNow.Subtract(dto.TimePunched).Minutes < -workShift.ToleranceMinutes)
+            if (workShift != null && (dto.PunchType == PunchType.IN &&
+                    dto.TimePunched.IsBetween(
+                        workShift.StartTime.AddMinutes(-workShift.ToleranceMinutes),
+                        workShift.StartTime.AddMinutes(workShift.ToleranceMinutes)) || dto.PunchType == PunchType.OUT &&
+                    dto.TimePunched.IsBetween(
+                        workShift.EndTime.AddMinutes(-workShift.ToleranceMinutes),
+                        workShift.EndTime.AddMinutes(workShift.ToleranceMinutes))))
             {
                 return true;
             }
@@ -182,7 +193,7 @@ namespace DeltaFour.Application.Service
                 {
                     throw new BadHttpRequestException("Ocorreu um erro");
                 }
-                
+
 
                 byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
                 var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
@@ -194,6 +205,7 @@ namespace DeltaFour.Application.Service
                     {
                         return PunchInResponse.FNC;
                     }
+
                     EmployeeAttendance employeeAttendance = new EmployeeAttendance()
                     {
                         EmployeeId = user.Id,
@@ -209,6 +221,7 @@ namespace DeltaFour.Application.Service
                     return PunchInResponse.SCC;
                 }
             }
+
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
     }
