@@ -17,13 +17,6 @@ namespace DeltaFour.Application.Service
 {
     public class EmployeeService(AllRepositories repository, PythonExe pythonExe)
     {
-        static EmployeeService()
-        {
-            ImageFolder = "../Image";
-        }
-
-        private static readonly String ImageFolder;
-
         public async Task<List<EmployeeResponseDto>> GetAllByCompany(Guid companyId)
         {
             List<EmployeeResponseDto> employees = await repository.EmployeeRepository.GetAll(companyId);
@@ -55,12 +48,7 @@ namespace DeltaFour.Application.Service
                     Employee employee = EmployeeMapper.FromCreateDto(dto, role.Id, userAuthenticated);
                     repository.EmployeeRepository.Create(employee);
 
-                    String imageType = dto.ImageBase64.Split(';')[0].Split('/')[1];
                     String imageForDecode = dto.ImageBase64.Split(',')[1];
-
-                    String fileName = Path.GetFileName(
-                        $"{userAuthenticated.CompanyId}_{employee.Id}_{dto.Name}.{imageType}");
-                    String filePath = Path.Combine(ImageFolder, fileName);
 
                     byte[] imageBytes = Convert.FromBase64String(imageForDecode);
 
@@ -70,8 +58,6 @@ namespace DeltaFour.Application.Service
                     EmployeeFace employeeFace =
                         new EmployeeFace(employee.Id, embeddingSerialized, userAuthenticated.Id);
                     repository.EmployeeFaceRepository.Create(employeeFace);
-
-                    await File.WriteAllBytesAsync(filePath, imageBytes);
 
                     List<EmployeeShift> employeeShifts = new List<EmployeeShift>();
                     foreach (var shift in dto.EmployeeShift)
@@ -197,6 +183,7 @@ namespace DeltaFour.Application.Service
 
                 byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
                 var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
+                
                 if (embeddingToVerify != null && employee.EmployeeFaces != null)
                 {
                     double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
@@ -206,15 +193,7 @@ namespace DeltaFour.Application.Service
                         return PunchInResponse.FNC;
                     }
 
-                    EmployeeAttendance employeeAttendance = new EmployeeAttendance()
-                    {
-                        EmployeeId = user.Id,
-                        PunchTime = dto.TimePunched,
-                        PunchType = dto.Type,
-                        ShiftType = dto.ShiftType,
-                        Coord = new Coordinates(dto.longitude, dto.latitude),
-                        CreatedBy = user.Id,
-                    };
+                    EmployeeAttendance employeeAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
                     repository.EmployeeAttendanceRepository.Create(employeeAttendance);
                     await repository.Save();
 
@@ -223,6 +202,13 @@ namespace DeltaFour.Application.Service
             }
 
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
+        }
+
+        public async Task PunchForUser(PunchForUserDto dto,  UserContext user)
+        {
+            EmployeeAttendance employeeAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
+            repository.EmployeeAttendanceRepository.Create(employeeAttendance);
+            await repository.Save();
         }
     }
 }

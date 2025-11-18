@@ -87,7 +87,7 @@ namespace DeltaFour.Infrastructure.Repositories
                             PunchTime = ea.PunchTime,
                             PunchDate = ea.CreatedAt
                         })
-                    // .Take(10)
+                    .Take(10)
                     .ToList()
             }).FirstOrDefaultAsync();
         }

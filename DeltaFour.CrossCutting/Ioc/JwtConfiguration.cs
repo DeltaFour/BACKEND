@@ -15,7 +15,6 @@ namespace DeltaFour.CrossCutting.Ioc
         )
         {
             var rsaPublicKey = GetRsaKeys.GetPublicKey("../app.pub");
-            var rsaPrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
             bool validateLifeTime = bool.Parse(Environment.GetEnvironmentVariable("VALIDATE_LIFETIME")!);
             bool requireExpirationTime = bool.Parse(Environment.GetEnvironmentVariable("REQUIRE_EXPIRATION_TIME")!);
             bool validateIssuerSigningKey =
@@ -32,7 +31,6 @@ namespace DeltaFour.CrossCutting.Ioc
                 ValidateIssuerSigningKey = validateIssuerSigningKey,
                 IssuerSigningKey = new RsaSecurityKey(rsaPublicKey),
                 ClockSkew = TimeSpan.Zero,
-                // TokenDecryptionKey = new RsaSecurityKey(rsaPrivateKey)
             };
             service.AddSingleton(validationParameters);
 

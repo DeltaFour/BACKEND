@@ -5,6 +5,7 @@ using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -45,10 +46,7 @@ namespace DeltaFour.Application.Service
         public string CreateToken(TreatedUserInformationDto employee)
         {
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
-            var rsaPublicKey = new RsaSecurityKey(PublicKey);
             var signingCredentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
-            var encryptingCredentials = new EncryptingCredentials(rsaPublicKey, SecurityAlgorithms.RsaOAEP,
-                SecurityAlgorithms.Aes256CbcHmacSha512);
             UserContext context = AuthMapper.UserContext(employee);
             IDictionary<string, object> signingKeys = new Dictionary<string, object>()
             {
@@ -61,7 +59,6 @@ namespace DeltaFour.Application.Service
                 IssuedAt = DateTime.UtcNow,
                 Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = signingCredentials,
-                // EncryptingCredentials = encryptingCredentials
             };
 
             var token = new JwtSecurityTokenHandler().CreateToken(tokenDescriptor);
@@ -76,8 +73,14 @@ namespace DeltaFour.Application.Service
             {
                 repositories.EmployeeAuthRepository.Delete(userAuth);
             }
+            var tokenHandler = new JsonWebTokenHandler();
+            var rsaPublicKey = new RsaSecurityKey(PublicKey);
+            var encryptingCredentials = new EncryptingCredentials(rsaPublicKey, SecurityAlgorithms.RsaOAEP,
+                SecurityAlgorithms.Aes256CbcHmacSha512);
+            
+            var tokenEncrypted = tokenHandler.EncryptToken(jwt, encryptingCredentials);
 
-            userAuth = new EmployeeAuth(employee.Id, jwt, DateTime.UtcNow.AddHours(24));
+            userAuth = new EmployeeAuth(employee.Id, tokenEncrypted, DateTime.UtcNow.AddHours(24));
             repositories.EmployeeAuthRepository.Create(userAuth);
             await repositories.Save();
             return userAuth.Id;
