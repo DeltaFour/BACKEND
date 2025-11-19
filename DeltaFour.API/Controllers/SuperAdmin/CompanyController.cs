@@ -22,7 +22,7 @@ public class CompanyController(StatusService statusService) : ControllerBase
         [FromBody] CreateCompanyRequest request
     )
     {
-        var user = HttpContext.GetObject<Employee>("user");
+        var user = HttpContext.GetUserAuthenticated<UserContext>();
 
         await createService.Create(request, user.Id);
 

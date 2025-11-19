@@ -12,7 +12,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
     {
         var email = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
         
-        return await _unitOfWork.EmployeeRepository.Exists(e => e.Email == email);
+        return await _unitOfWork.EmployeeRepository.FindAny(e => e.Email == email);
     }
 
     private Company SaveCompanySuperAdmin()

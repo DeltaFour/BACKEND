@@ -62,6 +62,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 Id = e.Id,
                 Name = e.Name,
                 Email = e.Email,
+                RoleName = e.Role != null ? e.Role.Name : null,
                 RoleId = e.RoleId,
                 IsAllowedBypassCoord = e.IsAllowedBypassCoord,
                 IsActive = e.IsActive,
@@ -102,11 +103,6 @@ namespace DeltaFour.Infrastructure.Repositories
             return await context
                 .Employees
                 .FirstOrDefaultAsync(predicate);
-        }
-
-        public async Task<bool> Exists(Expression<Func<Employee, bool>> predicate)
-        {
-            return await context.Employees.AnyAsync(predicate);
         }
     }
 }
