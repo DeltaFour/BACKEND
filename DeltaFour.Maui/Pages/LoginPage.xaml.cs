@@ -92,8 +92,8 @@ public partial class LoginPage : ContentPage
             {
                 Name = "Carlos Mendes",
                 ShiftType = "Diurno",
-                StartTime = DateTime.Today.AddHours(8).AddMinutes(45),
-                EndTime = DateTime.Today.AddHours(17),
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.Today.AddHours(18),
                 CompanyName = "DeltaFour Tech",
                 RecentActivities = new List<RecentActivity>
             {

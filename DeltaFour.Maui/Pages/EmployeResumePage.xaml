@@ -306,6 +306,7 @@
 
                 <Button Grid.Row="3" Grid.ColumnSpan="3"
             BackgroundColor="{Binding ActionButtonBackground}"
+            IsEnabled="{Binding IsActionButtonEnabled}"
             CornerRadius="16"
             FontAttributes="Bold"
             HeightRequest="50"

@@ -11,6 +11,8 @@ public partial class EmployeResume : ContentPage
     private ISession? session;
     private LocalUser? _user;
     private bool _isInNow;
+    private bool _isWithinTimeMargin = false;
+    private bool _shiftCompleted = false;
 
     public ObservableCollection<RecentItemVM> RecentItems { get; } = new();
 
@@ -26,6 +28,7 @@ public partial class EmployeResume : ContentPage
     public Color StatusFrameBackground { get; private set; } = Colors.Transparent;
     public string ActionButtonText { get; private set; } = "";
     public Color ActionButtonBackground { get; private set; } = Colors.Transparent;
+    public bool IsActionButtonEnabled { get; private set; } = false;
 
     // LastPunchText como BindableProperty para atualização imediata no XAML
     public static readonly BindableProperty LastPunchTextProperty =
@@ -72,6 +75,7 @@ public partial class EmployeResume : ContentPage
         StartRingTimer();
         UpdateRing();
         UpdateLblHoje();
+        UpdateActionButtonState();
     }
 
     protected override void OnDisappearing()
@@ -98,6 +102,8 @@ public partial class EmployeResume : ContentPage
             return;
 
         _user = u;
+        Trace.WriteLine($"{_user.StartTime} == {_user.EndTime}");
+        Trace.WriteLine($"{ToBrt(_user.StartTime)} == {ToBrt(_user.EndTime)}");
 
         _user.StartTime = ToUtcAssumingBrt(_user.StartTime);
         _user.EndTime = ToUtcAssumingBrt(_user.EndTime);
@@ -132,6 +138,21 @@ public partial class EmployeResume : ContentPage
         var last = _user.RecentActivities?.OrderByDescending(a => a.PunchTime).FirstOrDefault();
         _isInNow = last?.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase) == true;
 
+        // Verificar se o último registro é de hoje. Se não for, resetar o estado.
+        if (last != null)
+        {
+            var lastBrt = ToBrt(last.PunchTime);
+            var todayBrt = ToBrt(DateTime.UtcNow);
+            if (lastBrt.Date != todayBrt.Date)
+            {
+                _isInNow = false;
+                _shiftCompleted = false;
+                _ring.ShiftCompleted = false;
+                _ring.ShowProgress = false;
+                _ring.StartMarkerColor = Colors.Green; // Resetar cor do marcador inicial
+            }
+        }
+
         ApplyHeader(_isInNow);
 
         LastPunchText = last is null
@@ -144,6 +165,7 @@ public partial class EmployeResume : ContentPage
                 RecentItems.Add(MapActivityToVM(a));
 
         UpdateRing();
+        UpdateActionButtonState();
         NotifyHeaderBindings();
     }
 
@@ -168,9 +190,62 @@ public partial class EmployeResume : ContentPage
         };
     }
 
+    private void UpdateActionButtonState()
+    {
+        if (_user is null || _shiftCompleted)
+        {
+            IsActionButtonEnabled = false;
+            ActionButtonText = "Expediente Encerrado";
+            ActionButtonBackground = Colors.Gray;
+            return;
+        }
+
+        var now = ToBrt(DateTime.UtcNow);
+        var start = ToBrt(_user.StartTime);
+        var end = ToBrt(_user.EndTime);
+
+        // Verificar se está dentro da margem de 10 minutos
+        _isWithinTimeMargin = IsWithinTimeMargin(now, start, end);
+
+        if (_isWithinTimeMargin)
+        {
+            IsActionButtonEnabled = true;
+            ActionButtonText = _isInNow ? "Dar Saída" : "Dar Entrada";
+            ActionButtonBackground = _isInNow ? Color.FromArgb("#962020") : Color.FromArgb("#4D9C24");
+        }
+        else
+        {
+            IsActionButtonEnabled = false;
+            ActionButtonText = _isInNow ? "Aguardar Saída" : "Aguardar Expediente";
+            ActionButtonBackground = Colors.Gray;
+        }
+
+        OnPropertyChanged(nameof(IsActionButtonEnabled));
+        OnPropertyChanged(nameof(ActionButtonText));
+        OnPropertyChanged(nameof(ActionButtonBackground));
+    }
+
+    private bool IsWithinTimeMargin(DateTime now, DateTime start, DateTime end)
+    {
+        var margin = TimeSpan.FromMinutes(10);
+
+        // Para entrada: pode bater de 10min antes até o horário de início
+        if (!_isInNow)
+        {
+            var timeToStart = start - now;
+            return timeToStart <= margin && timeToStart >= TimeSpan.FromMinutes(-5); // 5min de tolerância após
+        }
+        // Para saída: pode bater de 10min antes até o horário de fim
+        else
+        {
+            var timeToEnd = end - now;
+            return timeToEnd <= margin && timeToEnd >= TimeSpan.FromMinutes(-5); // 5min de tolerância após
+        }
+    }
+
     private void OnActionButtonClicked(object? sender, EventArgs e)
     {
-        if (_user == null) return;
+        if (_user == null || !IsActionButtonEnabled) return;
 
         var newType = _isInNow ? "OUT" : "IN";
         var utcNow = DateTime.UtcNow;
@@ -186,13 +261,26 @@ public partial class EmployeResume : ContentPage
         _user.RecentActivities.Add(activity);
         RecentItems.Insert(0, MapActivityToVM(activity));
 
-        // atualiza dica de horário imediatamente
         LastPunchText = ToBrt(activity.PunchTime).ToString("'Às' HH:mm:ss", PtBr);
 
-        _isInNow = !_isInNow;
-        ApplyHeader(_isInNow);
+        if (_isInNow)
+        {
+            // Finalizar expediente
+            _shiftCompleted = true;
+            _ring.ShiftCompleted = true;
+            _ring.ShowProgress = false;
+            StopRingTimer(); // Parar o timer
+        }
+        else
+        {
+            // Iniciar expediente
+            _isInNow = true;
+            _ring.ShowProgress = true;
+        }
 
-        UpdateRing();           // mantém ponteiro/progresso corretos
+        ApplyHeader(_isInNow);
+        UpdateRing();
+        UpdateActionButtonState();
         NotifyHeaderBindings();
     }
 
@@ -204,56 +292,90 @@ public partial class EmployeResume : ContentPage
         {
             StatusColor = Color.FromArgb("#4D9C24");
             StatusFrameBackground = Color.FromArgb("#1A17BC08");
-            ActionButtonText = "Dar Saída";
-            ActionButtonBackground = Color.FromArgb("#962020");
         }
         else
         {
             StatusColor = Color.FromArgb("#962020");
             StatusFrameBackground = Color.FromArgb("#1ABC1D08");
-            ActionButtonText = "Dar Entrada";
-            ActionButtonBackground = Color.FromArgb("#4D9C24");
         }
     }
-
-    // ---------- RING ----------
-
-    private static float DayPos(DateTime brt)
-        => (float)(brt.TimeOfDay.TotalSeconds / 86400d);
 
     private void UpdateRing(DateTime? nowBrtOpt = null)
     {
         if (_user is null) return;
 
-        var nowBrt = ToBrt(DateTime.UtcNow);
-        NowBrtLabel.Text = nowBrt.ToString("HH:mm:ss", PtBr);
+        // INÍCIO
+        var start = ToBrt(_user.StartTime);
+        int startSec12 = ((start.Hour % 12) * 3600) + start.Minute * 60 + start.Second;
+        _ring.StartMarkerAngleDeg = (float)(startSec12 / 43200.0 * 360.0);
+        _ring.StartMarkerSweepDeg = 5f;
 
-        // Ângulo do ponteiro (relógio de 12h)
-        var seconds12 = (nowBrt.Hour % 12) * 3600 + nowBrt.Minute * 60 + nowBrt.Second;
-        _ring.HandAngleDeg = (float)(seconds12 / 43200.0 * 360.0);
+        // FIM
+        var end = ToBrt(_user.EndTime);
+        int endSec12 = ((end.Hour % 12) * 3600) + end.Minute * 60 + end.Second;
+        _ring.EndMarkerAngleDeg = (float)(endSec12 / 43200.0 * 360.0);
+        _ring.EndMarkerSweepDeg = 5f;
 
-        // Ângulo do INÍCIO do expediente (relógio de 12h): 30° por hora + 0.5° por minuto + 1/120° por segundo
-        var startBrt = ToBrt(_user.StartTime);
-        float startAngleDeg =
-            (startBrt.Hour % 12) * 30f
-            + startBrt.Minute * 0.5f
-            + startBrt.Second * (0.5f / 60f);
+        // Ponteiro (hora atual 12h)
+        var now = nowBrtOpt ?? ToBrt(DateTime.UtcNow);
+        int nowSec12 = ((now.Hour % 12) * 3600) + now.Minute * 60 + now.Second;
+        _ring.HandAngleDeg = (float)(nowSec12 / 43200.0 * 360.0);
 
-        _ring.StartMarkerAngleDeg = startAngleDeg;
-        _ring.StartMarkerSweepDeg = 5f;      // 10 minutos na escala de 12h
-        _ring.StartMarkerColor = Colors.Green;
+        // CORREÇÃO: Ponteiro NUNCA fica cinza após dar entrada
+        _ring.Dimmed = !_isWithinTimeMargin && !_isInNow && !_shiftCompleted;
 
-        _ring.Dimmed = !_isInNow;            // fora de expediente: dim
+        // Aplicar lógica de opacidade baseada na distância temporal
+        ApplyMarkerOpacityLogic(start, end, now);
+
         ShiftRing.Invalidate();
+    }
 
+    private void ApplyMarkerOpacityLogic(DateTime start, DateTime end, DateTime now)
+    {
+        // Calcular distância em horas entre início e fim
+        var timeSpanBetweenMarkers = end - start;
+        if (timeSpanBetweenMarkers < TimeSpan.Zero)
+        {
+            timeSpanBetweenMarkers += TimeSpan.FromDays(1); // Caso passe da meia-noite
+        }
+
+        // Se a distância for maior que 12 horas, aplicar lógica de opacidade
+        if (timeSpanBetweenMarkers > TimeSpan.FromHours(12))
+        {
+            // Calcular distância do horário atual para cada marcador
+            var timeToStart = start - now;
+            var timeToEnd = end - now;
+
+            // Ajustar para considerar que pode ser no dia seguinte
+            if (timeToStart < TimeSpan.Zero) timeToStart += TimeSpan.FromDays(1);
+            if (timeToEnd < TimeSpan.Zero) timeToEnd += TimeSpan.FromDays(1);
+
+            // Reduzir opacidade do marcador mais distante
+            if (timeToStart > timeToEnd)
+            {
+                // Início está mais longe - reduzir opacidade do início
+                _ring.StartMarkerColor = _ring.StartMarkerColor.WithAlpha(0.5f);
+            }
+            else
+            {
+                // Fim está mais longe - reduzir opacidade do fim
+                _ring.EndMarkerColor = _ring.EndMarkerColor.WithAlpha(0.5f);
+            }
+        }
+        else
+        {
+            // Resetar cores para opacidade total
+            _ring.StartMarkerColor = Colors.Green;
+            _ring.EndMarkerColor = Color.FromArgb("#962020");
+        }
     }
 
     private void StartRingTimer()
     {
+        if (_shiftCompleted) return; // Não iniciar timer se expediente completo
+
         _timer ??= Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
-
-        // garante um único handler
         _timer.Tick -= OnTimerTick;
         _timer.Tick += OnTimerTick;
 
@@ -266,6 +388,7 @@ public partial class EmployeResume : ContentPage
         var nowBrt = ToBrt(DateTime.UtcNow);
         NowBrtLabel.Text = nowBrt.ToString("HH:mm:ss", PtBr);
         UpdateRing(nowBrt);
+        UpdateActionButtonState(); // Atualizar estado do botão a cada tick
     }
 
     private void StopRingTimer()
@@ -290,8 +413,6 @@ public partial class EmployeResume : ContentPage
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusColor));
         OnPropertyChanged(nameof(StatusFrameBackground));
-        OnPropertyChanged(nameof(ActionButtonText));
-        OnPropertyChanged(nameof(ActionButtonBackground));
     }
 
     private RecentItemVM MapActivityToVM(RecentActivity a)
