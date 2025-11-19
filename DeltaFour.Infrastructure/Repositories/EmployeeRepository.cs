@@ -99,7 +99,14 @@ namespace DeltaFour.Infrastructure.Repositories
 
         public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
         {
-            return await context.Employees.FirstOrDefaultAsync(predicate);
+            return await context
+                .Employees
+                .FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<bool> Exists(Expression<Func<Employee, bool>> predicate)
+        {
+            return await context.Employees.AnyAsync(predicate);
         }
     }
 }

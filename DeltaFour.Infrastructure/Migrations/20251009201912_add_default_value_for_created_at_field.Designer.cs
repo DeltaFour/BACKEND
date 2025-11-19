@@ -4,6 +4,7 @@ using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 
@@ -12,9 +13,11 @@ using NetTopologySuite.Geometries;
 namespace DeltaFour.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009201912_add_default_value_for_created_at_field")]
+    partial class add_default_value_for_created_at_field
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,28 +43,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("action", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("0692d812-087c-4290-82c5-582e3dff34ec"),
-                            Name = "list"
-                        },
-                        new
-                        {
-                            Id = new Guid("3d1cc1a8-b027-46d9-abbd-ee618d1c72a1"),
-                            Name = "create"
-                        },
-                        new
-                        {
-                            Id = new Guid("92ade242-36c1-4a85-9a7f-26576e318b5c"),
-                            Name = "update"
-                        },
-                        new
-                        {
-                            Id = new Guid("9c9cee76-6495-4806-8d15-34ce7a4fe100"),
-                            Name = "delete"
-                        });
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.Address", b =>
@@ -299,7 +280,8 @@ namespace DeltaFour.Infrastructure.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("RoleId")
+                        .IsUnique();
 
                     b.ToTable("employee", (string)null);
                 });
@@ -336,10 +318,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("punch_type");
-
-                    b.Property<int>("ShiftType")
-                        .HasColumnType("int")
-                        .HasColumnName("shift_type");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -486,23 +464,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("location", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("9639d831-4df1-4088-a36f-6e1a94cd35c5"),
-                            Name = "company"
-                        },
-                        new
-                        {
-                            Id = new Guid("44a1c0a0-644b-4751-8a78-89ee043adb84"),
-                            Name = "employee"
-                        },
-                        new
-                        {
-                            Id = new Guid("7b5d199e-7a5e-492a-a303-ae1fbfffdc3b"),
-                            Name = "work"
-                        });
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.Role", b =>
@@ -588,10 +549,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("company_id");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
@@ -600,8 +557,8 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("created_by");
 
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time(6)")
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("end_time");
 
                     b.Property<string>("ShiftType")
@@ -609,8 +566,8 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("shift_type");
 
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time(6)")
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("starter_time");
 
                     b.Property<int>("ToleranceMinutes")
@@ -626,8 +583,6 @@ namespace DeltaFour.Infrastructure.Migrations
                         .HasColumnName("updated_by");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
 
                     b.ToTable("work_shift", (string)null);
                 });
@@ -662,8 +617,8 @@ namespace DeltaFour.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("DeltaFour.Domain.Entities.Role", "Role")
-                        .WithMany("Employee")
-                        .HasForeignKey("RoleId");
+                        .WithOne("Employee")
+                        .HasForeignKey("DeltaFour.Domain.Entities.Employee", "RoleId");
 
                     b.Navigation("Company");
 
@@ -760,17 +715,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("DeltaFour.Domain.Entities.WorkShift", b =>
-                {
-                    b.HasOne("DeltaFour.Domain.Entities.Company", "Company")
-                        .WithMany("WorkShifts")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("DeltaFour.Domain.Entities.Action", b =>
                 {
                     b.Navigation("RolePermissions");
@@ -788,8 +732,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Navigation("Employees");
 
                     b.Navigation("Roles");
-
-                    b.Navigation("WorkShifts");
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.Employee", b =>

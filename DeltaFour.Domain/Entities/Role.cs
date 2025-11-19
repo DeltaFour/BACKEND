@@ -1,4 +1,6 @@
-﻿namespace DeltaFour.Domain.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace DeltaFour.Domain.Entities
 {
     public class Role : BaseEntity
     {
@@ -16,6 +18,7 @@
         
         public Company? Company { get; set; }
         
+        [JsonIgnore]
         public List<Employee>? Employee { get; set; }
         
         public List<RolePermission>? RolePermissions { get; set; }

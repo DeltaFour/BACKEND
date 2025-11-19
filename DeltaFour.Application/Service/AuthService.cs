@@ -48,10 +48,11 @@ namespace DeltaFour.Application.Service
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
             var signingCredentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
             UserContext context = AuthMapper.UserContext(employee);
+            var role = await repositories.RoleRepository.Find(role => role.Id == employee.RoleId);
             IDictionary<string, object> signingKeys = new Dictionary<string, object>()
             {
                 { "user", JsonConvert.SerializeObject(context) },
-
+                { "Role", role.Name }
             };
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
