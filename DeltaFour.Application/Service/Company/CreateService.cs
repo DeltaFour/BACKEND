@@ -2,6 +2,8 @@
 using DeltaFour.Domain.Entities;
 using CompanyEntity = DeltaFour.Domain.Entities.Company;
 using DeltaFour.Domain.IRepositories;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DeltaFour.Application.Service.Company;
 
@@ -46,11 +48,18 @@ public class CreateService(IUnitOfWork unitOfWork)
         Guid roleId
     )
     {
+        using var hash = SHA256.Create();
+        byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(request.Password));
+        var hashPassowrd = new StringBuilder();
+        foreach (byte b in bytes)
+        {
+            hashPassowrd.Append(b.ToString("x2"));
+        }
         var employee = new Employee()
         {
             Name = request.Name,
             Email = request.Email,
-            Password = request.Password,
+            Password = hashPassowrd.ToString(),
             CreatedBy = createdBy,
             CompanyId = companyId,
             RoleId = roleId,

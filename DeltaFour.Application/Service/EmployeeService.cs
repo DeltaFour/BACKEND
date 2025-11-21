@@ -164,7 +164,7 @@ namespace DeltaFour.Application.Service
             Employee? employee = await repository.EmployeeRepository.FindForPunchIn(user.Id);
             if (employee != null)
             {
-                if (user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
+                if (!user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
                 {
                     var csFactory = new CoordinateSystemFactory();
                     var ctFactory = new CoordinateTransformationFactory();

@@ -9,12 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-String pythonHome = Environment.GetEnvironmentVariable("PYTHONNET_PYDLLd")!;
+String dll = Environment.GetEnvironmentVariable("PYTHONNET_PYDLL")!;
 
-// Environment.SetEnvironmentVariable("PYTHONHOME", pythonHome);
-// Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonHome}\\Lib;{pythonHome}\\DLLs");
-
-Runtime.PythonDLL = @"C:\\Users\\Arthur\\AppData\\Local\\Programs\\Python\\Python310\\python310.dll";
+Runtime.PythonDLL = dll;
 PythonEngine.Initialize();
 PythonEngine.BeginAllowThreads();
 

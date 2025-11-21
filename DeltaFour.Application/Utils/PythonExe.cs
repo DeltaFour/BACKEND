@@ -24,8 +24,6 @@ namespace DeltaFour.Application.Utils
         
         public List<double>? ExtractEmbedding(byte[] base64Image)
         {
-            // PythonEngine.Initialize();
-            
             using (Py.GIL())
             {
                 dynamic sys = Py.Import("sys");

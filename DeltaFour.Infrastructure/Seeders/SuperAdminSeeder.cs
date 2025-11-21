@@ -1,6 +1,8 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DeltaFour.Infrastructure.Seeders;
 
@@ -10,7 +12,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
     private async Task<bool> SuperAdminAlreadyExists()
     {
         var email = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
-        
+
         return await unitOfWork.EmployeeRepository.FindAny(e => e.Email == email);
     }
 
@@ -20,7 +22,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         var cnpj = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_CNPJ");
         var name = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_NAME");
         var adminId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
-        
+
 
         var company = new Company()
         {
@@ -35,7 +37,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         return company;
     }
 
-    private Role SaveRole(Guid companyId) 
+    private Role SaveRole(Guid companyId)
     {
         var isActive = true;
         var name = nameof(RoleType.SUPER_ADMIN);
@@ -54,13 +56,22 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
 
     private void SaveEmployee(Guid companyId, Guid roleId)
     {
+        using var hash = SHA256.Create();
+        byte[] bytes =
+            hash.ComputeHash(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SUPER_ADMIN_PASSWORD")));
+        var hashPassowrd = new StringBuilder();
+        foreach (byte b in bytes)
+        {
+            hashPassowrd.Append(b.ToString("x2"));
+        }
+
         var name = Environment.GetEnvironmentVariable("SUPER_ADMIN_NAME");
         var email = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
-        var password = Environment.GetEnvironmentVariable("SUPER_ADMIN_PASSWORD");
+        var password = hashPassowrd.ToString();
         var isActive = true;
         var isConfirmed = true;
         var isAllowedBypassCoord = true;
-        
+
         var employee = new Employee()
         {
             CompanyId = companyId,

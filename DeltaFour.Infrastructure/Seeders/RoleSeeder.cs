@@ -27,8 +27,15 @@ namespace DeltaFour.Infrastructure.Seeders
                 Name = nameof(RoleType.EMPLOYEE),
                 IsActive = true,
             };
+            Role admin = new Role()
+            {
+                CompanyId = companyId,
+                Name = nameof(RoleType.ADMIN),
+                IsActive = true,
+            };
             repository.RoleRepository.Create(rh);
             repository.RoleRepository.Create(employee);
+            repository.RoleRepository.Create(admin);
         }
         
         public async Task SeedAsync()
