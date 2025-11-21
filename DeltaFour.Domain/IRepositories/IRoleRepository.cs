@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
@@ -9,5 +10,7 @@ namespace DeltaFour.Domain.IRepositories
         void Update(Role role);
         
         void Delete(Role role);
+        
+        Task<Boolean> FindAny(Expression<Func<Role, bool>> predicate);
     }
 }

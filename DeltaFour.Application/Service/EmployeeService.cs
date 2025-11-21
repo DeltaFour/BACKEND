@@ -5,10 +5,14 @@ using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
+using GeoAPI.CoordinateSystems;
 using Microsoft.AspNetCore.Http;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.Geometries.Utilities;
 using Newtonsoft.Json;
+using ProjNet.CoordinateSystems;
+using ProjNet.CoordinateSystems.Transformations;
 using System.Security.Cryptography;
 using System.Text;
 using Coordinates = DeltaFour.Domain.Entities.Coordinates;
@@ -160,30 +164,44 @@ namespace DeltaFour.Application.Service
             Employee? employee = await repository.EmployeeRepository.FindForPunchIn(user.Id);
             if (employee != null)
             {
-                if (!user.IsAllowedBypassCoord && dto is { latitude: > 0, longitude: > 0 })
+                if (user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
                 {
-                    var geoFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 3857);
+                    var csFactory = new CoordinateSystemFactory();
+                    var ctFactory = new CoordinateTransformationFactory();
 
-                    var userPoint = geoFactory.CreatePoint(new Coordinate(dto.longitude, dto.latitude));
-                    var companyPoint = geoFactory.CreatePoint(new Coordinate(
+                    var wgs84 = csFactory.CreateGeographicCoordinateSystem(
+                        "WGS 84",
+                        AngularUnit.Degrees,
+                        HorizontalDatum.WGS84,
+                        PrimeMeridian.Greenwich,
+                        new AxisInfo("longitude", AxisOrientationEnum.East),
+                        new AxisInfo("latitude", AxisOrientationEnum.North)
+                    );
+
+                    var webMercator = ProjectedCoordinateSystem.WebMercator;
+                    var transformTo3857 = ctFactory.CreateFromCoordinateSystems(wgs84, webMercator);
+
+                    var mt = transformTo3857.MathTransform;
+
+                    var userCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(dto.Longitude, dto.Latitude));
+                    var companyCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(
                         employee!.Company.CompanyGeolocation!.Coord.Longitude,
                         employee.Company.CompanyGeolocation.Coord.Latitude));
 
-                    Double distance = userPoint.Distance(companyPoint);
+                    Double distance = userCoord.Distance(companyCoord);
                     if (distance > employee.Company.CompanyGeolocation.RadiusMeters)
                     {
                         return PunchInResponse.OFR;
                     }
                 }
-                else if (!user.IsAllowedBypassCoord && dto is { latitude: 0, longitude: 0 })
+                else if (!user.IsAllowedBypassCoord && dto is { Latitude: 0, Longitude: 0 })
                 {
                     throw new BadHttpRequestException("Ocorreu um erro");
                 }
 
-
                 byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
                 var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
-                
+
                 if (embeddingToVerify != null && employee.EmployeeFaces != null)
                 {
                     double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
@@ -193,7 +211,8 @@ namespace DeltaFour.Application.Service
                         return PunchInResponse.FNC;
                     }
 
-                    EmployeeAttendance employeeAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
+                    EmployeeAttendance employeeAttendance =
+                        EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
                     repository.EmployeeAttendanceRepository.Create(employeeAttendance);
                     await repository.Save();
 
@@ -204,7 +223,7 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        public async Task PunchForUser(PunchForUserDto dto,  UserContext user)
+        public async Task PunchForUser(PunchForUserDto dto, UserContext user)
         {
             EmployeeAttendance employeeAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
             repository.EmployeeAttendanceRepository.Create(employeeAttendance);

@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-String pythonHome = Environment.GetEnvironmentVariable("PYTHON_HOME")!;
+String pythonHome = Environment.GetEnvironmentVariable("PYTHONNET_PYDLLd")!;
 
 // Environment.SetEnvironmentVariable("PYTHONHOME", pythonHome);
 // Environment.SetEnvironmentVariable("PYTHONPATH", $"{pythonHome}\\Lib;{pythonHome}\\DLLs");

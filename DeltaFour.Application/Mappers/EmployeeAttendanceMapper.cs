@@ -13,7 +13,7 @@ namespace DeltaFour.Application.Mappers
                 PunchTime = dto.TimePunched,
                 PunchType = dto.Type,
                 ShiftType = dto.ShiftType,
-                Coord = new Coordinates(dto.longitude, dto.latitude),
+                Coord = new Coordinates(dto.Longitude, dto.Latitude),
                 CreatedBy = userId
             };
         }

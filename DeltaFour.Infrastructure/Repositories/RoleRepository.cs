@@ -17,6 +17,11 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.Roles.Add(role);
         }
+
+        public async Task<Boolean> FindAny(Expression<Func<Role, bool>> predicate)
+        {
+            return await context.Roles.AnyAsync(predicate);
+        }
         
         public void Update(Role role)
         {

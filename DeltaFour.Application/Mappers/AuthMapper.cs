@@ -13,6 +13,7 @@ namespace DeltaFour.Application.Mappers
                 Id = employee.Id,
                 Name = employee.Name,
                 Email = employee.Email,
+                RoleName = employee.Role?.Name,
                 RoleId = employee.RoleId,
                 IsAllowedBypassCoord = employee.IsAllowedBypassCoord,
                 CompanyId = employee.CompanyId,

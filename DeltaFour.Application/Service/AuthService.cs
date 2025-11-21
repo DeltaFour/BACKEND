@@ -92,9 +92,8 @@ namespace DeltaFour.Application.Service
                 await repositories.EmployeeAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
-
                 Employee employee =
-                    await repositories.EmployeeRepository.Find(u => u.Id == GetUserIdFromToken(token)) ??
+                    await repositories.EmployeeRepository.FindIncludingRole(u => u.Id == GetUserIdFromToken(token)) ??
                     throw new BadHttpRequestException("Ops, algo deu errado");
                 return CreateToken(AuthMapper.FromEmployeeToTreatedUserInfo(employee));
             }

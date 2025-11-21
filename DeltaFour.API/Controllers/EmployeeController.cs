@@ -15,7 +15,7 @@ namespace DeltaFour.API.Controllers
     public class EmployeeController(EmployeeService service) : Controller
     {
         [HttpGet]
-        [Authorize]
+        [Authorize(Policy = nameof(RoleType.RH))]
         public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>();
@@ -23,7 +23,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Policy = nameof(RoleType.RH))]
         public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>(); 
@@ -32,7 +32,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPatch]
-        [Authorize]
+        [Authorize(Policy = nameof(RoleType.RH))]
         public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>();
@@ -41,7 +41,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpDelete("{employeeId}")]
-        [Authorize]
+        [Authorize(Policy = nameof(RoleType.RH))]
         public async Task<IActionResult> Delete(Guid employeeId)
         {
             await service.Delete(employeeId);
@@ -49,7 +49,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpGet("allowed-punch")]
-        [Authorize]
+        [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
         {   
             var user =  HttpContext.GetUserAuthenticated<UserContext>();
@@ -57,7 +57,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost("punch-in")]
-        [Authorize]
+        [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
@@ -71,7 +71,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost("punch-for-user")]
-        [Authorize]
+        [Authorize(Policy = nameof(RoleType.RH))]
         public async Task<IActionResult> PunchForUser([FromBody] PunchForUserDto dto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();

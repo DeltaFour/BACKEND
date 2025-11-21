@@ -14,6 +14,8 @@ namespace DeltaFour.Domain.IRepositories
         Task<Employee?> FindIncluding(Guid id);
 
         Task<Employee?> FindForPunchIn(Guid id);
+
+        Task<Employee?> FindIncludingRole(Expression<Func<Employee, bool>> predicate);
         
         void Create(Employee employee);
 

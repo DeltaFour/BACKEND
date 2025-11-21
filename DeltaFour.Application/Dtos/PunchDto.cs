@@ -17,9 +17,9 @@ namespace DeltaFour.Application.Dtos
         [Required]
         public ShiftType ShiftType { get; set; }
         
-        public Double latitude { get; set; }
+        public Double Latitude { get; set; }
         
-        public Double longitude { get; set; }
+        public Double Longitude { get; set; }
         
         
     }

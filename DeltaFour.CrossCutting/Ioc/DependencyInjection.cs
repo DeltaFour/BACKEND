@@ -54,6 +54,7 @@ public static class DependencyInjection
             services.AddScoped<IUnitOfWork, AllRepositories>();
             services.AddScoped<PythonExe>();
             services.AddScoped<SuperAdminSeeder>();
+            services.AddScoped<RoleSeeder>();
             services.AddScoped<StatusService>();
             services.AddScoped<CreateCompanyService>();
             services.AddScoped<ListCompanyService>();

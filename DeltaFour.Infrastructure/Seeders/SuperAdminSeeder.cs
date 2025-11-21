@@ -6,13 +6,12 @@ namespace DeltaFour.Infrastructure.Seeders;
 
 public class SuperAdminSeeder(IUnitOfWork unitOfWork)
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     private async Task<bool> SuperAdminAlreadyExists()
     {
         var email = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
         
-        return await _unitOfWork.EmployeeRepository.FindAny(e => e.Email == email);
+        return await unitOfWork.EmployeeRepository.FindAny(e => e.Email == email);
     }
 
     private Company SaveCompanySuperAdmin()
@@ -20,15 +19,18 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         var isActive = true;
         var cnpj = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_CNPJ");
         var name = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_NAME");
+        var adminId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
+        
 
         var company = new Company()
         {
+            Id = adminId,
             IsActive = isActive,
             Cnpj = cnpj,
             Name = name,
         };
 
-        _unitOfWork.CompanyRepository.Create(company);
+        unitOfWork.CompanyRepository.Create(company);
 
         return company;
     }
@@ -45,7 +47,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
             IsActive = isActive
         };
 
-        _unitOfWork.RoleRepository.Create(role);
+        unitOfWork.RoleRepository.Create(role);
 
         return role;
     }
@@ -71,7 +73,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
             IsAllowedBypassCoord = isAllowedBypassCoord,
         };
 
-        _unitOfWork.EmployeeRepository.Create(employee);
+        unitOfWork.EmployeeRepository.Create(employee);
     }
 
     public async Task SeedAsync()
@@ -85,6 +87,6 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
 
         SaveEmployee(company.Id, role.Id);
 
-        await _unitOfWork.Save();
+        await unitOfWork.Save();
     }
 }

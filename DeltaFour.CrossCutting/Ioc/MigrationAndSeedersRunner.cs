@@ -12,7 +12,7 @@ namespace DeltaFour.CrossCutting.Ioc;
 
 public static class MigrationAndSeedersRunner
 {
-    public static async Task ApplyMigrationsAndSeedAsync(this WebApplication app)
+    public async static Task ApplyMigrationsAndSeedAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
 
@@ -21,7 +21,9 @@ public static class MigrationAndSeedersRunner
         await db.Database.MigrateAsync();
 
         var seeder = scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>();
+        var seederRole = scope.ServiceProvider.GetRequiredService<RoleSeeder>();
 
         await seeder.SeedAsync();
+        await seederRole.SeedAsync();
     }
 }

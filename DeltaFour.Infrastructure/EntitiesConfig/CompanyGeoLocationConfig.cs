@@ -14,7 +14,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasKey(cgl => cgl.Id);
             builder.Property(cgl => cgl.Id).HasColumnName("id");
             builder.Property(cgl => cgl.Coord).HasConversion(
-                v => new Point(v.Longitude, v.Latitude) { SRID = 3857 }, 
+                v => new Point(v.Longitude, v.Latitude) { SRID = 4326 }, 
                 v => new Coordinates(v.Y, v.X)
             ).HasColumnType("point").HasColumnName("coord").IsRequired();
             builder.Property(cgl => cgl.RadiusMeters).HasColumnName("radius_meters").IsRequired();
