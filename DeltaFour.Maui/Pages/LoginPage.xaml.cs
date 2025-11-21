@@ -18,13 +18,17 @@ public partial class LoginPage : ContentPage
 {
     bool _hidePassword = true;
     private ISession? session;
-    public LoginPage()
+    private readonly IApiAuthService authService;
+
+    public LoginPage(ISession session, IApiAuthService authService)
     {
         InitializeComponent();
         HandlerChanged += OnHandlerChanged;
+        this.authService = authService;
+        this.session = session;
     }
-#if ANDROID
 
+#if ANDROID
     void DismissKeyboard()
     {
         MainThread.BeginInvokeOnMainThread(() =>
@@ -36,7 +40,7 @@ public partial class LoginPage : ContentPage
             var view = activity.CurrentFocus ?? activity.Window?.DecorView;
 
             if (view is null)
-                view = new Android.Views.View(activity); 
+                view = new Android.Views.View(activity);
 
             var token = view.WindowToken;
             if (token != null)
@@ -46,6 +50,7 @@ public partial class LoginPage : ContentPage
         });
     }
 #endif
+
     private void OnHandlerChanged(object? sender, EventArgs e) => TryResolveSession();
 
     private void TryResolveSession()
@@ -56,10 +61,9 @@ public partial class LoginPage : ContentPage
                  ?? Application.Current?.Handler?.MauiContext?.Services;
 
         if (sp != null)
-        {
             session = sp.GetRequiredService<ISession>();
-        }
     }
+
     void OnTogglePassword(object? sender, EventArgs e)
     {
         _hidePassword = !_hidePassword;
@@ -78,9 +82,10 @@ public partial class LoginPage : ContentPage
 
         if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
         {
-           await DisplayAlert("Erro", "Preencha os campos!", "ok");
+            await DisplayAlert("Erro", "Preencha os campos!", "ok");
             return;
         }
+
         try
         {
             LoginButton.IsEnabled = false;
@@ -88,29 +93,57 @@ public partial class LoginPage : ContentPage
 
             await Task.Delay(500);
 
+            var apiUser = await authService.LoginAsync(user, pass);
+
+            if (apiUser is null)
+            {
+                await DisplayAlert("Erro", "Usuário ou senha inválidos.", "ok");
+                return;
+            }
+
+            var nowBrt = ToBrt(DateTime.UtcNow);
+
+            var startBrt = new DateTime(
+                nowBrt.Year, nowBrt.Month, nowBrt.Day,
+                16, 16, 0,
+                DateTimeKind.Unspecified);
+
+            var endBrt = new DateTime(
+                nowBrt.Year, nowBrt.Month, nowBrt.Day,
+                23, nowBrt.Minute, nowBrt.Second,
+                DateTimeKind.Unspecified);
+
+            var outBrt = endBrt.AddDays(-1).AddMinutes(9);
+
             var mockUser = new LocalUser
             {
                 Name = "Carlos Mendes",
-                ShiftType = "Diurno",
-                StartTime = DateTime.UtcNow,
-                EndTime = DateTime.Today.AddHours(18),
+                ShiftType = "Noturno",
+                StartTime = startBrt,   // BRT + Unspecified
+                EndTime = endBrt,       // BRT + Unspecified
                 CompanyName = "DeltaFour Tech",
+                ToleranceMinutes = 10,
                 RecentActivities = new List<RecentActivity>
-            {
-                new() { PunchTime = DateTime.Today.AddHours(8).AddMinutes(42), PunchType = "IN", ShiftType = "Diurno" },
-                new() { PunchTime = DateTime.Today.AddDays(-1).AddHours(17), PunchType = "OUT", ShiftType = "Diurno" },
-                new() { PunchTime = DateTime.Today.AddDays(-1).AddHours(2).AddMinutes(42), PunchType = "IN", ShiftType = "Diurno" },
-
-            }
+                {
+                    new()
+                    {
+                        PunchTime = outBrt, // BRT + Unspecified
+                        PunchType = "OUT",
+                        ShiftType = "Noturno"
+                    }
+                }
             };
-            session.CurrentUser = mockUser;
+
+            session!.CurrentUser = apiUser;
+
             session.IsAuthenticated = true;
+
             ((App)Application.Current).EnterShell();
             await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
         }
         catch (Exception ex)
         {
-          await DisplayAlert("Erro", ex.ToString(), "ok");
+            await DisplayAlert("Erro", ex.ToString(), "ok");
         }
         finally
         {
@@ -120,5 +153,24 @@ public partial class LoginPage : ContentPage
             UsernameEntry.Text = "";
             PasswordEntry.Text = "";
         }
+    }
+
+    // Helpers de fuso BRT (iguais em conceito aos do EmployeResume)
+    private static TimeZoneInfo GetBrt()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"); }
+        catch { return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo"); }
+    }
+
+    private static DateTime ToBrt(DateTime dt)
+    {
+        var tz = GetBrt();
+        return dt.Kind switch
+        {
+            DateTimeKind.Utc => TimeZoneInfo.ConvertTimeFromUtc(dt, tz),
+            DateTimeKind.Local => TimeZoneInfo.ConvertTime(dt, tz),
+            DateTimeKind.Unspecified => TimeZoneInfo.ConvertTime(dt, tz, tz),
+            _ => TimeZoneInfo.ConvertTime(dt, tz)
+        };
     }
 }

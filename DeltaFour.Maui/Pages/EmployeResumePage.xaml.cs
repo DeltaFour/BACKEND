@@ -2,48 +2,140 @@ using DeltaFour.Maui.Local;
 using DeltaFour.Maui.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
-
 namespace DeltaFour.Maui.Pages;
-
 public partial class EmployeResume : ContentPage
 {
+    /// <summary>
+    /// Sessão atual da aplicação.
+    /// </summary>
     private ISession? session;
+    /// <summary>
+    /// Usuário local carregado na tela.
+    /// </summary>
+    private IApiAuthService authService;
     private LocalUser? _user;
+    /// <summary>
+    /// Indica se o usuário está em expediente no turno atual.
+    /// </summary>
     private bool _isInNow;
-    private bool _isWithinTimeMargin = false;
-    private bool _shiftCompleted = false;
-
+    /// <summary>
+    /// Indica se o expediente atual já foi concluído.
+    /// </summary>
+    private bool _shiftCompleted;
+    /// <summary>
+    /// Momento da última saída do expediente atual em BRT.
+    /// </summary>
+    private DateTime? _lastOutBrt;
+    /// <summary>
+    /// Indica se existe pelo menos uma batida registrada.
+    /// </summary>
+    private bool _hasLastPunch;
+    /// <summary>
+    /// Indica se a última batida geral foi de entrada.
+    /// </summary>
+    private bool _lastWasIn;
+    /// <summary>
+    /// Indica se a última batida geral foi de saída.
+    /// </summary>
+    private bool _lastWasOut;
+    /// <summary>
+    /// Horário da batida de entrada do expediente atual em BRT.
+    /// </summary>
+    private DateTime? _entryBrt;
+    /// <summary>
+    /// Tempo BRT simulado usado para debug de rotação do relógio.
+    /// </summary>
+    private DateTime _currentNowBrt;
+    /// <summary>
+    /// Multiplicador de tempo para simulação (1x normal, valores maiores aceleram).
+    /// </summary>
+    private int _timeMultiplier = 1;
+    /// <summary>
+    /// Lista de atividades recentes exibidas na UI.
+    /// </summary>
     public ObservableCollection<RecentItemVM> RecentItems { get; } = new();
-
+    /// <summary>
+    /// Texto de saudação com o nome do usuário.
+    /// </summary>
     public string GreetingText { get; private set; } = "";
+    /// <summary>
+    /// Horário de início do turno em BRT, formatado.
+    /// </summary>
     public string StartTimeBrt { get; private set; } = "";
+    /// <summary>
+    /// Horário de término do turno em BRT, formatado.
+    /// </summary>
     public string EndTimeBrt { get; private set; } = "";
+    /// <summary>
+    /// Texto que descreve o tipo de turno.
+    /// </summary>
     public string ShiftTypeText { get; private set; } = "";
+    /// <summary>
+    /// Data em que o turno começou a valer.
+    /// </summary>
     public string StartedOnDate { get; private set; } = "";
+    /// <summary>
+    /// Texto que descreve a janela de trabalho (início e fim).
+    /// </summary>
     public string WorkWindowText { get; private set; } = "";
+    /// <summary>
+    /// Nome da empresa exibido no cabeçalho.
+    /// </summary>
     public string CompanyNameText { get; private set; } = "";
+    /// <summary>
+    /// Texto de status da última batida (entrada ou saída).
+    /// </summary>
     public string StatusText { get; private set; } = "";
+    /// <summary>
+    /// Cor do texto de status no cabeçalho.
+    /// </summary>
     public Color StatusColor { get; private set; } = Colors.Transparent;
+    /// <summary>
+    /// Cor de fundo do frame de status no cabeçalho.
+    /// </summary>
     public Color StatusFrameBackground { get; private set; } = Colors.Transparent;
+    /// <summary>
+    /// Texto exibido no botão principal de ação (entrada/saída).
+    /// </summary>
     public string ActionButtonText { get; private set; } = "";
+    /// <summary>
+    /// Cor de fundo do botão principal de ação.
+    /// </summary>
     public Color ActionButtonBackground { get; private set; } = Colors.Transparent;
-    public bool IsActionButtonEnabled { get; private set; } = false;
-
-    // LastPunchText como BindableProperty para atualização imediata no XAML
+    /// <summary>
+    /// Indica se o botão principal de ação está habilitado.
+    /// </summary>
+    public bool IsActionButtonEnabled { get; private set; }
+    /// <summary>
+    /// BindableProperty para o texto da última batida exibido na UI.
+    /// </summary>
     public static readonly BindableProperty LastPunchTextProperty =
         BindableProperty.Create(nameof(LastPunchText), typeof(string), typeof(EmployeResume), default(string));
+    /// <summary>
+    /// Texto formatado com o horário da última batida registrada.
+    /// </summary>
     public string LastPunchText
     {
         get => (string)GetValue(LastPunchTextProperty);
         private set => SetValue(LastPunchTextProperty, value);
     }
-
+    /// <summary>
+    /// Drawable responsável por desenhar o relógio/anel do turno.
+    /// </summary>
     private readonly ShiftRingDrawable _ring = new();
+    /// <summary>
+    /// Timer usado para atualizar o relógio e o estado da tela.
+    /// </summary>
     private IDispatcherTimer? _timer;
-
+    /// <summary>
+    /// Cultura pt-BR usada para formatação de datas e horas.
+    /// </summary>
     public static readonly CultureInfo PtBr = new("pt-BR");
-
+    /// <summary>
+    /// Construtor da página de resumo do empregado.
+    /// </summary>
     public EmployeResume()
     {
         InitializeComponent();
@@ -51,13 +143,25 @@ public partial class EmployeResume : ContentPage
         HandlerChanged += OnHandlerChanged;
         ShiftRing.Drawable = _ring;
     }
-
+    /// <summary>
+    /// Manipula o clique no botão de logout, limpando sessão e navegando para login.
+    /// </summary>
     async void OnLogoutClicked(object? sender, EventArgs e)
     {
-        if (!TryResolveSession())
+        // Garante que temos sessão + serviço
+        if (!TryResolveDependencies())
         {
             await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
             return;
+        }
+
+        try
+        {
+            await authService!.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Erro no logout da API: {ex}");
         }
 
         session!.IsAuthenticated = false;
@@ -68,40 +172,69 @@ public partial class EmployeResume : ContentPage
         await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
     }
 
+    private bool TryResolveDependencies()
+    {
+        if (session != null && authService != null)
+            return true;
+
+        var services =
+            Handler?.MauiContext?.Services ??
+            Application.Current?.Handler?.MauiContext?.Services;
+
+        if (services == null)
+            return false;
+
+        session ??= services.GetRequiredService<ISession>();
+        authService ??= services.GetRequiredService<IApiAuthService>();
+
+        return true;
+    }
+
+
+    /// <summary>
+    /// Evento de ciclo de vida chamado quando a página aparece.
+    /// </summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        if (TryResolveSession()) LoadUserIfChanged();
-        StartRingTimer();
-        UpdateRing();
-        UpdateLblHoje();
-        UpdateActionButtonState();
-    }
 
+        _currentNowBrt = ToBrt(DateTime.UtcNow);
+
+        if (TryResolveDependencies())
+            LoadUserIfChanged();
+
+        var nowBrt = GetNowBrt();
+        UpdateRing(nowBrt);
+        UpdateActionButtonState(nowBrt);
+        UpdateLblHoje();
+        StartRingTimer();
+    }
+    /// <summary>
+    /// Evento de ciclo de vida chamado quando a página desaparece.
+    /// </summary>
     protected override void OnDisappearing()
     {
         StopRingTimer();
         base.OnDisappearing();
     }
-
-    private bool TryResolveSession()
-    {
-        session ??= Handler?.MauiContext?.Services.GetService<ISession>()
-               ?? Application.Current?.Handler?.MauiContext?.Services.GetService<ISession>();
-        return session is not null;
-    }
-
+    /// <summary>
+    /// Handler chamado quando o Handler da página muda, usado para tentar recarregar a sessão.
+    /// </summary>
     private void OnHandlerChanged(object? s, EventArgs e)
     {
-        if (TryResolveSession()) LoadUserIfChanged();
+        if (TryResolveDependencies())
+            LoadUserIfChanged();
     }
-
+    /// <summary>
+    /// Carrega o usuário da sessão se a referência mudou e normaliza as datas.
+    /// </summary>
     private void LoadUserIfChanged()
     {
         if (session?.CurrentUser is not LocalUser u || ReferenceEquals(_user, u))
             return;
 
         _user = u;
+
         Trace.WriteLine($"{_user.StartTime} == {_user.EndTime}");
         Trace.WriteLine($"{ToBrt(_user.StartTime)} == {ToBrt(_user.EndTime)}");
 
@@ -117,67 +250,135 @@ public partial class EmployeResume : ContentPage
             }
         }
 
-        FillAllFromUser();
-    }
+        var nowBrt = _currentNowBrt != default
+            ? _currentNowBrt
+            : ToBrt(DateTime.UtcNow);
 
-    private void FillAllFromUser()
+        FillAllFromUser(nowBrt);
+    }
+    /// <summary>
+    /// Preenche todo o estado da tela com base no usuário e no horário atual em BRT.
+    /// </summary>
+    private void FillAllFromUser(DateTime nowBrt)
     {
         if (_user is null) return;
 
-        var startBrt = ToBrt(_user.StartTime);
-        var endBrt = ToBrt(_user.EndTime);
+        var startTemplate = ToBrt(_user.StartTime);
+        var endTemplate = ToBrt(_user.EndTime);
+
+        var rawStart = startTemplate;
+        var rawEnd = endTemplate;
+
+        GetShiftWindowForNow(nowBrt, out var shiftStartToday, out var shiftEndToday);
+        var tol = GetTolerance();
+
+        // início da janela (entrada antecipada, com tolerância)
+        var windowStart = shiftStartToday - tol;
+        // fim da janela ALINHADO com a lógica de tardia do botão:
+        // shiftEnd + tol + 12h
+        var lateLimit = shiftEndToday + tol + TimeSpan.FromHours(12);
 
         GreetingText = _user.Name;
-        StartTimeBrt = startBrt.ToString("HH:mm 'BRT'", PtBr);
-        EndTimeBrt = endBrt.ToString("HH:mm 'BRT'", PtBr);
+        StartTimeBrt = startTemplate.ToString("HH:mm 'BRT'", PtBr);
+        EndTimeBrt = endTemplate.ToString("HH:mm 'BRT'", PtBr);
         ShiftTypeText = _user.ShiftType;
-        StartedOnDate = startBrt.ToString("dd/MM/yy", PtBr);
-        WorkWindowText = $"Das {startBrt:HH:mm} Até as {endBrt:HH:mm}";
+        StartedOnDate = startTemplate.ToString("dd/MM/yy", PtBr);
+        WorkWindowText = $"Das {startTemplate:HH:mm} Até as {endTemplate:HH:mm}";
         CompanyNameText = _user.CompanyName;
 
-        var last = _user.RecentActivities?.OrderByDescending(a => a.PunchTime).FirstOrDefault();
-        _isInNow = last?.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase) == true;
+        _isInNow = false;
+        _shiftCompleted = false;
+        _entryBrt = null;
+        _lastOutBrt = null;
+        _hasLastPunch = false;
+        _lastWasIn = false;
+        _lastWasOut = false;
+        LastPunchText = string.Empty;
 
-        // Verificar se o último registro é de hoje. Se não for, resetar o estado.
-        if (last != null)
+        if (_user.RecentActivities is null || _user.RecentActivities.Count == 0)
         {
-            var lastBrt = ToBrt(last.PunchTime);
-            var todayBrt = ToBrt(DateTime.UtcNow);
-            if (lastBrt.Date != todayBrt.Date)
+            RecentItems.Clear();
+            ApplyHeader();
+            UpdateRing(nowBrt);
+            UpdateActionButtonState(nowBrt);
+            NotifyHeaderBindings();
+            return;
+        }
+
+        var actsWithBrt = _user.RecentActivities
+            .Select(a => new { Act = a, TimeBrt = ToBrt(a.PunchTime) })
+            .OrderBy(x => x.TimeBrt)
+            .ToList();
+
+        var lastOverall = actsWithBrt.Last();
+        _hasLastPunch = true;
+        _lastWasIn = lastOverall.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
+        _lastWasOut = lastOverall.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase);
+        LastPunchText = lastOverall.TimeBrt.ToString("'Às' HH:mm:ss", PtBr);
+
+        // AGORA: inclui também saídas tardias até shiftEnd + tol + 12h
+        var todaysActs = actsWithBrt
+            .Where(x => x.TimeBrt >= windowStart && x.TimeBrt <= lateLimit)
+            .ToList();
+
+        if (todaysActs.Count > 0)
+        {
+            var lastToday = todaysActs.Last();
+            var lastTodayIsIn = lastToday.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
+            var lastTodayIsOut = lastToday.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase);
+
+            var lastInToday = todaysActs
+                .Where(x => x.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase))
+                .LastOrDefault();
+
+            if (lastTodayIsOut && lastInToday is not null)
             {
+                // IN + OUT (normal ou tardia) dentro do mesmo ciclo -> turno concluído
                 _isInNow = false;
+                _shiftCompleted = true;
+                _entryBrt = lastInToday.TimeBrt;
+                _lastOutBrt = lastToday.TimeBrt;
+            }
+            else if (lastTodayIsIn)
+            {
+                // Tem entrada, mas ainda não tem saída para este ciclo
+                _isInNow = true;
                 _shiftCompleted = false;
-                _ring.ShiftCompleted = false;
-                _ring.ShowProgress = false;
-                _ring.StartMarkerColor = Colors.Green; // Resetar cor do marcador inicial
+                _entryBrt = lastToday.TimeBrt;
+                _lastOutBrt = null;
             }
         }
 
-        ApplyHeader(_isInNow);
-
-        LastPunchText = last is null
-            ? string.Empty
-            : ToBrt(last.PunchTime).ToString("'Às' HH:mm:ss", PtBr);
-
         RecentItems.Clear();
-        if (_user.RecentActivities is not null)
-            foreach (var a in _user.RecentActivities.OrderByDescending(x => x.PunchTime))
-                RecentItems.Add(MapActivityToVM(a));
+        foreach (var x in actsWithBrt.OrderByDescending(x => x.TimeBrt))
+            RecentItems.Add(MapActivityToVM(x.Act));
 
-        UpdateRing();
-        UpdateActionButtonState();
+        ApplyHeader();
+
+        var ringNow = _shiftCompleted && _lastOutBrt.HasValue
+            ? _lastOutBrt.Value
+            : nowBrt;
+
+        UpdateRing(ringNow);
+        UpdateActionButtonState(nowBrt);
         NotifyHeaderBindings();
+
+        if (_isInNow && !_shiftCompleted)
+            StartRingTimer();
+        else
+            StopRingTimer();
     }
 
+    /// <summary>
+    /// Atualiza o label de "Hoje" com a data atual em pt-BR.
+    /// </summary>
     private void UpdateLblHoje()
     {
         var nowBrt = ToBrt(DateTime.UtcNow);
         var mesUpper = nowBrt.ToString("MMM", PtBr).ToUpper(PtBr);
-
         Color primary = Colors.Black;
         if (Application.Current.Resources.TryGetValue("Primary", out var v))
             primary = v is SolidColorBrush b ? b.Color : (Color)v;
-
         LblHoje.FormattedText = new FormattedString
         {
             Spans =
@@ -185,221 +386,502 @@ public partial class EmployeResume : ContentPage
                 new Span { Text = "Hoje - " },
                 new Span { Text = nowBrt.ToString("dd ", PtBr), FontAttributes = FontAttributes.Bold, TextColor = primary },
                 new Span { Text = mesUpper + " " },
-                new Span { Text = nowBrt.ToString("yyyy", PtBr), FontAttributes = FontAttributes.Bold, TextColor = primary },
+                new Span { Text = nowBrt.ToString("yyyy", PtBr), FontAttributes = FontAttributes.Bold, TextColor = primary }
             }
         };
     }
-
-    private void UpdateActionButtonState()
+    /// <summary>
+    /// Atualiza estado, texto e cor do botão principal de ação conforme horário atual.
+    /// </summary>
+    /// <summary>
+    /// Atualiza estado, texto e cor do botão principal (Entrada/Saída)
+    /// com base na hora atual em BRT e na situação do turno.
+    /// </summary>
+    private void UpdateActionButtonState(DateTime nowBrt)
     {
-        if (_user is null || _shiftCompleted)
+        if (_user is null)
         {
             IsActionButtonEnabled = false;
-            ActionButtonText = "Expediente Encerrado";
+            ActionButtonText = "Aguardar Expediente";
             ActionButtonBackground = Colors.Gray;
+            NotifyActionButtonBindings();
             return;
         }
 
-        var now = ToBrt(DateTime.UtcNow);
-        var start = ToBrt(_user.StartTime);
-        var end = ToBrt(_user.EndTime);
+        var tol = GetTolerance();
+        var rawStart = ToBrt(_user.StartTime);
+        var rawEnd = ToBrt(_user.EndTime);
 
-        // Verificar se está dentro da margem de 10 minutos
-        _isWithinTimeMargin = IsWithinTimeMargin(now, start, end);
+        // Se estou em expediente, uso a DATA do turno ao qual a entrada pertence.
+        // Se não estou em expediente, uso o turno "de hoje" (padrão recorrente).
+        DateTime shiftStart;
+        DateTime shiftEnd;
 
-        if (_isWithinTimeMargin)
+        if (_isInNow && _entryBrt.HasValue)
         {
-            IsActionButtonEnabled = true;
-            ActionButtonText = _isInNow ? "Dar Saída" : "Dar Entrada";
-            ActionButtonBackground = _isInNow ? Color.FromArgb("#962020") : Color.FromArgb("#4D9C24");
+            shiftStart = GetShiftStartForHit(rawStart, rawEnd, _entryBrt.Value);
+            shiftEnd = GetShiftEndForHit(rawStart, rawEnd, _entryBrt.Value);
         }
         else
         {
+            GetShiftWindowForNow(nowBrt, out shiftStart, out shiftEnd);
+        }
+
+        var entryWinStart = shiftStart - tol;
+        var entryWinEnd = shiftStart + tol;
+
+        var exitWinStart = shiftEnd - tol;
+        var exitWinEnd = shiftEnd + tol;
+
+        bool inEntryWindow = nowBrt >= entryWinStart && nowBrt <= entryWinEnd;
+        bool afterEntryWin = nowBrt > entryWinEnd;
+        bool beforeEntryWin = nowBrt < entryWinStart;
+
+        bool inExitWindow = nowBrt >= exitWinStart && nowBrt <= exitWinEnd;
+        bool afterExitWin = nowBrt > exitWinEnd;
+        bool beforeExitWin = nowBrt < exitWinStart;
+
+        if (_shiftCompleted)
+        {
+            // Turno já fechado (OUT registrado para esse turno)
             IsActionButtonEnabled = false;
-            ActionButtonText = _isInNow ? "Aguardar Saída" : "Aguardar Expediente";
+            ActionButtonText = "Expediente Encerrado";
             ActionButtonBackground = Colors.Gray;
         }
-
-        OnPropertyChanged(nameof(IsActionButtonEnabled));
-        OnPropertyChanged(nameof(ActionButtonText));
-        OnPropertyChanged(nameof(ActionButtonBackground));
-    }
-
-    private bool IsWithinTimeMargin(DateTime now, DateTime start, DateTime end)
-    {
-        var margin = TimeSpan.FromMinutes(10);
-
-        // Para entrada: pode bater de 10min antes até o horário de início
-        if (!_isInNow)
+        else if (!_isInNow)
         {
-            var timeToStart = start - now;
-            return timeToStart <= margin && timeToStart >= TimeSpan.FromMinutes(-5); // 5min de tolerância após
+            // Ainda NÃO deu entrada neste turno
+            if (beforeEntryWin)
+            {
+                IsActionButtonEnabled = false;
+                ActionButtonText = "Aguardar Expediente";
+                ActionButtonBackground = Colors.Gray;
+            }
+            else if (inEntryWindow)
+            {
+                IsActionButtonEnabled = true;
+                ActionButtonText = "Dar Entrada";
+                ActionButtonBackground = Color.FromArgb("#4D9C24");
+            }
+            else if (afterEntryWin && nowBrt <= exitWinEnd)
+            {
+                // Janela de entrada passou, mas ainda estamos no "miolo" do turno
+                IsActionButtonEnabled = true;
+                ActionButtonText = "Dar Entrada (Atraso)";
+                ActionButtonBackground = Color.FromArgb("#4D9C24");
+            }
+            else
+            {
+                // Turno deste ciclo já passou inteiro -> aguarda próximo ciclo
+                IsActionButtonEnabled = false;
+                ActionButtonText = "Aguardar Expediente";
+                ActionButtonBackground = Colors.Gray;
+            }
         }
-        // Para saída: pode bater de 10min antes até o horário de fim
         else
         {
-            var timeToEnd = end - now;
-            return timeToEnd <= margin && timeToEnd >= TimeSpan.FromMinutes(-5); // 5min de tolerância após
+            // Já está em expediente neste turno (_isInNow == true)
+            if (beforeExitWin)
+            {
+                IsActionButtonEnabled = false;
+                ActionButtonText = "Aguardar Saída";
+                ActionButtonBackground = Colors.Gray;
+            }
+            else if (inExitWindow)
+            {
+                // Dentro da janela normal de saída
+                IsActionButtonEnabled = true;
+                ActionButtonText = "Dar Saída";
+                ActionButtonBackground = Color.FromArgb("#962020");
+            }
+            else if (afterExitWin && nowBrt <= shiftEnd + tol + TimeSpan.FromHours(12))
+            {
+                // Saída tardia até, no máximo, 12h após fim+tol desse MESMO turno
+                IsActionButtonEnabled = true;
+                ActionButtonText = "Dar Saída (Tardia)";
+                ActionButtonBackground = Color.FromArgb("#962020");
+            }
+            else
+            {
+                // Já passou inclusive a janela de tardia -> considera turno fechado
+                IsActionButtonEnabled = false;
+                ActionButtonText = "Aguardar Expediente";
+                ActionButtonBackground = Colors.Gray;
+            }
         }
+
+        NotifyActionButtonBindings();
     }
 
+    /// <summary>
+    /// Manipula o clique no botão principal de ação e registra nova batida.
+    /// </summary>
     private void OnActionButtonClicked(object? sender, EventArgs e)
     {
-        if (_user == null || !IsActionButtonEnabled) return;
-
-        var newType = _isInNow ? "OUT" : "IN";
-        var utcNow = DateTime.UtcNow;
-
+        if (_user == null || !IsActionButtonEnabled)
+            return;
+        var nowBrt = GetNowBrt();
+        var punchingOut = _isInNow;
+        var newType = punchingOut ? "OUT" : "IN";
+        var utcNow = ToUtcAssumingBrt(nowBrt);
         var activity = new RecentActivity
         {
             PunchTime = utcNow,
             PunchType = newType,
             ShiftType = _user.ShiftType
         };
-
         _user.RecentActivities ??= new();
         _user.RecentActivities.Add(activity);
-        RecentItems.Insert(0, MapActivityToVM(activity));
-
-        LastPunchText = ToBrt(activity.PunchTime).ToString("'Às' HH:mm:ss", PtBr);
-
-        if (_isInNow)
-        {
-            // Finalizar expediente
-            _shiftCompleted = true;
-            _ring.ShiftCompleted = true;
-            _ring.ShowProgress = false;
-            StopRingTimer(); // Parar o timer
-        }
-        else
-        {
-            // Iniciar expediente
-            _isInNow = true;
-            _ring.ShowProgress = true;
-        }
-
-        ApplyHeader(_isInNow);
-        UpdateRing();
-        UpdateActionButtonState();
-        NotifyHeaderBindings();
+        FillAllFromUser(nowBrt);
     }
-
-    private void ApplyHeader(bool isInNow)
+    /// <summary>
+    /// Manipula o evento de pressionar o botão principal, acelerando o tempo.
+    /// </summary>
+    private void OnActionButtonPressed(object? sender, EventArgs e)
     {
-        StatusText = isInNow ? "Deu Entrada" : "Deu Saída";
-
-        if (isInNow)
+        _timeMultiplier = 1040;
+    }
+    /// <summary>
+    /// Manipula o evento de soltar o botão principal, voltando o tempo ao normal.
+    /// </summary>
+    private void OnActionButtonReleased(object? sender, EventArgs e)
+    {
+        _timeMultiplier = 1;
+    }
+    /// <summary>
+    /// Atualiza o texto e cores de status do cabeçalho com base na última batida.
+    /// </summary>
+    private void ApplyHeader()
+    {
+        if (!_hasLastPunch)
         {
-            StatusColor = Color.FromArgb("#4D9C24");
-            StatusFrameBackground = Color.FromArgb("#1A17BC08");
+            StatusText = "Sem Registro";
+            StatusColor = Colors.Gray;
+            StatusFrameBackground = Colors.Transparent;
+            return;
         }
-        else
+        if (_lastWasOut)
         {
+            StatusText = "Deu Saída";
             StatusColor = Color.FromArgb("#962020");
             StatusFrameBackground = Color.FromArgb("#1ABC1D08");
         }
+        else
+        {
+            StatusText = "Deu Entrada";
+            StatusColor = Color.FromArgb("#4D9C24");
+            StatusFrameBackground = Color.FromArgb("#1A17BC08");
+        }
     }
-
+    /// <summary>
+    /// Atualiza o desenho do anel/relógio (marcadores, ponteiro e cores).
+    /// </summary>
     private void UpdateRing(DateTime? nowBrtOpt = null)
     {
         if (_user is null) return;
-
-        // INÍCIO
-        var start = ToBrt(_user.StartTime);
-        int startSec12 = ((start.Hour % 12) * 3600) + start.Minute * 60 + start.Second;
+        var rawStart = ToBrt(_user.StartTime);
+        var rawEnd = ToBrt(_user.EndTime);
+        bool frozen = _shiftCompleted && _lastOutBrt.HasValue;
+        DateTime now = frozen
+            ? _lastOutBrt!.Value
+            : nowBrtOpt ?? GetNowBrt();
+        int startSec12 = ((rawStart.Hour % 12) * 3600) + rawStart.Minute * 60 + rawStart.Second;
         _ring.StartMarkerAngleDeg = (float)(startSec12 / 43200.0 * 360.0);
-        _ring.StartMarkerSweepDeg = 5f;
-
-        // FIM
-        var end = ToBrt(_user.EndTime);
-        int endSec12 = ((end.Hour % 12) * 3600) + end.Minute * 60 + end.Second;
+        int endSec12 = ((rawEnd.Hour % 12) * 3600) + rawEnd.Minute * 60 + rawEnd.Second;
         _ring.EndMarkerAngleDeg = (float)(endSec12 / 43200.0 * 360.0);
-        _ring.EndMarkerSweepDeg = 5f;
-
-        // Ponteiro (hora atual 12h)
-        var now = nowBrtOpt ?? ToBrt(DateTime.UtcNow);
+        var tolerance = GetTolerance();
+        float tolMins = (float)tolerance.TotalMinutes;
+        if (tolMins <= 0f) tolMins = 10f;
+        float sweepDeg = tolMins;
+        _ring.StartMarkerSweepDeg = sweepDeg;
+        _ring.EndMarkerSweepDeg = sweepDeg;
         int nowSec12 = ((now.Hour % 12) * 3600) + now.Minute * 60 + now.Second;
         _ring.HandAngleDeg = (float)(nowSec12 / 43200.0 * 360.0);
-
-        // CORREÇÃO: Ponteiro NUNCA fica cinza após dar entrada
-        _ring.Dimmed = !_isWithinTimeMargin && !_isInNow && !_shiftCompleted;
-
-        // Aplicar lógica de opacidade baseada na distância temporal
-        ApplyMarkerOpacityLogic(start, end, now);
-
+        if (_shiftCompleted)
+        {
+            _ring.StartMarkerColor = _ring.CompletedColor;
+            _ring.EndMarkerColor = _ring.CompletedColor;
+        }
+        else if (_isInNow)
+        {
+            _ring.StartMarkerColor = _ring.HandColor;
+            _ring.EndMarkerColor = _ring.BaseEndMarkerColor;
+        }
+        else
+        {
+            _ring.StartMarkerColor = ApplyTwelveHoursFade(
+                _ring.BaseStartMarkerColor,
+                rawStart,
+                now);
+            _ring.EndMarkerColor = ApplyTwelveHoursFade(
+                _ring.BaseEndMarkerColor,
+                rawEnd,
+                now);
+        }
+        _ring.ShiftCompleted = _shiftCompleted;
+        UpdateRingProgress(now);
         ShiftRing.Invalidate();
     }
-
-    private void ApplyMarkerOpacityLogic(DateTime start, DateTime end, DateTime now)
+    /// <summary>
+    /// Calcula a próxima ocorrência de um horário-modelo a partir de um instante.
+    /// </summary>
+    private static DateTime NextOccurrence(DateTime markerTemplate, DateTime now)
     {
-        // Calcular distância em horas entre início e fim
-        var timeSpanBetweenMarkers = end - start;
-        if (timeSpanBetweenMarkers < TimeSpan.Zero)
+        var candidate = new DateTime(
+            now.Year, now.Month, now.Day,
+            markerTemplate.Hour, markerTemplate.Minute, markerTemplate.Second,
+            DateTimeKind.Unspecified);
+        return candidate <= now
+            ? candidate.AddDays(1)
+            : candidate;
+    }
+    /// <summary>
+    /// Aplica efeito de fade (50% alpha) se o marcador estiver a mais de 12h do ponteiro.
+    /// </summary>
+    private static Color ApplyTwelveHoursFade(Color baseColor, DateTime marker, DateTime now)
+    {
+        var next = NextOccurrence(marker, now);
+        var diff = next - now;
+        if (diff > TimeSpan.FromHours(12))
+            return baseColor.WithAlpha(0.5f);
+        return baseColor;
+    }
+    /// <summary>
+    /// Atualiza a barra de progresso e a barra extra (tardia) do anel com base no horário atual.
+    /// </summary>
+    private void UpdateRingProgress(DateTime nowBrt)
+    {
+        if (_user is null)
         {
-            timeSpanBetweenMarkers += TimeSpan.FromDays(1); // Caso passe da meia-noite
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
         }
 
-        // Se a distância for maior que 12 horas, aplicar lógica de opacidade
-        if (timeSpanBetweenMarkers > TimeSpan.FromHours(12))
+        if (!_isInNow && !_shiftCompleted)
         {
-            // Calcular distância do horário atual para cada marcador
-            var timeToStart = start - now;
-            var timeToEnd = end - now;
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
+        }
 
-            // Ajustar para considerar que pode ser no dia seguinte
-            if (timeToStart < TimeSpan.Zero) timeToStart += TimeSpan.FromDays(1);
-            if (timeToEnd < TimeSpan.Zero) timeToEnd += TimeSpan.FromDays(1);
+        if (!_entryBrt.HasValue)
+        {
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
+        }
 
-            // Reduzir opacidade do marcador mais distante
-            if (timeToStart > timeToEnd)
+        var entryBrt = _entryBrt.Value;
+
+        float gap = _ring.MarkerGapDeg;
+
+        float startDial = NormalizeAngle(_ring.StartMarkerAngleDeg);
+        float endDial = NormalizeAngle(_ring.EndMarkerAngleDeg);
+        float handDial = NormalizeAngle(_ring.HandAngleDeg);
+
+        float spanSE = (endDial - startDial + 360f) % 360f;
+        const float eps = 0.01f;
+
+        // Se o arco útil não existe, não desenha nada
+        if (spanSE <= 2f * gap + eps)
+        {
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
+        }
+
+        // Converte ângulos para coordenadas relativas ao início do turno
+        float relFromStart(float angle) => (NormalizeAngle(angle) - startDial + 360f) % 360f;
+
+        int entrySec12 = ((entryBrt.Hour % 12) * 3600) + entryBrt.Minute * 60 + entryBrt.Second;
+        float entryDial = NormalizeAngle((float)(entrySec12 / 43200.0 * 360.0));
+
+        float relEntry = relFromStart(entryDial);   // 0..360
+        float relHand = relFromStart(handDial);    // 0..360
+
+        bool entryInsideArc = relEntry <= spanSE;
+        bool handInsideArc = relHand <= spanSE;
+
+        float uStartInside = gap;           // início útil = start + gap
+        float uEndInside = spanSE - gap;  // fim útil   = end   - gap
+        float uOvertimeMin = spanSE + gap;  // overtime   = end   + gap
+
+        // Caso 1: entrada fora do arco E ponteiro fora do arco
+        // (entrada antecipada antes do início e ponteiro ainda não chegou no início):
+        // não desenha nenhuma barra.
+        if (!entryInsideArc && !handInsideArc)
+        {
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
+        }
+
+        // Define posição "u" da entrada:
+        // - se a entrada estiver dentro do arco, usa a posição real;
+        // - se estiver fora (antecipada), projeta para o começo útil (start+gap).
+        float entryUraw = entryInsideArc ? relEntry : uStartInside;
+        float handUraw = relHand; // ponteiro pode estar dentro ou depois do arco
+
+        // Clampa a entrada para dentro da faixa útil
+        float entryU = Clamp(entryUraw, uStartInside, uEndInside);
+
+        // Se o ponteiro ainda não avançou em relação à entrada dentro do arco, não desenha barra
+        float deltaFromEntry = (handUraw - entryU + 360f) % 360f;
+        if (deltaFromEntry <= eps)
+        {
+            _ring.ShowProgress = false;
+            _ring.ShowOvertime = false;
+            return;
+        }
+
+        // ---------- Barra normal (do início até o marcador de saída - gap) ----------
+
+        float insideEndU = MathF.Min(handUraw, uEndInside);
+
+        if (insideEndU > entryU + eps)
+        {
+            _ring.ProgressStartAngleDeg = NormalizeAngle(startDial + entryU);
+            _ring.ProgressEndAngleDeg = NormalizeAngle(startDial + insideEndU);
+
+            _ring.ProgressColor = _shiftCompleted
+                ? _ring.CompletedColor          // cinza após saída registrada
+                : Color.FromArgb("#1e2d69");    // azul durante o expediente
+
+            _ring.ShowProgress = true;
+        }
+        else
+        {
+            _ring.ShowProgress = false;
+        }
+
+        // ---------- Barra extra (tardia) ----------
+
+        var tol = GetTolerance();
+        GetShiftWindowForNow(nowBrt, out var shiftStartToday, out var shiftEndToday);
+        var endLimit = shiftEndToday + tol;
+
+        bool afterRealEnd = nowBrt > endLimit;
+
+        if (afterRealEnd && handUraw > uOvertimeMin + eps)
+        {
+            float overtimeStartU = MathF.Max(uOvertimeMin, entryU);
+            float overtimeEndU = handUraw;
+            float overtimeSpan = overtimeEndU - overtimeStartU;
+
+            if (overtimeSpan > eps)
             {
-                // Início está mais longe - reduzir opacidade do início
-                _ring.StartMarkerColor = _ring.StartMarkerColor.WithAlpha(0.5f);
+                _ring.OvertimeStartAngleDeg = NormalizeAngle(startDial + overtimeStartU);
+                _ring.OvertimeEndAngleDeg = NormalizeAngle(startDial + overtimeEndU);
+
+                var baseColor = _shiftCompleted
+                    ? _ring.CompletedColor
+                    : Color.FromArgb("#1e2d69");
+
+                _ring.OvertimeColor = baseColor.WithAlpha(0.2f);
+                _ring.ShowOvertime = true;
             }
             else
             {
-                // Fim está mais longe - reduzir opacidade do fim
-                _ring.EndMarkerColor = _ring.EndMarkerColor.WithAlpha(0.5f);
+                _ring.ShowOvertime = false;
             }
         }
         else
         {
-            // Resetar cores para opacidade total
-            _ring.StartMarkerColor = Colors.Green;
-            _ring.EndMarkerColor = Color.FromArgb("#962020");
+            _ring.ShowOvertime = false;
         }
     }
 
+    /// <summary>
+    /// Limita um valor float a um intervalo mínimo e máximo.
+    /// </summary>
+    private static float Clamp(float value, float min, float max)
+    {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
+    /// <summary>
+    /// Calcula a distância angular mínima entre dois ângulos em graus.
+    /// </summary>
+    private static float AngularDistance(float a, float b)
+    {
+        float na = NormalizeAngle(a);
+        float nb = NormalizeAngle(b);
+        float diff = MathF.Abs(na - nb) % 360f;
+        return MathF.Min(diff, 360f - diff);
+    }
+    /// <summary>
+    /// Normaliza um ângulo para o intervalo [0, 360).
+    /// </summary>
+    private static float NormalizeAngle(float angle)
+    {
+        var a = angle % 360f;
+        if (a < 0) a += 360f;
+        return a;
+    }
+    /// <summary>
+    /// Calcula o span bruto entre início e fim de turno.
+    /// </summary>
+    private static TimeSpan GetShiftSpan(DateTime start, DateTime end)
+    {
+        return end - start;
+    }
+    /// <summary>
+    /// Verifica se um DateTime está dentro do intervalo de turno considerando margem longa.
+    /// </summary>
+    private bool IsWithinShiftInterval(DateTime t, DateTime start, DateTime end)
+    {
+        if (end <= start)
+            end = end.AddDays(1);
+        var margin = TimeSpan.FromHours(12);
+        var windowEnd = end + margin;
+        return t >= start && t <= windowEnd;
+    }
+    /// <summary>
+    /// Verifica se um instante está dentro da janela de tolerância em torno de um marcador.
+    /// </summary>
+    private bool IsWithinPunchWindow(DateTime now, DateTime marker)
+    {
+        var tolerance = GetTolerance();
+        var diff = (now - marker).Duration();
+        return diff <= tolerance;
+    }
+    /// <summary>
+    /// Inicia o timer que atualiza o relógio e o estado se o turno não está concluído.
+    /// </summary>
     private void StartRingTimer()
     {
-        if (_shiftCompleted) return; // Não iniciar timer se expediente completo
-
+        if (_shiftCompleted) return;
         _timer ??= Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromSeconds(1);
         _timer.Tick -= OnTimerTick;
         _timer.Tick += OnTimerTick;
-
         if (!_timer.IsRunning)
             _timer.Start();
     }
-
+    /// <summary>
+    /// Tick do timer que avança o tempo simulado e atualiza UI e regras de saída automática.
+    /// </summary>
     private void OnTimerTick(object? sender, EventArgs e)
     {
-        var nowBrt = ToBrt(DateTime.UtcNow);
+        var nowBrt = GetNowBrt();
         NowBrtLabel.Text = nowBrt.ToString("HH:mm:ss", PtBr);
         UpdateRing(nowBrt);
-        UpdateActionButtonState(); // Atualizar estado do botão a cada tick
+        UpdateActionButtonState(nowBrt);
     }
-
+    /// <summary>
+    /// Interrompe o timer do relógio.
+    /// </summary>
     private void StopRingTimer()
     {
         if (_timer is null) return;
         _timer.Stop();
         _timer.Tick -= OnTimerTick;
     }
-
-    // ---------- Bindings/util ----------
-
+    /// <summary>
+    /// Dispara notificações de property changed para os bindings de cabeçalho.
+    /// </summary>
     private void NotifyHeaderBindings()
     {
         OnPropertyChanged(nameof(GreetingText));
@@ -409,32 +891,110 @@ public partial class EmployeResume : ContentPage
         OnPropertyChanged(nameof(StartedOnDate));
         OnPropertyChanged(nameof(WorkWindowText));
         OnPropertyChanged(nameof(CompanyNameText));
-
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusColor));
         OnPropertyChanged(nameof(StatusFrameBackground));
     }
-
+    /// <summary>
+    /// Dispara notificações de property changed para os bindings do botão principal.
+    /// </summary>
+    private void NotifyActionButtonBindings()
+    {
+        OnPropertyChanged(nameof(IsActionButtonEnabled));
+        OnPropertyChanged(nameof(ActionButtonText));
+        OnPropertyChanged(nameof(ActionButtonBackground));
+    }
+    /// <summary>
+    /// Mapeia uma RecentActivity de domínio para o view model exibido na lista.
+    /// </summary>
     private RecentItemVM MapActivityToVM(RecentActivity a)
     {
         var t = ToBrt(a.PunchTime);
         var isIn = a.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
-        return new RecentItemVM
+
+        var vm = new RecentItemVM
         {
-            PunchTypeText = isIn ? "Entrada" : "Saída",
             PunchTimeBrt = t.ToString("HH:mm 'BRT'", PtBr),
             ShiftTypeText = a.ShiftType,
-            DateShort = t.ToString("dd/MM/yy", PtBr)
+            DateShort = t.ToString("dd/MM/yy", PtBr),
+            PunchTypeText = isIn ? "Entrada" : "Saída",
+            PunchIconKey = isIn ? "Entrada" : "Saída"
         };
+
+        var fs = new FormattedString();
+
+        fs.Spans.Add(new Span
+        {
+            FontAttributes = FontAttributes.Bold,
+            Text = isIn ? "Entrada" : "Saída",
+            TextColor = Colors.Black
+        });
+
+        if (_user is not null)
+        {
+            var rawStart = ToBrt(_user.StartTime);
+            var rawEnd = ToBrt(_user.EndTime);
+            var tol = GetTolerance();
+
+            if (isIn)
+            {
+                // ENTRADA (ATRASO)
+                var shiftStart = GetShiftStartForHit(rawStart, rawEnd, t);
+                var startLimit = shiftStart + tol;
+
+                if (t > startLimit)
+                {
+                    var delayMinutes = (int)Math.Round((t - startLimit).TotalMinutes);
+                    if (delayMinutes < 1) delayMinutes = 1;
+
+                    fs.Spans.Add(new Span
+                    {
+                        FontAttributes = FontAttributes.Bold,
+                        Text = $" (Atraso) +{delayMinutes} min",
+                        TextColor = Color.FromArgb("#962020")
+                    });
+
+                    vm.PunchTypeText = $"Entrada (Atraso) +{delayMinutes} min";
+                }
+            }
+            else
+            {
+                // SAÍDA (TARDIA) — usar mesma lógica do botão
+                GetShiftWindowForNow(t, out var shiftStartForHit, out var shiftEndForHit);
+                var endLimit = shiftEndForHit + tol;
+
+                if (t > endLimit)
+                {
+                    var delayMinutes = (int)Math.Round((t - endLimit).TotalMinutes);
+                    if (delayMinutes < 1) delayMinutes = 1;
+
+                    fs.Spans.Add(new Span
+                    {
+                        FontAttributes = FontAttributes.Bold,
+                        Text = $" (Tardia) +{delayMinutes} min",
+                        TextColor = Color.FromArgb("#962020")
+                    });
+
+                    vm.PunchTypeText = $"Saída (Tardia) +{delayMinutes} min";
+                }
+            }
+        }
+
+        vm.PunchTypeFormatted = fs;
+        return vm;
     }
 
-    // ——— fuso util ———
+    /// <summary>
+    /// Obtém a TimeZoneInfo correspondente ao fuso BRT.
+    /// </summary>
     private static TimeZoneInfo GetBrt()
     {
         try { return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"); }
         catch { return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo"); }
     }
-
+    /// <summary>
+    /// Converte um DateTime para BRT respeitando o Kind.
+    /// </summary>
     private static DateTime ToBrt(DateTime dt)
     {
         var tz = GetBrt();
@@ -446,7 +1006,9 @@ public partial class EmployeResume : ContentPage
             _ => TimeZoneInfo.ConvertTime(dt, tz)
         };
     }
-
+    /// <summary>
+    /// Interpreta um DateTime como BRT e converte para UTC.
+    /// </summary>
     private static DateTime ToUtcAssumingBrt(DateTime dt)
     {
         var tz = GetBrt();
@@ -458,12 +1020,179 @@ public partial class EmployeResume : ContentPage
             _ => dt
         };
     }
+    /// <summary>
+    /// Obtém o TimeSpan de tolerância configurado no usuário, com padrão de 10 minutos.
+    /// </summary>
+    private TimeSpan GetTolerance()
+    {
+        int minutes = _user?.ToleranceMinutes ?? 10;
+        if (minutes <= 0) minutes = 10;
+        return TimeSpan.FromMinutes(minutes);
+    }
+    /// <summary>
+    /// Retorna o horário atual em BRT, avançando tempo simulado conforme multiplicador.
+    /// </summary>
+    private DateTime GetNowBrt()
+    {
+        if (_currentNowBrt == default)
+        {
+            _currentNowBrt = ToBrt(DateTime.UtcNow);
+        }
+        else
+        {
+            _currentNowBrt = _currentNowBrt.AddSeconds(_timeMultiplier);
+        }
+        return _currentNowBrt;
+    }
+    /// <summary>
+    /// Garante que todos os dias ANTES de hoje que tenham pelo menos uma ENTRADA
+    /// e nenhuma SAÍDA recebam uma SAÍDA automática às 23:59.
+    /// Retorna true se pelo menos uma saída automática foi criada.
+    /// Ignora turnos overnight (start > end).
+    /// </summary>
+    private bool EnsureAutoOutForPastOpenDays(DateTime nowBrt)
+    {
+        if (_user is null || _user.RecentActivities is null || _user.RecentActivities.Count == 0)
+            return false;
 
+        var startBrt = ToBrt(_user.StartTime);
+        var endBrt = ToBrt(_user.EndTime);
+
+        // Só auto-fecha para turno simples (não overnight).
+        if (endBrt.TimeOfDay <= startBrt.TimeOfDay)
+            return false;
+
+        var today = nowBrt.Date;
+
+        var acts = _user.RecentActivities
+            .Select(a => new { Act = a, TimeBrt = ToBrt(a.PunchTime) })
+            .ToList();
+
+        // Agrupa por dia e pega SOMENTE dias < hoje com IN e sem OUT.
+        var groups = acts
+            .GroupBy(x => x.TimeBrt.Date)
+            .Where(g => g.Key < today)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        bool createdAny = false;
+
+        foreach (var g in groups)
+        {
+            bool hasIn = g.Any(x => x.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase));
+            bool hasOut = g.Any(x => x.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase));
+
+            if (!hasIn || hasOut)
+                continue;
+
+            var shiftDay = g.Key;
+
+            var outBrt = new DateTime(
+                shiftDay.Year, shiftDay.Month, shiftDay.Day,
+                23, 59, 0,
+                DateTimeKind.Unspecified);
+
+            var outUtc = ToUtcAssumingBrt(outBrt);
+
+            var activity = new RecentActivity
+            {
+                PunchTime = outUtc,
+                PunchType = "OUT",
+                ShiftType = _user.ShiftType
+            };
+
+            _user.RecentActivities.Add(activity);
+            createdAny = true;
+        }
+
+        return createdAny;
+    }
+
+    /// <summary>
+    /// Calcula janela de início e fim do turno referente ao dia do nowBrt.
+    /// </summary>
+    private void GetShiftWindowForNow(DateTime nowBrt, out DateTime shiftStartToday, out DateTime shiftEndToday)
+    {
+        var templateStart = ToBrt(_user.StartTime);
+        var templateEnd = ToBrt(_user.EndTime);
+        var baseDate = nowBrt.Date;
+        var start = new DateTime(
+            baseDate.Year, baseDate.Month, baseDate.Day,
+            templateStart.Hour, templateStart.Minute, templateStart.Second,
+            DateTimeKind.Unspecified);
+        var endSameDay = new DateTime(
+            baseDate.Year, baseDate.Month, baseDate.Day,
+            templateEnd.Hour, templateEnd.Minute, templateEnd.Second,
+            DateTimeKind.Unspecified);
+        if (templateEnd.TimeOfDay <= templateStart.TimeOfDay)
+        {
+            shiftStartToday = start;
+            shiftEndToday = endSameDay.AddDays(1);
+        }
+        else
+        {
+            shiftStartToday = start;
+            shiftEndToday = endSameDay;
+        }
+    }
+    /// <summary>
+    /// Calcula o início do turno ao qual uma batida pertence, tratando turnos overnight.
+    /// </summary>
+    private DateTime GetShiftStartForHit(DateTime rawStart, DateTime rawEnd, DateTime t)
+    {
+        bool overnight = rawEnd.TimeOfDay <= rawStart.TimeOfDay;
+        var candidate = new DateTime(
+            t.Year, t.Month, t.Day,
+            rawStart.Hour, rawStart.Minute, rawStart.Second,
+            DateTimeKind.Unspecified);
+        if (!overnight)
+            return candidate;
+        if (t.TimeOfDay < rawStart.TimeOfDay)
+            candidate = candidate.AddDays(-1);
+        return candidate;
+    }
+    /// <summary>
+    /// Calcula o fim do turno ao qual uma batida pertence, tratando turnos overnight.
+    /// </summary>
+    private DateTime GetShiftEndForHit(DateTime rawStart, DateTime rawEnd, DateTime hitBrt)
+    {
+        var start = GetShiftStartForHit(rawStart, rawEnd, hitBrt);
+        var end = new DateTime(
+            start.Year, start.Month, start.Day,
+            rawEnd.Hour, rawEnd.Minute, rawEnd.Second,
+            DateTimeKind.Unspecified);
+        if (end <= start)
+            end = end.AddDays(1);
+        return end;
+    }
+    /// <summary>
+    /// View model de um item de atividade recente exibido na lista.
+    /// </summary>
     public sealed class RecentItemVM
     {
+        /// <summary>
+        /// Texto da ação (Entrada, Saída, Entrada Atraso, etc.).
+        /// </summary>
         public string PunchTypeText { get; set; } = "";
+        /// <summary>
+        /// Horário da batida em BRT formatado.
+        /// </summary>
         public string PunchTimeBrt { get; set; } = "";
+        /// <summary>
+        /// Tipo de turno associado à batida.
+        /// </summary>
         public string ShiftTypeText { get; set; } = "";
+        /// <summary>
+        /// Data curta da batida.
+        /// </summary>
         public string DateShort { get; set; } = "";
+        /// <summary>
+        /// Texto formatado com spans coloridos e negrito para tipo/atrasos.
+        /// </summary>
+        public FormattedString PunchTypeFormatted { get; set; } = new();
+        /// <summary>
+        /// Chave usada para selecionar o ícone/SVG correto (Entrada ou Saída).
+        /// </summary>
+        public string PunchIconKey { get; set; } = "";
     }
 }

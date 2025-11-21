@@ -16,7 +16,7 @@
     <Nullable>enable</Nullable>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
 
-    <ApplicationTitle>DeltaFour</ApplicationTitle>
+    <ApplicationTitle>Ponto IA</ApplicationTitle>
     <ApplicationId>com.companyname.deltafour.maui</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>

@@ -2,32 +2,51 @@
 
 public sealed class ShiftRingDrawable : IDrawable
 {
-    public float HandAngleDeg { get; set; } = 0f;
+    // Ângulo do ponteiro em graus no dial (0° = 12h, 90° = 3h, etc.)
+    public float HandAngleDeg { get; set; }
 
-    // Janela do INÍCIO
-    public float StartMarkerAngleDeg { get; set; } = 0f;
-    public float StartMarkerSweepDeg { get; set; } = 0.1f;
-    public Color StartMarkerColor { get; set; } = Colors.Green;
+    // Gap em graus entre a barra e os marcadores
+    public float MarkerGapDeg { get; set; } = 7f;
 
-    // Janela do FIM
-    public float EndMarkerAngleDeg { get; set; } = 0f;
-    public float EndMarkerSweepDeg { get; set; } = 0.1f;
-    public Color EndMarkerColor { get; set; } = Color.FromArgb("#962020");
+    // Cores base dos marcadores (antes de qualquer estado)
+    public Color BaseStartMarkerColor { get; } = Color.FromArgb("#4D9C24"); // verde (entrada)
+    public Color BaseEndMarkerColor { get; } = Color.FromArgb("#962020"); // vermelho (saída)
 
-    // Barra de progresso
-    public bool ShowProgress { get; set; } = false;
+    // Marcador de início
+    public float StartMarkerAngleDeg { get; set; }
+    public float StartMarkerSweepDeg { get; set; } = 5f;
+    public Color StartMarkerColor { get; set; }
+
+    // Marcador de fim
+    public float EndMarkerAngleDeg { get; set; }
+    public float EndMarkerSweepDeg { get; set; } = 5f;
+    public Color EndMarkerColor { get; set; }
+
+    // Barra de progresso (entre entrada e horário atual ou saída)
+    public bool ShowProgress { get; set; }
     public Color ProgressColor { get; set; } = Color.FromArgb("#1e2d69");
+    public float ProgressStartAngleDeg { get; set; }
+    public float ProgressEndAngleDeg { get; set; }
 
-    // Estado completo (após saída)
-    public bool ShiftCompleted { get; set; } = false;
-    public Color CompletedColor { get; set; } = Colors.Gray;
+    // Estado de expediente encerrado (ponteiro + barra + marcadores cinza)
+    public bool ShiftCompleted { get; set; }
+    public Color CompletedColor { get; set; } = Color.FromArgb("#c8c8c8");
+    public bool ShowOvertime { get; set; } = false;
+    public float OvertimeStartAngleDeg { get; set; }
+    public float OvertimeEndAngleDeg { get; set; }
+    public Color OvertimeColor { get; set; }
 
+    // Aparência geral
     public float Stroke { get; set; } = 8f;
     public float PointerSize { get; set; } = 10f;
     public Color TrackColor { get; set; } = Color.FromArgb("#F5F8FB");
     public Color HandColor { get; set; } = Color.FromArgb("#1e2d69");
-    public Color OutsideHoursHandColor { get; set; } = Colors.Gray;
-    public bool Dimmed { get; set; } = false;
+
+    public ShiftRingDrawable()
+    {
+        StartMarkerColor = BaseStartMarkerColor;
+        EndMarkerColor = BaseEndMarkerColor;
+    }
 
     public void Draw(ICanvas canvas, RectF rect)
     {
@@ -37,56 +56,52 @@ public sealed class ShiftRingDrawable : IDrawable
 
         canvas.Antialias = true;
 
-        // 1) Trilho
+        // Trilha base do relógio
         canvas.StrokeSize = Stroke;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.StrokeColor = TrackColor;
         canvas.DrawCircle(cx, cy, radius);
 
-        float x1 = cx - radius, y1 = cy - radius, x2 = cx + radius, y2 = cy + radius;
+        float x1 = cx - radius;
+        float y1 = cy - radius;
+        float x2 = cx + radius;
+        float y2 = cy + radius;
 
-        // 2) Se expediente completo, desenhar arco completo cinza
-        if (ShiftCompleted)
+        // Cores dos marcadores: se expediente encerrado, tudo cinza
+        Color startColor = ShiftCompleted ? CompletedColor : StartMarkerColor;
+        Color endColor = ShiftCompleted ? CompletedColor : EndMarkerColor;
+
+        // Marcadores de início e fim
+        DrawMarker(canvas, x1, y1, x2, y2,
+            StartMarkerAngleDeg, StartMarkerSweepDeg, startColor);
+
+        DrawMarker(canvas, x1, y1, x2, y2,
+            EndMarkerAngleDeg, EndMarkerSweepDeg, endColor);
+
+        // Barra de progresso
+        if (ShowProgress)
         {
-            canvas.StrokeColor = CompletedColor;
-            canvas.StrokeSize = Stroke;
-            canvas.StrokeLineCap = LineCap.Round;
-            canvas.DrawCircle(cx, cy, radius);
-        }
-        else
-        {
-            // 3) Marcadores - Marcador de início fica com cor de progresso quando ativo
-            Color startColor = ShowProgress ? ProgressColor : StartMarkerColor;
-            DrawMarker(canvas, x1, y1, x2, y2, StartMarkerAngleDeg, StartMarkerSweepDeg, startColor);
-            DrawMarker(canvas, x1, y1, x2, y2, EndMarkerAngleDeg, EndMarkerSweepDeg, EndMarkerColor);
-
-            // 4) Barra de progresso (se ativa) - CORREÇÃO FINAL
-            if (ShowProgress)
-            {
-                // CORREÇÃO: Calcular o progresso de forma mais simples e direta
-                (float startAngle, float endAngle) = CalculateProgressArc();
-
-                // Só desenhar se houver um arco significativo
-                if (Math.Abs(startAngle - endAngle) > 1f)
-                {
-                    canvas.StrokeColor = ProgressColor;
-                    canvas.StrokeSize = Stroke;
-                    canvas.StrokeLineCap = LineCap.Round;
-
-                    var progressPath = new PathF();
-                    progressPath.AddArc(x1, y1, x2, y2, startAngle, endAngle, false);
-                    canvas.DrawPath(progressPath);
-                }
-            }
+            DrawDialArc(canvas, x1, y1, x2, y2,
+                ProgressStartAngleDeg,
+                ProgressEndAngleDeg,
+                ProgressColor);
         }
 
-        // 5) Ponteiro
-        var pointerColor = Dimmed ? OutsideHoursHandColor : HandColor;
-        if (ShiftCompleted) pointerColor = CompletedColor;
+        // Barra EXTRA (tardia) com alpha reduzido
+        if (ShowOvertime)
+        {
+            DrawDialArc(canvas, x1, y1, x2, y2,
+                OvertimeStartAngleDeg,
+                OvertimeEndAngleDeg,
+                OvertimeColor);
+        }
+
+        // Ponteiro (cinza se expediente encerrado)
+        var pointerColor = ShiftCompleted ? CompletedColor : HandColor;
 
         canvas.SaveState();
         canvas.Translate(cx, cy);
-        canvas.Rotate(HandAngleDeg - 90f);
+        canvas.Rotate(HandAngleDeg - 90f); // 0° dial = 12h → -90° no canvas
         canvas.FillColor = pointerColor;
 
         float r = radius;
@@ -98,45 +113,117 @@ public sealed class ShiftRingDrawable : IDrawable
         pointer.LineTo(backX, -half);
         pointer.LineTo(backX, half);
         pointer.Close();
-        canvas.FillPath(pointer);
 
+        canvas.FillPath(pointer);
         canvas.RestoreState();
     }
 
-    private void DrawMarker(ICanvas canvas, float x1, float y1, float x2, float y2,
-                          float angleDeg, float sweepDeg, Color color)
+    private void DrawMarker(
+        ICanvas canvas,
+        float x1, float y1, float x2, float y2,
+        float angleDeg,
+        float sweepDeg,
+        Color color)
     {
-        float center = 90f - angleDeg;
-        float startDeg = center - sweepDeg / 2f;
-        float endDeg = center + sweepDeg / 2f;
+        float centerDial = NormalizeAngle(angleDeg);
+        float centerCanvas = DialToCanvas(centerDial);
+
+        float startCanvas = centerCanvas - sweepDeg / 2f;
+        float endCanvas = centerCanvas + sweepDeg / 2f;
 
         canvas.StrokeColor = color;
         canvas.StrokeSize = Stroke;
-        canvas.StrokeLineCap = LineCap.Round;
+        canvas.StrokeLineCap = LineCap.Butt;
 
         var path = new PathF();
-        path.AddArc(x1, y1, x2, y2, startDeg, endDeg, false);
+        path.AddArc(x1, y1, x2, y2, startCanvas, endCanvas, false);
         canvas.DrawPath(path);
     }
 
-    // CORREÇÃO FINAL: Nova lógica mais simples e direta
-    private (float startAngle, float endAngle) CalculateProgressArc()
+    // Converte ângulo de "relógio" (0° = 12h, sentido horário)
+    // para ângulo de canvas (0° = direita, CCW).
+    private float DialToCanvas(float dialDeg)
     {
-        // Converter ângulos para sistema MAUI
-        float startCenter = 90f - StartMarkerAngleDeg;
-        float handCenter = 90f - HandAngleDeg;
+        float norm = NormalizeAngle(dialDeg);
+        return 90f - norm;
+    }
 
-        // Calcular distância do ponteiro até o fim (com margem de segurança)
-        float distanceToEnd = (EndMarkerAngleDeg - HandAngleDeg + 360) % 360;
-        float safeDistanceToEnd = 5f; // 5 graus de margem
+    /// <summary>
+    /// Desenha um arco de progresso entre dois ângulos de DIAL,
+    /// seguindo o sentido horário lógico do relógio, sem usar clockwise = true.
+    /// </summary>
+    private void DrawDialArc(
+        ICanvas canvas,
+        float x1, float y1, float x2, float y2,
+        float startDialDeg,
+        float endDialDeg,
+        Color color)
+    {
+        float startDial = NormalizeAngle(startDialDeg);
+        float endDial = NormalizeAngle(endDialDeg);
 
-        // Se o ponteiro está muito perto do fim, limitar o progresso
-        if (distanceToEnd < safeDistanceToEnd)
+        // Span em "sentido horário" do dial
+        float spanDial = (endDial - startDial + 360f) % 360f;
+        if (spanDial < 0.5f)
+            return;
+
+        float cx = (x1 + x2) / 2f;
+        float cy = (y1 + y2) / 2f;
+        float radius = (x2 - x1) / 2f;
+
+        // Comprimento aproximado do arco em pixels
+        float arcLength = radius * spanDial * (float)(Math.PI / 180.0);
+
+        // Segmentos pequenos para ficar liso
+        const float pixelsPerSegment = 0.5f;
+        int steps = (int)(arcLength / pixelsPerSegment);
+
+        if (steps < 64) steps = 64;
+        if (steps > 1440) steps = 1440;
+
+        var path = new PathF();
+
+        for (int i = 0; i <= steps; i++)
         {
-            float limitedHandAngle = (EndMarkerAngleDeg - safeDistanceToEnd + 360) % 360;
-            handCenter = 90f - limitedHandAngle;
+            float t = (float)i / steps;
+            float dial = NormalizeAngle(startDial + spanDial * t);
+
+            GetPointOnCircle(cx, cy, radius, dial, out float px, out float py);
+
+            if (i == 0)
+                path.MoveTo(px, py);
+            else
+                path.LineTo(px, py);
         }
 
-        return (startCenter, handCenter);
+        canvas.StrokeColor = color;
+        canvas.StrokeSize = Stroke;
+        canvas.StrokeLineCap = LineCap.Butt;
+        canvas.DrawPath(path);
+    }
+
+    /// <summary>
+    /// Calcula um ponto na circunferência para um ângulo de "relógio" (0° = 12h).
+    /// </summary>
+    private static void GetPointOnCircle(
+        float cx,
+        float cy,
+        float radius,
+        float dialDeg,
+        out float x,
+        out float y)
+    {
+        // dialDeg: 0° = topo, cresce horário → converte para ângulo matemático
+        float rad = (float)((dialDeg - 90f) * Math.PI / 180.0);
+
+        x = cx + radius * MathF.Cos(rad);
+        y = cy + radius * MathF.Sin(rad);
+    }
+
+    private static float NormalizeAngle(float angle)
+    {
+        var a = angle % 360f;
+        if (a < 0f) a += 360f;
+        return a;
     }
 }

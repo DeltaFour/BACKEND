@@ -2,6 +2,7 @@
 using DeltaFour.Maui;
 using DeltaFour.Maui.Services;
 using DeltaFour.Maui.Controls;
+
 #if ANDROID
 using DeltaFour.Maui.Handlers;
 #endif
@@ -28,6 +29,21 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton<ISession, Session>();
         builder.Services.AddSingleton<AppShell>();
+        builder.Services.AddSingleton(sp =>
+        {
+            var innerHandler = new HttpClientHandler();
+            var loggingHandler = new LoggingHandler(innerHandler);
+
+            var client = new HttpClient(loggingHandler)
+            {
+                BaseAddress = new Uri("https://zb3467wz-5212.brs.devtunnels.ms/"),
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            return client;
+        });
+
+        builder.Services.AddSingleton<IApiAuthService, ApiAuthService>();
         builder.Services.AddTransient<LoginPage>();
         return builder.Build();
     }

@@ -219,7 +219,7 @@
 
         <Frame Grid.Row="2" Style="{StaticResource CardFrame}" Margin="0,6">
             <Grid ColumnDefinitions="*,Auto,*"
-        RowDefinitions="Auto,Auto,Auto,Auto"
+        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
         ColumnSpacing="12"
         RowSpacing="8">
 
@@ -230,18 +230,40 @@
            TextColor="{StaticResource Muted}"
            HorizontalTextAlignment="End"/>
 
-                <HorizontalStackLayout Grid.Row="0" Grid.Column="0" HorizontalOptions="Start">
+                <HorizontalStackLayout Grid.Row="0"
+                       Grid.Column="0"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center">
+
                     <Frame Padding="6,2"
-             BackgroundColor="{Binding StatusFrameBackground}"
-             BorderColor="#0505050F"
-             CornerRadius="8"
-             HasShadow="False"
-             VerticalOptions="Center">
-                        <Label Text="{Binding StatusText}"
-               FontAttributes="Bold"
-               FontSize="12"
-               TextColor="{Binding StatusColor}"/>
+           BackgroundColor="{Binding StatusFrameBackground}"
+           BorderColor="#0505050F"
+           CornerRadius="8"
+           HasShadow="False"
+           VerticalOptions="Center">
+
+                        <Grid ColumnDefinitions="Auto,*"
+              ColumnSpacing="4"
+              VerticalOptions="Center">
+
+                            <Path Grid.Column="0"
+                  Aspect="Fill"
+                  Data="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+                  Fill="{Binding StatusColor}"
+                  HeightRequest="6"
+                  WidthRequest="6"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Center" />
+
+                            <Label Grid.Column="1"
+                   Text="{Binding StatusText}"
+                   FontAttributes="Bold"
+                   FontSize="12"
+                   TextColor="{Binding StatusColor}"
+                   VerticalOptions="Center" />
+                        </Grid>
                     </Frame>
+
                 </HorizontalStackLayout>
 
                 <Grid Grid.RowSpan="3" Grid.Column="1"
@@ -297,7 +319,15 @@
            LineBreakMode="TailTruncation"
            HorizontalTextAlignment="End"
            VerticalTextAlignment="Center"/>
-
+                <ImageButton Grid.Row="2" Grid.Column="2"
+                        HorizontalOptions="Start"
+                        Source="chevron"
+                        HeightRequest="10"
+                        WidthRequest="10"
+                        Pressed="OnActionButtonPressed"
+                        Released="OnActionButtonReleased"
+                        CornerRadius="16"
+                        />
                 <BoxView Grid.Row="2" Grid.ColumnSpan="3"
              Color="#F5F8FB"
              HeightRequest="1"
@@ -371,7 +401,7 @@
                                         <!-- ENTRADA -->
                                         <DataTrigger
                                             TargetType="Path"
-                                            Binding="{Binding PunchTypeText}"
+                                            Binding="{Binding PunchIconKey}"
                                             Value="Entrada">
                                             <Setter
                                                 Property="Data"
@@ -381,7 +411,7 @@
                                         <!-- SAÍDA -->
                                         <DataTrigger
                                             TargetType="Path"
-                                            Binding="{Binding PunchTypeText}"
+                                            Binding="{Binding PunchIconKey}"
                                             Value="Saída">
                                             <Setter
                                                 Property="Data"
@@ -393,7 +423,7 @@
 
                             <Label
                                 Grid.Column="1"
-                                Text="{Binding PunchTypeText}"
+                                FormattedText="{Binding PunchTypeFormatted}"
                                 FontAttributes="Bold" />
 
                             <Label
