@@ -6,7 +6,7 @@ namespace DeltaFour.Infrastructure.Context;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Employee> Employees { get; set; }
+    public DbSet<User> Employees { get; set; }
 
     public DbSet<Company> Companies { get; set; }
     
@@ -14,7 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     
     public DbSet<Role> Roles { get; set; }
     
-    public DbSet<EmployeeAuth> Auth { get; set; }
+    public DbSet<UserAuth> Auth { get; set; }
     
     public DbSet<RolePermission> RolePermissions { get; set; }
     
@@ -24,11 +24,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     
     public DbSet<CompanyGeolocation> CompanyGeolocations { get; set; }
     
-    public DbSet<EmployeeAttendance> EmployeeAttendances { get; set; }
+    public DbSet<UserAttendance> EmployeeAttendances { get; set; }
     
-    public DbSet<EmployeeFace> EmployeeFaces { get; set; }
+    public DbSet<UserFace> EmployeeFaces { get; set; }
     
-    public DbSet<EmployeeShift> EmployeeShifts { get; set; }
+    public DbSet<UserShift> EmployeeShifts { get; set; }
     
     public DbSet<WorkShift> WorkShifts { get; set; }
     

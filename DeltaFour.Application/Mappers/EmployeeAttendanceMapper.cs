@@ -5,22 +5,23 @@ namespace DeltaFour.Application.Mappers
 {
     public static class EmployeeAttendanceMapper
     {
-        public static EmployeeAttendance EmployeeAttendanceFromDto(PunchDto dto, Guid userId)
+        public static UserAttendance EmployeeAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate)
         {
-            return new EmployeeAttendance()
+            return new UserAttendance()
             {
                 EmployeeId = userId,
                 PunchTime = dto.TimePunched,
                 PunchType = dto.Type,
                 ShiftType = dto.ShiftType,
                 Coord = new Coordinates(dto.Longitude, dto.Latitude),
-                CreatedBy = userId
+                CreatedBy = userId,
+                IsLate = isLate,
             };
         }
         
-        public static EmployeeAttendance EmployeeAttendanceFromDto(PunchForUserDto dto, Guid userId)
+        public static UserAttendance EmployeeAttendanceFromDto(PunchForUserDto dto, Guid userId)
         {
-            return new EmployeeAttendance()
+            return new UserAttendance()
             {
                 EmployeeId = dto.EmployeeId,
                 PunchTime = dto.TimePunched,

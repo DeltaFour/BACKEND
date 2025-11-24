@@ -6,17 +6,17 @@ namespace DeltaFour.Application.Mappers
 {
     public static class AuthMapper
     {
-        public static TreatedUserInformationDto FromEmployeeToTreatedUserInfo(Employee employee)
+        public static TreatedUserInformationDto FromEmployeeToTreatedUserInfo(User user)
         {
             return new TreatedUserInformationDto()
             {
-                Id = employee.Id,
-                Name = employee.Name,
-                Email = employee.Email,
-                RoleName = employee.Role?.Name,
-                RoleId = employee.RoleId,
-                IsAllowedBypassCoord = employee.IsAllowedBypassCoord,
-                CompanyId = employee.CompanyId,
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                RoleName = user.Role?.Name,
+                RoleId = user.RoleId,
+                IsAllowedBypassCoord = user.IsAllowedBypassCoord,
+                CompanyId = user.CompanyId,
             };
         }
         

@@ -2,12 +2,12 @@
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeAttendanceRepository : IBaseRepository<EmployeeAttendance>
+    public interface IEmployeeAttendanceRepository : IBaseRepository<UserAttendance>
     {
-        void Create(EmployeeAttendance employeeAttendance);
+        void Create(UserAttendance userAttendance);
         
-        void Update(EmployeeAttendance employeeAttendance);
+        void Update(UserAttendance userAttendance);
         
-        void Delete(EmployeeAttendance employeeAttendance);
+        void Delete(UserAttendance userAttendance);
     }
 }

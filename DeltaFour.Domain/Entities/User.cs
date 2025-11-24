@@ -1,6 +1,6 @@
 ﻿namespace DeltaFour.Domain.Entities;
 
-public class Employee : BaseEntity
+public class User : BaseEntity
 {
     public String Name { get; set; }
     
@@ -30,13 +30,13 @@ public class Employee : BaseEntity
     
     public Role? Role { get; set; }
     
-    public EmployeeAuth? EmployeeAuth { get; set; }
+    public UserAuth? EmployeeAuth { get; set; }
     
     public Company Company { get; set; }
     
-    public List<EmployeeShift>? EmployeeShifts { get; set; }
+    public List<UserShift>? EmployeeShifts { get; set; }
     
-    public List<EmployeeAttendance>? EmployeeAttendances { get; set; }
+    public List<UserAttendance>? EmployeeAttendances { get; set; }
     
-    public List<EmployeeFace>? EmployeeFaces { get; set; }
+    public List<UserFace>? EmployeeFaces { get; set; }
 }

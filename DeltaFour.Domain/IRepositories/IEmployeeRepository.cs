@@ -5,23 +5,23 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeRepository :  IBaseRepository<Employee>
+    public interface IEmployeeRepository :  IBaseRepository<User>
     {
         Task<List<EmployeeResponseDto>> GetAll(Guid companyId);
         
-        Task<Boolean> FindAny(Expression<Func<Employee, bool>> predicate);
+        Task<Boolean> FindAny(Expression<Func<User, bool>> predicate);
         
-        Task<Employee?> FindIncluding(Guid id);
+        Task<User?> FindIncluding(Guid id);
 
-        Task<Employee?> FindForPunchIn(Guid id);
+        Task<User?> FindForPunchIn(Guid id);
 
-        Task<Employee?> FindIncludingRole(Expression<Func<Employee, bool>> predicate);
+        Task<User?> FindIncludingRole(Expression<Func<User, bool>> predicate);
         
-        void Create(Employee employee);
+        void Create(User user);
 
-        Task<TreatedUserInformationDto?> FindUserInformation(String email, TimeOnly date);
+        Task<TreatedUserInformationDto?> FindUserInformation(String email);
         
-        void Update(Employee employee);
+        void Update(User user);
 
     }
 }

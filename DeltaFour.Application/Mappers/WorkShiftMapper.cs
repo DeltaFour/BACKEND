@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.ValueObjects.Dtos;
 
 namespace DeltaFour.Application.Mappers
 {
@@ -26,6 +27,16 @@ namespace DeltaFour.Application.Mappers
             workShift.ToleranceMinutes = dto.ToleranceMinutes;
             workShift.UpdatedBy = user.Id;
             workShift.UpdatedAt = DateTime.UtcNow;
+        }
+
+        public static WorkShiftPunchDto FromWorkShift(WorkShift workShift)
+        {
+            return new WorkShiftPunchDto()
+            {
+                StartTime = workShift.StartTime,
+                EndTime = workShift.EndTime,
+                ToleranceMinutes = workShift.ToleranceMinutes,
+            };
         }
     }
 }

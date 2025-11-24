@@ -9,25 +9,25 @@ namespace DeltaFour.Infrastructure.Repositories
     public class EmployeeAuthRepository(AppDbContext context) : IEmployeeAuthRepository
     {
 
-        public async Task<EmployeeAuth?> Find(Expression<Func<EmployeeAuth, bool>> predicate)
+        public async Task<UserAuth?> Find(Expression<Func<UserAuth, bool>> predicate)
         {
             return await context.Auth.FirstOrDefaultAsync(predicate);
         }
 
-        public void Create(EmployeeAuth employeeAuth)
+        public void Create(UserAuth userAuth)
         {
-            context.Auth.Add(employeeAuth);
+            context.Auth.Add(userAuth);
         }
 
-        public void Delete(EmployeeAuth employeeAuth)
+        public void Delete(UserAuth userAuth)
         {
-            context.Auth.Remove(employeeAuth);
+            context.Auth.Remove(userAuth);
 
         }
         
-        public void Update(EmployeeAuth employeeAuth)
+        public void Update(UserAuth userAuth)
         {
-            context.Auth.Update(employeeAuth);
+            context.Auth.Update(userAuth);
         }
     }
 }

@@ -41,7 +41,7 @@ public class CreateService(IUnitOfWork unitOfWork)
         return role;
     }
 
-    private Employee SaveFirstEmployee(
+    private User SaveFirstEmployee(
         EmployeeRequest request,
         Guid companyId,
         Guid createdBy,
@@ -55,7 +55,7 @@ public class CreateService(IUnitOfWork unitOfWork)
         {
             hashPassowrd.Append(b.ToString("x2"));
         }
-        var employee = new Employee()
+        var employee = new User()
         {
             Name = request.Name,
             Email = request.Email,

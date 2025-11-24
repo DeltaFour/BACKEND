@@ -10,8 +10,5 @@ namespace DeltaFour.Application.Dtos
         
         [Required]
         public string Password { get; set; }
-        
-        [JsonRequired]
-        public TimeOnly TimeLogged { get; set; }
     }
 }

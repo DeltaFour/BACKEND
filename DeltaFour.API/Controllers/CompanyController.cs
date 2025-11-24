@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers.SuperAdmin;
 
-[Route("api/super-admin/company")]
+[Route("api/admin-control/company")]
 [ApiController]
 [Authorize(Policy = nameof(RoleType.SUPER_ADMIN))]
 public class CompanyController(StatusService statusService) : ControllerBase
@@ -29,22 +29,14 @@ public class CompanyController(StatusService statusService) : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id}/active")]
+    [HttpPost("{id}/change-status")]
     public async Task<IActionResult> Active(Guid id)
     {
-        await _statusService.Active(id);
+        await _statusService.ChangeStatus(id);
 
         return NoContent();
     }
-
-    [HttpPost("{id}/desactive")]
-    public async Task<IActionResult> Desactive(Guid id)
-    {
-        await _statusService.Active(id);
-
-        return NoContent();
-    }
-
+    
     [HttpGet]
     public async Task<ActionResult<ListCompaniesResponse>> List([FromServices] ListService listService)
     {

@@ -3,20 +3,20 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeShiftRepository : IBaseRepository<EmployeeShift>
+    public interface IEmployeeShiftRepository : IBaseRepository<UserShift>
     {
-        void Create(EmployeeShift employeeAttendance);
+        void Create(UserShift userAttendance);
         
-        void CreateAll(List<EmployeeShift> employeeShifts);
+        void CreateAll(List<UserShift> employeeShifts);
         
-        void Update(EmployeeShift employeeAttendance);
+        void Update(UserShift userAttendance);
         
-        void Delete(EmployeeShift employeeAttendance);
+        void Delete(UserShift userAttendance);
 
-        Task<Boolean> FindAny(Expression<Func<EmployeeShift, bool>> predicate);
+        Task<Boolean> FindAny(Expression<Func<UserShift, bool>> predicate);
         
-        void UpdateAll(List<EmployeeShift> employeeShifts);
+        void UpdateAll(List<UserShift> employeeShifts);
         
-        void DeleteAll(List<EmployeeShift> employeeShifts);
+        void DeleteAll(List<UserShift> employeeShifts);
     }
 }

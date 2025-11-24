@@ -8,6 +8,8 @@ namespace DeltaFour.Infrastructure.Seeders;
 
 public class SuperAdminSeeder(IUnitOfWork unitOfWork)
 {
+    private static readonly Guid IdCompanyId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
+    private static readonly Guid RoleAdminId = Guid.Parse(Environment.GetEnvironmentVariable("ROLE_SUPER_ADMIN_ID"));
 
     private async Task<bool> SuperAdminAlreadyExists()
     {
@@ -21,7 +23,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         var isActive = true;
         var cnpj = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_CNPJ");
         var name = Environment.GetEnvironmentVariable("SUPER_ADMIN_COMPANY_NAME");
-        var adminId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
+        var adminId = IdCompanyId;
 
 
         var company = new Company()
@@ -37,14 +39,15 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         return company;
     }
 
-    private Role SaveRole(Guid companyId)
+    private Role SaveRole()
     {
         var isActive = true;
         var name = nameof(RoleType.SUPER_ADMIN);
 
         var role = new Role()
         {
-            CompanyId = companyId,
+            Id = RoleAdminId,
+            CompanyId = IdCompanyId,
             Name = name,
             IsActive = isActive
         };
@@ -72,7 +75,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
         var isConfirmed = true;
         var isAllowedBypassCoord = true;
 
-        var employee = new Employee()
+        var employee = new User()
         {
             CompanyId = companyId,
             RoleId = roleId,
@@ -93,10 +96,10 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
 
         if (exists) return;
 
-        var company = SaveCompanySuperAdmin();
-        var role = SaveRole(company.Id);
+        SaveCompanySuperAdmin();
+        SaveRole();
 
-        SaveEmployee(company.Id, role.Id);
+        SaveEmployee(IdCompanyId, RoleAdminId);
 
         await unitOfWork.Save();
     }

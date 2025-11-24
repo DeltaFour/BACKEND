@@ -8,21 +8,21 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class EmployeeAttendanceRepository(AppDbContext context) : IEmployeeAttendanceRepository
     {
-        public async Task<EmployeeAttendance?> Find(Expression<Func<EmployeeAttendance, bool>> predicate)
+        public async Task<UserAttendance?> Find(Expression<Func<UserAttendance, bool>> predicate)
         {
             return await context.EmployeeAttendances.FirstOrDefaultAsync(predicate);
         }
-        public void Create(EmployeeAttendance employeeAttendance)
+        public void Create(UserAttendance userAttendance)
         {
-            context.EmployeeAttendances.Add(employeeAttendance);
+            context.EmployeeAttendances.Add(userAttendance);
         }
-        public void Update(EmployeeAttendance employeeAttendance)
+        public void Update(UserAttendance userAttendance)
         {
-            context.EmployeeAttendances.Update(employeeAttendance);
+            context.EmployeeAttendances.Update(userAttendance);
         }
-        public void Delete(EmployeeAttendance employeeAttendance)
+        public void Delete(UserAttendance userAttendance)
         {
-            context.EmployeeAttendances.Remove(employeeAttendance);
+            context.EmployeeAttendances.Remove(userAttendance);
         }
     }
 }

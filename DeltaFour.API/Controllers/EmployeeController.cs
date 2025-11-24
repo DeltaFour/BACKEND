@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers
 {
-    [Route("api/employee")]
+    [Route("api/user")]
     [Authorize]
     [ApiController]
     public class EmployeeController(EmployeeService service) : Controller
     {
         [HttpGet]
-        [Authorize(Policy = nameof(RoleType.RH))]
+        [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>();
@@ -23,7 +23,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = nameof(RoleType.RH))]
+        [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>(); 
@@ -32,7 +32,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPatch]
-        [Authorize(Policy = nameof(RoleType.RH))]
+        [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
         {
             var employee = HttpContext.GetUserAuthenticated<UserContext>();
@@ -41,14 +41,14 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpDelete("{employeeId}")]
-        [Authorize(Policy = nameof(RoleType.RH))]
+        [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Delete(Guid employeeId)
         {
             await service.Delete(employeeId);
             return Ok();
         }
 
-        [HttpGet("allowed-punch")]
+        [HttpPost("allowed-punch")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
         {   
@@ -71,7 +71,7 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost("punch-for-user")]
-        [Authorize(Policy = nameof(RoleType.RH))]
+        [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> PunchForUser([FromBody] PunchForUserDto dto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();

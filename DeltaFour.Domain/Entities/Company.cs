@@ -18,7 +18,7 @@
 
         public Address? Address { get; set; }
         
-        public List<Employee>? Employees { get; set; }
+        public List<User>? Employees { get; set; }
         
         public List<Role>? Roles { get; set; }
         

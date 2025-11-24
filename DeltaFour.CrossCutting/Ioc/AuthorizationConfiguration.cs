@@ -25,7 +25,10 @@ public static class AuthorizationConfiguration
             .AddPolicy("RH_OR_EMPLOYEE",
                 policy => policy.RequireAssertion(context =>
                     context.User.HasClaim("Role", rhPolicy) || context.User.HasClaim("Role", employeePolicy) ||
-                    context.User.HasClaim("Role", adminPolicy)));
+                    context.User.HasClaim("Role", adminPolicy)))
+            .AddPolicy("RH_OR_ADMIN",
+            policy => policy.RequireAssertion(context =>
+                context.User.HasClaim("Role", rhPolicy) || context.User.HasClaim("Role", adminPolicy)));
 
         return service;
     }

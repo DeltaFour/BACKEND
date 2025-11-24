@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Domain.Entities
 {
-    public class EmployeeAttendance : BaseEntity 
+    public class UserAttendance : BaseEntity 
     {
         public Guid EmployeeId { get; set; }
         
@@ -14,12 +14,16 @@ namespace DeltaFour.Domain.Entities
         
         public Coordinates Coord { get; set; }
         
+        public Boolean? IsLate { get; set; }
+        
+        public int? TimeLate { get; set; }
+        
         public DateTime? UpdatedAt { get; set; }
         
         public Guid CreatedBy { get; set; }
          
         public Guid? UpdatedBy { get; set; }
         
-        public Employee? Employee { get; set; }
+        public User? Employee { get; set; }
     }
 }

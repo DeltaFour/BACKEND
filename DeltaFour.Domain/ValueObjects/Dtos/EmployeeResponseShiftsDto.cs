@@ -10,6 +10,8 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
         
         public DateTime? EndDate { get; set; }
         
+        public Boolean IsActive { get; set; }
+        
         public ShiftType? WorkShiftType {get; set;}
         
         public TimeOnly? WorkShiftStartTime { get; set; }

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DeltaFour.Infrastructure.EntitiesConfig;
 
-public class EmployeeConfig : IEntityTypeConfiguration<Employee>
+public class UserConfig : IEntityTypeConfiguration<User>
 {
-    public void Configure(EntityTypeBuilder<Employee> builder)
+    public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("employee");
+        builder.ToTable("user");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("id");
         builder.Property(e => e.Name).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("name");
@@ -31,8 +31,8 @@ public class EmployeeConfig : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.RoleId).HasColumnName("role_id");
         builder.HasOne<Company>(e => e.Company).WithMany(c => c.Employees)
             .HasForeignKey(e => e.CompanyId);
-        builder.HasOne<EmployeeAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)
-            .HasForeignKey<EmployeeAuth>(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<UserAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)
+            .HasForeignKey<UserAuth>(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(e => e.Role).WithMany(r => r.Employee).HasForeignKey(e => e.RoleId);
         builder.HasMany(e => e.EmployeeShifts).WithOne(es => es.Employee).HasForeignKey(es => es.EmployeeId)
             .OnDelete(DeleteBehavior.Cascade);

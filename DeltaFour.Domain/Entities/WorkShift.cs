@@ -20,7 +20,7 @@ namespace DeltaFour.Domain.Entities
         
         public Guid CreatedBy { get; set; }
         
-        public List<EmployeeShift>? EmployeeShifts { get; set; }
+        public List<UserShift>? EmployeeShifts { get; set; }
         
         public Company Company { get; set; }
     }

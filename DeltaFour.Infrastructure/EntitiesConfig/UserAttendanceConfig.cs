@@ -7,11 +7,11 @@ using Coordinates = DeltaFour.Domain.Entities.Coordinates;
 
 namespace DeltaFour.Infrastructure.EntitiesConfig
 {
-    public class EmployeeAttendanceConfig : IEntityTypeConfiguration<EmployeeAttendance>
+    public class UserAttendanceConfig : IEntityTypeConfiguration<UserAttendance>
     {
-        public void Configure(EntityTypeBuilder<EmployeeAttendance> builder)
+        public void Configure(EntityTypeBuilder<UserAttendance> builder)
         {
-            builder.ToTable("employee_attendance");
+            builder.ToTable("user_attendance");
             builder.HasKey(ea => ea.Id);
             builder.Property(ea => ea.Id).HasColumnName("id");
             builder.Property(ea => ea.EmployeeId).HasColumnName("employee_id").IsRequired();
@@ -24,11 +24,13 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
                     v => new Point(v.Longitude, v.Latitude) { SRID = 4326 },
                     v => new Coordinates(v.Y, v.X)).IsRequired().HasColumnType("point")
                 .HasColumnName("coord");
+            builder.Property(ea => ea.IsLate).HasColumnName("is_late");
+            builder.Property(ea => ea.TimeLate).HasColumnName("time_late");
             builder.Property(ea => ea.UpdatedAt).HasColumnName("updated_at");
             builder.Property(ea => ea.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ea => ea.CreatedBy).HasColumnName("created_by").IsRequired();
             builder.Property(ea => ea.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.HasOne<Employee>(ea => ea.Employee).WithMany(e => e.EmployeeAttendances)
+            builder.HasOne<User>(ea => ea.Employee).WithMany(e => e.EmployeeAttendances)
                 .HasForeignKey(ea => ea.EmployeeId);
         }
     }

@@ -49,8 +49,8 @@ namespace DeltaFour.Application.Service
                     }
 
                     dto.Password = hashPassowrd.ToString();
-                    Employee employee = EmployeeMapper.FromCreateDto(dto, role.Id, userAuthenticated);
-                    repository.EmployeeRepository.Create(employee);
+                    User user = EmployeeMapper.FromCreateDto(dto, role.Id, userAuthenticated);
+                    repository.EmployeeRepository.Create(user);
 
                     String imageForDecode = dto.ImageBase64.Split(',')[1];
 
@@ -59,14 +59,14 @@ namespace DeltaFour.Application.Service
                     var embeddingUser = pythonExe.ExtractEmbedding(imageBytes);
                     String embeddingSerialized = JsonConvert.SerializeObject(embeddingUser);
 
-                    EmployeeFace employeeFace =
-                        new EmployeeFace(employee.Id, embeddingSerialized, userAuthenticated.Id);
-                    repository.EmployeeFaceRepository.Create(employeeFace);
+                    UserFace userFace =
+                        new UserFace(user.Id, embeddingSerialized, userAuthenticated.Id);
+                    repository.EmployeeFaceRepository.Create(userFace);
 
-                    List<EmployeeShift> employeeShifts = new List<EmployeeShift>();
+                    List<UserShift> employeeShifts = new List<UserShift>();
                     foreach (var shift in dto.EmployeeShift)
                     {
-                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, employee.Id, userAuthenticated.Id));
+                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, user.Id, userAuthenticated.Id));
                     }
 
                     repository.EmployeeShiftRepository.CreateAll(employeeShifts);
@@ -77,14 +77,14 @@ namespace DeltaFour.Application.Service
 
         public async Task Update(EmployeeUpdateDto dto, UserContext userAuthenticated)
         {
-            Employee? employee = await repository.EmployeeRepository.FindIncluding(dto.Id);
+            User? employee = await repository.EmployeeRepository.FindIncluding(dto.Id);
             if (employee != null)
             {
                 EmployeeMapper.UpdateDataEmployeeByUpdateDto(dto, employee, userAuthenticated.Id);
                 repository.EmployeeRepository.Update(employee);
 
-                List<EmployeeShift> employeeShiftsCreate = new List<EmployeeShift>();
-                List<EmployeeShift> employeeShiftsUpdate = new List<EmployeeShift>();
+                List<UserShift> employeeShiftsCreate = new List<UserShift>();
+                List<UserShift> employeeShiftsUpdate = new List<UserShift>();
                 foreach (var shift in dto.EmployeeShift)
                 {
                     if (shift.Id == null)
@@ -101,7 +101,7 @@ namespace DeltaFour.Application.Service
                     }
                 }
 
-                List<EmployeeShift> employeeShiftsRemove = new List<EmployeeShift>();
+                List<UserShift> employeeShiftsRemove = new List<UserShift>();
                 foreach (var shift in employee.EmployeeShifts!)
                 {
                     if (!dto.EmployeeShift.Exists(shiftDto => shiftDto.Id == shift.Id))
@@ -129,7 +129,7 @@ namespace DeltaFour.Application.Service
 
         public async Task Delete(Guid employeeId)
         {
-            Employee? employee = await repository.EmployeeRepository.Find(e => e.Id == employeeId);
+            User? employee = await repository.EmployeeRepository.Find(e => e.Id == employeeId);
             if (employee != null)
             {
                 employee.IsActive = !employee.IsActive;
@@ -144,14 +144,8 @@ namespace DeltaFour.Application.Service
         public async Task<Boolean> CanPunchIn(CanPunchDto dto, UserContext user)
         {
             WorkShiftPunchDto? workShift =
-                await repository.WorkShiftRepository.GetByTimeAndEmployeeId(dto.TimePunched, user.Id, user.CompanyId);
-            if (workShift != null && (dto.PunchType == PunchType.IN &&
-                    dto.TimePunched.IsBetween(
-                        workShift.StartTime.AddMinutes(-workShift.ToleranceMinutes),
-                        workShift.StartTime.AddMinutes(workShift.ToleranceMinutes)) || dto.PunchType == PunchType.OUT &&
-                    dto.TimePunched.IsBetween(
-                        workShift.EndTime.AddMinutes(-workShift.ToleranceMinutes),
-                        workShift.EndTime.AddMinutes(workShift.ToleranceMinutes))))
+                await repository.WorkShiftRepository.GetByEmployeeIdAndIsActive(user.Id, user.CompanyId);
+            if (workShift != null && CheckTime(workShift, dto.TimePunched, dto.PunchType))
             {
                 return true;
             }
@@ -161,7 +155,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<PunchInResponse> PunchIn(PunchDto dto, UserContext user)
         {
-            Employee? employee = await repository.EmployeeRepository.FindForPunchIn(user.Id);
+            User? employee = await repository.EmployeeRepository.FindForPunchIn(user.Id);
             if (employee != null)
             {
                 if (!user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
@@ -199,24 +193,32 @@ namespace DeltaFour.Application.Service
                     throw new BadHttpRequestException("Ocorreu um erro");
                 }
 
-                byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
-                var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
 
-                if (embeddingToVerify != null && employee.EmployeeFaces != null)
+                WorkShift? ws = employee.EmployeeShifts?.Find(es => es.IsActive)?.WorkShift;
+                if (ws != null)
                 {
-                    double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
-                        JsonConvert.DeserializeObject<List<double>>(employee.EmployeeFaces.First().FaceTemplate)!);
-                    if (comparing < 75.0)
+                    byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
+                    var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
+
+                    if (embeddingToVerify != null && employee.EmployeeFaces != null)
                     {
-                        return PunchInResponse.FNC;
+                        double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
+                            JsonConvert.DeserializeObject<List<double>>(employee.EmployeeFaces.First().FaceTemplate)!);
+                        if (comparing < 75.0)
+                        {
+                            return PunchInResponse.FNC;
+                        }
+
+                        UserAttendance userAttendance =
+                            EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id,
+                                CheckTime(WorkShiftMapper.FromWorkShift(ws), TimeOnly.FromDateTime(dto.TimePunched), dto.Type));
+                        repository.EmployeeAttendanceRepository.Create(userAttendance);
+                        await repository.Save();
+
+                        return PunchInResponse.SCC;
+
                     }
 
-                    EmployeeAttendance employeeAttendance =
-                        EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
-                    repository.EmployeeAttendanceRepository.Create(employeeAttendance);
-                    await repository.Save();
-
-                    return PunchInResponse.SCC;
                 }
             }
 
@@ -225,9 +227,21 @@ namespace DeltaFour.Application.Service
 
         public async Task PunchForUser(PunchForUserDto dto, UserContext user)
         {
-            EmployeeAttendance employeeAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
-            repository.EmployeeAttendanceRepository.Create(employeeAttendance);
+            UserAttendance userAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
+            repository.EmployeeAttendanceRepository.Create(userAttendance);
             await repository.Save();
+        }
+
+        private Boolean CheckTime(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
+        {
+            if (type.Equals(PunchType.IN))
+            {
+                return ws.StartTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
+                       time <= ws.StartTime.AddMinutes(ws.ToleranceMinutes);
+            }
+
+            return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
+                   time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
         }
     }
 }

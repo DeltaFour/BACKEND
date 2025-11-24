@@ -8,40 +8,40 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class EmployeeShiftRepository(AppDbContext context) : IEmployeeShiftRepository
     {
-        public async Task<EmployeeShift?> Find(Expression<Func<EmployeeShift, bool>> predicate)
+        public async Task<UserShift?> Find(Expression<Func<UserShift, bool>> predicate)
         {
             return await context.EmployeeShifts.FirstOrDefaultAsync(predicate);
         }
         
-        public void Create(EmployeeShift employeeShift)
+        public void Create(UserShift userShift)
         {
-            context.EmployeeShifts.Add(employeeShift);
+            context.EmployeeShifts.Add(userShift);
         }
         
-        public void CreateAll(List<EmployeeShift> employeeShifts)
+        public void CreateAll(List<UserShift> employeeShifts)
         {
             context.EmployeeShifts.AddRange(employeeShifts);
         }
         
-        public void Update(EmployeeShift employeeShift)
+        public void Update(UserShift userShift)
         {
-            context.EmployeeShifts.Update(employeeShift);
+            context.EmployeeShifts.Update(userShift);
         }
 
-        public async Task<Boolean> FindAny(Expression<Func<EmployeeShift, bool>> predicate)
+        public async Task<Boolean> FindAny(Expression<Func<UserShift, bool>> predicate)
         {
             return await context.EmployeeShifts.AnyAsync(predicate);
         }
         
-        public void Delete(EmployeeShift employeeShift)
+        public void Delete(UserShift userShift)
         {
-            context.EmployeeShifts.Remove(employeeShift);
+            context.EmployeeShifts.Remove(userShift);
         }
-        public void UpdateAll(List<EmployeeShift> employeeShifts)
+        public void UpdateAll(List<UserShift> employeeShifts)
         {
             context.EmployeeShifts.UpdateRange(employeeShifts);
         }
-        public void DeleteAll(List<EmployeeShift> employeeShifts)
+        public void DeleteAll(List<UserShift> employeeShifts)
         {
             context.EmployeeShifts.RemoveRange(employeeShifts);
         }

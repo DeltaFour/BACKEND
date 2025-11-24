@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DeltaFour.Infrastructure.EntitiesConfig
 {
-    public class EmployeeFaceConfig : IEntityTypeConfiguration<EmployeeFace>
+    public class UserFaceConfig : IEntityTypeConfiguration<UserFace>
     {
-        public void Configure(EntityTypeBuilder<EmployeeFace> builder)
+        public void Configure(EntityTypeBuilder<UserFace> builder)
         {
-            builder.ToTable("employee_face");
+            builder.ToTable("user_face");
             builder.HasKey(ef => ef.Id);
             builder.Property(ef => ef.Id).HasColumnName("id");
             builder.Property(ef => ef.EmployeeId).HasColumnName("employee_id").IsRequired();
@@ -17,7 +17,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(ef => ef.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ef => ef.CreatedBy).HasColumnName("created_by").IsRequired();
             builder.Property(ef => ef.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.HasOne<Employee>(ef => ef.Employee).WithMany(e => e.EmployeeFaces)
+            builder.HasOne<User>(ef => ef.Employee).WithMany(e => e.EmployeeFaces)
                 .HasForeignKey(e => e.EmployeeId);
         }
     }

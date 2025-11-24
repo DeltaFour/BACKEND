@@ -27,6 +27,7 @@ namespace DeltaFour.Infrastructure.Repositories
                         Id = s.Id,
                         StartDate = s.StartDate,
                         EndDate = s.EndDate,
+                        IsActive = s.IsActive,
                         WorkShiftType = s.WorkShift!.ShiftType,
                         WorkShiftStartTime = s.WorkShift.StartTime,
                         WorkShiftEndTime = s.WorkShift.EndTime,
@@ -35,33 +36,34 @@ namespace DeltaFour.Infrastructure.Repositories
                 }).ToListAsync();
         }
 
-        public async Task<Employee?> FindIncludingRole(Expression<Func<Employee, bool>> predicate)
+        public async Task<User?> FindIncludingRole(Expression<Func<User, bool>> predicate)
         {
             return await context.Employees.Where(predicate).Include(e => e.Role)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<bool> FindAny(Expression<Func<Employee, bool>> predicate)
+        public async Task<bool> FindAny(Expression<Func<User, bool>> predicate)
         {
             return await context.Employees.AnyAsync(predicate);
         }
-        public async Task<Employee?> FindIncluding(Guid id)
+        public async Task<User?> FindIncluding(Guid id)
         {
             return await context.Employees.Where(e => e.Id == id)
                 .Include(e => e.EmployeeShifts).SingleOrDefaultAsync();
         }
 
-        public async Task<Employee?> FindForPunchIn(Guid id)
+        public async Task<User?> FindForPunchIn(Guid id)
         {
             return await context.Employees.Where(e => e.Id == id).Include(e => e.EmployeeFaces)
-                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation).FirstOrDefaultAsync();
+                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
+                .Include(e => e.EmployeeShifts).FirstOrDefaultAsync();
         }
 
-        public void Create(Employee employee)
+        public void Create(User user)
         {
-            context.Employees.Add(employee);
+            context.Employees.Add(user);
         }
-        public async Task<TreatedUserInformationDto?> FindUserInformation(String email, TimeOnly time)
+        public async Task<TreatedUserInformationDto?> FindUserInformation(String email)
         {
             return await context.Employees.Where(e => e.Email == email).Select(e => new TreatedUserInformationDto()
             {
@@ -77,7 +79,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 CompanyId = e.CompanyId,
                 CompanyName = e.Company.Name,
                 EmployeeShift =
-                    e.EmployeeShifts!.Where(es => time.IsBetween(es.WorkShift!.StartTime, es.WorkShift!.EndTime))
+                    e.EmployeeShifts!.Where(es => es.IsActive == true)
                         .Select(es => new EmployeeShiftInformationDto()
                         {
                             StartDate = es.StartDate,
@@ -99,12 +101,12 @@ namespace DeltaFour.Infrastructure.Repositories
             }).FirstOrDefaultAsync();
         }
 
-        public void Update(Employee employee)
+        public void Update(User user)
         {
-            context.Employees.Update(employee);
+            context.Employees.Update(user);
         }
 
-        public async Task<Employee?> Find(Expression<Func<Employee, bool>> predicate)
+        public async Task<User?> Find(Expression<Func<User, bool>> predicate)
         {
             return await context
                 .Employees

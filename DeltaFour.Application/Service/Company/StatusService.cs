@@ -11,20 +11,11 @@ public class StatusService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Active(Guid companyId)
+    public async Task ChangeStatus(Guid companyId)
     {
         var company = await _unitOfWork.CompanyRepository.Find(c => c.Id == companyId);
 
-        company!.IsActive = true;
-
-        await _unitOfWork.Save();
-    }
-
-    public async Task Desactive(Guid companyId)
-    {
-        var company = await _unitOfWork.CompanyRepository.Find(c => c.Id == companyId);
-
-        company!.IsActive = false;
+        company!.IsActive = !company.IsActive;
 
         await _unitOfWork.Save();
     }

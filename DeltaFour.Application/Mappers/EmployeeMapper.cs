@@ -6,9 +6,9 @@ namespace DeltaFour.Application.Mappers
 {
     public static class EmployeeMapper
     {
-        public static Employee FromCreateDto(EmployeeCreateDto dto, Guid roleId, UserContext createdBy)
+        public static User FromCreateDto(EmployeeCreateDto dto, Guid roleId, UserContext createdBy)
         {
-            return new Employee()
+            return new User()
             {
                 CompanyId = createdBy.CompanyId,
                 RoleId = roleId,
@@ -23,7 +23,7 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, Employee e, Guid userAuthenticatedId)
+        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, User e, Guid userAuthenticatedId)
         {
             e.Name = dto.Name;
             e.Cellphone = dto.CellPhone;

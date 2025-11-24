@@ -30,7 +30,7 @@ namespace DeltaFour.API.Controllers
             return Ok(service.MapUserInfo(user));
         }
 
-        [HttpPost("check-session")]
+        [HttpGet("check-session")]
         public IActionResult CheckSession()
         {
             var user = HttpContext.User;
