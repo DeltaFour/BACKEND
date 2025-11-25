@@ -9,6 +9,8 @@ namespace DeltaFour.Application.Dtos
 
         public String? CompanyName { get; set; }
 
+        public string? Role { get; set; }
+
         public DateTime? StartDate { get; set; }
 
         public ShiftType? ShiftType { get; set; }

@@ -28,7 +28,25 @@ builder.Services.AddPolicies(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var allowedHost = Environment.GetEnvironmentVariable("ALLOWED_HOST")!;
+var frontendCors = "frontendCors";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: frontendCors,
+                      policy =>
+                      {
+                          policy
+                          .WithOrigins(allowedHost)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                      });
+});
+
 var app = builder.Build();
+
+app.UseCors(frontendCors);
 
 AppDomain.CurrentDomain.ProcessExit += (s, e) => PythonEngine.Shutdown();
 

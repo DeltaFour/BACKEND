@@ -39,6 +39,7 @@ namespace DeltaFour.Application.Mappers
             {
                 Name = dto.Name,
                 CompanyName = dto.CompanyName,
+                Role = dto.RoleName,
                 StartDate = dto.EmployeeShift?.StartDate!,
                 ShiftType = dto.EmployeeShift?.ShiftType!,
                 StartTime = dto.EmployeeShift?.StartTime!,
