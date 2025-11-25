@@ -5,7 +5,7 @@ namespace DeltaFour.Application.Mappers
 {
     public static class EmployeeAttendanceMapper
     {
-        public static UserAttendance EmployeeAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate)
+        public static UserAttendance EmployeeAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
         {
             return new UserAttendance()
             {

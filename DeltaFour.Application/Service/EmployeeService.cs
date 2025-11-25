@@ -209,16 +209,19 @@ namespace DeltaFour.Application.Service
                             return PunchInResponse.FNC;
                         }
 
+                        Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(ws),
+                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                        
                         UserAttendance userAttendance =
                             EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id,
-                                CheckTime(WorkShiftMapper.FromWorkShift(ws), TimeOnly.FromDateTime(dto.TimePunched), dto.Type));
+                                timeCheked, timeCheked ? null : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                                 TimeOnly.FromDateTime(DateTime.UtcNow)));
                         repository.EmployeeAttendanceRepository.Create(userAttendance);
                         await repository.Save();
 
                         return PunchInResponse.SCC;
 
                     }
-
                 }
             }
 

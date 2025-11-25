@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers
 {
-    [Route("api/workshift")]
+    [Route("api/v1/workshift")]
     [ApiController]
     public class WorkShiftController(WorkShiftService service) : Controller
     {
-        [HttpGet]
+        [HttpGet("list")]
         [Authorize]
         public async Task<ActionResult<List<WorkShiftResponseDto>?>> Get()
         {
@@ -20,7 +20,7 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.Get(user.CompanyId));
         }
         
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize]
         public async Task<IActionResult> Post([FromBody] WorkShiftDto dto)
         {
@@ -29,7 +29,7 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("update")]
         [Authorize]
         public async Task<IActionResult> Put([FromBody] WorkShiftUpdateDto dto)
         {
@@ -38,7 +38,7 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        [HttpDelete("{workShiftId}")]
+        [HttpDelete("change-status/{workShiftId}")]
         [Authorize]
         public async Task<IActionResult> Delete(Guid workShiftId)
         {

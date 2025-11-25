@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace DeltaFour.API.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/v1/auth")]
     public class AuthController(AuthService service) : Controller
     {
         [HttpPost("login")]

@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers
 {
-    [Route("api/user")]
+    [Route("api/v1/user")]
     [Authorize]
     [ApiController]
-    public class EmployeeController(EmployeeService service) : Controller
+    public class UserController(EmployeeService service) : Controller
     {
-        [HttpGet]
+        [HttpGet("list")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
         {
@@ -22,7 +22,7 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.GetAllByCompany(employee.CompanyId));
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
         {
@@ -31,7 +31,7 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("update")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
         {
@@ -40,9 +40,9 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        [HttpDelete("{employeeId}")]
+        [HttpDelete("change-status/{employeeId}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> Delete(Guid employeeId)
+        public async Task<IActionResult> ChangeStatus(Guid employeeId)
         {
             await service.Delete(employeeId);
             return Ok();

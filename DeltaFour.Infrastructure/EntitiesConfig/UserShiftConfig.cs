@@ -23,5 +23,6 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasOne<WorkShift>(es => es.WorkShift).WithMany(e => e.EmployeeShifts)
                 .HasForeignKey(es => es.ShiftId);
         }
+        
     }
 }

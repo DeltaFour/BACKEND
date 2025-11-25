@@ -56,7 +56,7 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.Employees.Where(e => e.Id == id).Include(e => e.EmployeeFaces)
                 .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
-                .Include(e => e.EmployeeShifts).FirstOrDefaultAsync();
+                .Include(e => e.EmployeeShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
         }
 
         public void Create(User user)
