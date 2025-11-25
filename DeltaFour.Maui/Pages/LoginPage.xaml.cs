@@ -18,9 +18,9 @@ public partial class LoginPage : ContentPage
 {
     bool _hidePassword = true;
     private ISession? session;
-    private readonly IApiAuthService authService;
+    private readonly IApiService authService;
 
-    public LoginPage(ISession session, IApiAuthService authService)
+    public LoginPage(ISession session, IApiService authService)
     {
         InitializeComponent();
         HandlerChanged += OnHandlerChanged;

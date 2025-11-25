@@ -29,12 +29,22 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton<ISession, Session>();
         builder.Services.AddSingleton<AppShell>();
+#if ANDROID
+        builder.Services.AddTransient<CustomAuthHandler>();
+#endif
         builder.Services.AddSingleton(sp =>
         {
-            var innerHandler = new HttpClientHandler();
-            var loggingHandler = new LoggingHandler(innerHandler);
+            var httpClientHandler = new HttpClientHandler();
+            HttpMessageHandler handler = httpClientHandler;
 
-            var client = new HttpClient(loggingHandler)
+#if ANDROID
+            handler = new LoggingHandler(handler);
+            var authHandler = sp.GetRequiredService<CustomAuthHandler>();
+            authHandler.InnerHandler = handler;
+            handler = authHandler;
+#endif
+
+            var client = new HttpClient(handler)
             {
                 BaseAddress = new Uri("https://zb3467wz-5212.brs.devtunnels.ms/"),
                 Timeout = TimeSpan.FromSeconds(30)
@@ -43,7 +53,7 @@ public static class MauiProgram
             return client;
         });
 
-        builder.Services.AddSingleton<IApiAuthService, ApiAuthService>();
+        builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddTransient<LoginPage>();
         return builder.Build();
     }

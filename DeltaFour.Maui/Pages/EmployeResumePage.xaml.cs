@@ -1,8 +1,8 @@
 using DeltaFour.Maui.Local;
 using DeltaFour.Maui.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 namespace DeltaFour.Maui.Pages;
 public partial class EmployeResume : ContentPage
@@ -14,7 +14,7 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Usuário local carregado na tela.
     /// </summary>
-    private IApiAuthService authService;
+    private IApiService authService;
     private LocalUser? _user;
     /// <summary>
     /// Indica se o usuário está em expediente no turno atual.
@@ -72,6 +72,8 @@ public partial class EmployeResume : ContentPage
     /// Texto que descreve o tipo de turno.
     /// </summary>
     public string ShiftTypeText { get; private set; } = "";
+    public string GreetingPrefix { get; private set; } = "Olá ";
+
     /// <summary>
     /// Data em que o turno começou a valer.
     /// </summary>
@@ -148,7 +150,6 @@ public partial class EmployeResume : ContentPage
     /// </summary>
     async void OnLogoutClicked(object? sender, EventArgs e)
     {
-        // Garante que temos sessão + serviço
         if (!TryResolveDependencies())
         {
             await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
@@ -185,12 +186,41 @@ public partial class EmployeResume : ContentPage
             return false;
 
         session ??= services.GetRequiredService<ISession>();
-        authService ??= services.GetRequiredService<IApiAuthService>();
+        authService ??= services.GetRequiredService<IApiService>();
 
         return true;
     }
 
+    private void UpdateGreetingPrefix(DateTime nowBrt)
+    {
+        var baseGreetings = new[]
+        {
+        "Olá ",
+        "Bem-vindo "
+        };
 
+        var candidates = new List<string>(baseGreetings);
+
+        var hour = nowBrt.Hour;
+
+        if (hour >= 5 && hour < 12)
+        {
+            candidates.Add("Bom dia ");
+        }
+        else if (hour >= 12 && hour < 18)
+        {
+            candidates.Add("Boa tarde ");
+        }
+        else
+        {
+            candidates.Add("Boa noite ");
+        }
+
+        var index = Random.Shared.Next(candidates.Count);
+        GreetingPrefix = candidates[index];
+
+        OnPropertyChanged(nameof(GreetingPrefix));
+    }
     /// <summary>
     /// Evento de ciclo de vida chamado quando a página aparece.
     /// </summary>
@@ -204,6 +234,7 @@ public partial class EmployeResume : ContentPage
             LoadUserIfChanged();
 
         var nowBrt = GetNowBrt();
+        UpdateGreetingPrefix(nowBrt);
         UpdateRing(nowBrt);
         UpdateActionButtonState(nowBrt);
         UpdateLblHoje();
@@ -403,7 +434,7 @@ public partial class EmployeResume : ContentPage
         {
             IsActionButtonEnabled = false;
             ActionButtonText = "Aguardar Expediente";
-            ActionButtonBackground = Colors.Gray;
+            ActionButtonBackground = Color.FromArgb("#a1a1a1");
             NotifyActionButtonBindings();
             return;
         }
@@ -446,7 +477,7 @@ public partial class EmployeResume : ContentPage
             // Turno já fechado (OUT registrado para esse turno)
             IsActionButtonEnabled = false;
             ActionButtonText = "Expediente Encerrado";
-            ActionButtonBackground = Colors.Gray;
+            ActionButtonBackground = Color .FromArgb("#a1a1a1");
         }
         else if (!_isInNow)
         {
@@ -455,7 +486,7 @@ public partial class EmployeResume : ContentPage
             {
                 IsActionButtonEnabled = false;
                 ActionButtonText = "Aguardar Expediente";
-                ActionButtonBackground = Colors.Gray;
+                ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
             else if (inEntryWindow)
             {
@@ -475,7 +506,7 @@ public partial class EmployeResume : ContentPage
                 // Turno deste ciclo já passou inteiro -> aguarda próximo ciclo
                 IsActionButtonEnabled = false;
                 ActionButtonText = "Aguardar Expediente";
-                ActionButtonBackground = Colors.Gray;
+                ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
         }
         else
@@ -485,7 +516,7 @@ public partial class EmployeResume : ContentPage
             {
                 IsActionButtonEnabled = false;
                 ActionButtonText = "Aguardar Saída";
-                ActionButtonBackground = Colors.Gray;
+                ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
             else if (inExitWindow)
             {
@@ -506,7 +537,7 @@ public partial class EmployeResume : ContentPage
                 // Já passou inclusive a janela de tardia -> considera turno fechado
                 IsActionButtonEnabled = false;
                 ActionButtonText = "Aguardar Expediente";
-                ActionButtonBackground = Colors.Gray;
+                ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
         }
 
@@ -516,12 +547,39 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Manipula o clique no botão principal de ação e registra nova batida.
     /// </summary>
-    private void OnActionButtonClicked(object? sender, EventArgs e)
+    private async void OnActionButtonClicked(object? sender, EventArgs e)
     {
         if (_user == null || !IsActionButtonEnabled)
             return;
+
+        if (!TryResolveDependencies())
+            return;
+
+
         var nowBrt = GetNowBrt();
         var punchingOut = _isInNow;
+
+        bool canPunch;
+        try
+        {
+            canPunch = await authService!.CanPunchAsync(nowBrt, punchingOut);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Erro ao validar ponto: {ex}");
+            await DisplayAlert("Erro", "Não foi possível validar o registro de ponto.", "OK");
+            return;
+        }
+
+        if (!canPunch)
+        {
+            await DisplayAlert("Aviso", "No momento não é permitido registrar o ponto.", "OK");
+        } else
+        {
+            await DisplayAlert("Aviso", "API ALLOWED CORRIJIDO.", "OK");
+        }
+        await Shell.Current.GoToAsync("//MainTabs/FaceRegisterPage");
+        return;
         var newType = punchingOut ? "OUT" : "IN";
         var utcNow = ToUtcAssumingBrt(nowBrt);
         var activity = new RecentActivity
@@ -556,8 +614,8 @@ public partial class EmployeResume : ContentPage
         if (!_hasLastPunch)
         {
             StatusText = "Sem Registro";
-            StatusColor = Colors.Gray;
-            StatusFrameBackground = Colors.Transparent;
+            StatusColor = Color.FromArgb("#A1A1A1");
+            StatusFrameBackground = Color.FromArgb("#1A989898");
             return;
         }
         if (_lastWasOut)
@@ -884,6 +942,7 @@ public partial class EmployeResume : ContentPage
     /// </summary>
     private void NotifyHeaderBindings()
     {
+        OnPropertyChanged(nameof(GreetingPrefix));
         OnPropertyChanged(nameof(GreetingText));
         OnPropertyChanged(nameof(StartTimeBrt));
         OnPropertyChanged(nameof(EndTimeBrt));

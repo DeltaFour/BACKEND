@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Shell.TabBarIsVisible="False"
     Shell.NavBarIsVisible="True"
     Shell.BackgroundColor="{StaticResource Surface}"
         >
@@ -12,7 +13,7 @@
             <Label Style="{StaticResource CardTitle}">
                 <Label.FormattedText>
                     <FormattedString>
-                        <Span Text="Olá " />
+                        <Span Text="{Binding GreetingPrefix}" />
                         <Span Text="{Binding GreetingText}" TextColor="{StaticResource Primary}" FontAttributes="Bold"/>
                         <Span Text="!" />
                     </FormattedString>
@@ -26,7 +27,7 @@
         <ToolbarItem Order="Secondary" Text="Sair" Clicked="OnLogoutClicked"/>
     </ContentPage.ToolbarItems>
     <Grid
-        Padding="20"
+        Padding="17.5"
         RowSpacing="20"
         BackgroundColor="{StaticResource Surface}"
         RowDefinitions="Auto,Auto,Auto,Auto,*">
@@ -259,6 +260,7 @@
                    Text="{Binding StatusText}"
                    FontAttributes="Bold"
                    FontSize="12"
+                                   
                    TextColor="{Binding StatusColor}"
                    VerticalOptions="Center" />
                         </Grid>
@@ -352,7 +354,7 @@
             ColumnDefinitions="*,Auto"
             Margin="0,8,0,0">
             <Label
-                Text="Atividade recente"
+                Text="Atividades recentes"
                 FontFamily="OpenSansRegular"
                 FontAttributes="Bold"
                 FontSize="18" />
@@ -367,7 +369,14 @@
             VerticalScrollBarVisibility="Never"
             HorizontalOptions="Fill"
             >
-
+            <CollectionView.EmptyView>
+                <Grid>
+                    <Label HorizontalTextAlignment="Center" 
+                           Text="Não há registros para exibir no momento."
+                           TextColor="#6B7280"
+                           />
+                </Grid>
+            </CollectionView.EmptyView>
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="2" />
             </CollectionView.ItemsLayout>

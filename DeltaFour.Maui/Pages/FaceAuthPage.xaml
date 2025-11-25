@@ -6,40 +6,67 @@
     xmlns:c="clr-namespace:DeltaFour.Maui.Controls"
     xmlns:local="clr-namespace:DeltaFour.Maui.Local"
     Shell.NavBarIsVisible="False"
-    Shell.TabBarIsVisible="True"
+    Shell.TabBarIsVisible="False"
     Title="Cadastro Facial">
 
     <Grid>
 
+        <VerticalStackLayout
+        Spacing="8"
+        Padding="16,48,16,15"
+        HorizontalOptions="Fill"
+        VerticalOptions="Start"
+        ZIndex="1"
+        BackgroundColor="#1e2d69">
+            <Label Text="Registrar ponto eletrônico"
+               TextColor="#F5F8FB"
+               FontSize="20"
+               FontAttributes="Bold" />
+            <Label Text="Aponte a câmera para o rosto e mantenha dentro da área."
+               TextColor="#CCFFFFFF"
+               FontSize="14"
+               LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+
+        <Grid>
+
             <c:CameraView x:Name="Preview"
                       IsActive="True"
-                      Lens="Front"
-                      Margin="0,116,0,0"
-                      HeightRequest="666"
-                      />
+                      Lens="Front" />
 
-        <GraphicsView
+            <GraphicsView x:Name="FacesOverlay"
+                      HorizontalOptions="Fill"
+                      VerticalOptions="Fill" />
+
+            <GraphicsView
             Drawable="{x:Static local:FaceOverlayDrawable.Instance}"
             HorizontalOptions="Fill"
             VerticalOptions="Fill" />
-
-        <VerticalStackLayout
-            Spacing="8"
-            Padding="16,48,16,15"
-            HorizontalOptions="Fill"
-            VerticalOptions="Start"
-            BackgroundColor="#1e2d69"
-            >
-            
-            <Label Text="Registrar ponto eletrônico"
-                   TextColor="#F5F8FB"
+        </Grid>
+        <VerticalStackLayout ZIndex="3" Spacing="8"
+                Padding="16,20,16,15"
+                HorizontalOptions="Fill"
+                BackgroundColor="#A1000000"
+  
+                VerticalOptions="End">
+            <HorizontalStackLayout HorizontalOptions="Center">
+                <Label Text="Rosto não detectado!"
+                   HorizontalTextAlignment="Center"
+                   TextColor="#CCF5F8FB"
                    FontSize="20"
-                   FontAttributes="Bold" />
-            <Label Text="Aponte a câmera para o rosto e mantenha dentro da área."
-                   TextColor="#CCFFFFFF"
-                   FontSize="14"
-                   LineBreakMode="WordWrap" />
-        </VerticalStackLayout>
+                   FontAttributes="Bold"/>
+                <Path Data="M819-26 528-318l-16 78H352l40-204-72 28v136h-80v-188l96-41L27-818l57-57L876-83l-57 57ZM160-80q-33 0-56.5-23.5T80-160v-120h80v120h120v80H160Zm640-600v-120H680v-80h120q33 0 56.5 23.5T880-800v120h-80Zm-720 0v-120q0-17 6.5-31.5T103-857l57 58v119H80ZM680-80v-80h119l57 56q-10 11-24.5 17.5T800-80H680ZM273-800l-80-80h87v80h-7Zm607 607-80-80v-7h80v87ZM540-580q-33 0-56.5-23.5T460-660q0-33 23.5-56.5T540-740q33 0 56.5 23.5T620-660q0 33-23.5 56.5T540-580Z"
+                      Fill="#CCF5F8FB"
+                      HorizontalOptions="Center"
+                      Margin="20,0,0,0"
+                      Aspect="Fill"
+                      WidthRequest="34"
+                      HeightRequest="34"
+                      />
+            </HorizontalStackLayout>
 
+             
+        </VerticalStackLayout>
     </Grid>
+
 </ContentPage>

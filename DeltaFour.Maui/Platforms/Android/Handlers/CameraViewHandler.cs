@@ -1,4 +1,4 @@
-﻿// Platforms/Android/Handlers/CameraPreviewHandler.Android.cs  (handler + mappers)
+﻿// Platforms/Android/Handlers/CameraPreviewHandler.Android.cs
 #if ANDROID
 using AndroidX.Activity;
 using AndroidX.Camera.View;
@@ -35,12 +35,27 @@ namespace DeltaFour.Maui.Handlers
         protected override void ConnectHandler(PreviewView platformView)
         {
             base.ConnectHandler(platformView);
+
+            // liga o callback de faces do serviço ao VirtualView
+            _service.FacesDetected = (faces, width, height, rotation) =>
+            {
+                Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    var v = VirtualView;
+                    if (v is null) return;
+
+                    // método / evento interno do CameraView para repassar as faces
+                    v.OnFacesDetected(faces, width, height, rotation);
+                });
+            };
+
             if (VirtualView?.IsActive == true)
                 StartCamera();
         }
 
         protected override void DisconnectHandler(PreviewView platformView)
         {
+            _service.FacesDetected = null;
             _service.StopCamera();
             base.DisconnectHandler(platformView);
         }
@@ -58,23 +73,25 @@ namespace DeltaFour.Maui.Handlers
             if (v.IsActive) h.StartCamera();
         }
 
-        static void MapStart(CameraViewHandler h, CameraView v, object? p)
+        static void MapStart(CameraViewHandler h, CameraView v, object? _)
             => h.StartCamera();
 
-        static void MapStop(CameraViewHandler h, CameraView v, object? p)
+        static void MapStop(CameraViewHandler h, CameraView v, object? _)
             => h._service.StopCamera();
 
         void StartCamera()
         {
             if (PlatformView is null || VirtualView is null) return;
 
-            var activity = Context as ComponentActivity ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as ComponentActivity;
+            var activity = Context as ComponentActivity
+                           ?? Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as ComponentActivity;
             var owner = activity as ILifecycleOwner;
             if (owner is null) return;
 
             _ = _service.EnsurePermissionsAsync().ContinueWith(t =>
             {
                 if (!t.Result) return;
+
                 Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
                 {
                     _service.StartCameraAsync(PlatformView, Context, owner, VirtualView.Lens);

@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DeltaFour.Maui.Services
+namespace DeltaFour.Maui.Handlers
 {
     public sealed class LoggingHandler : DelegatingHandler
     {
