@@ -1,6 +1,5 @@
 ﻿import face_recognition
 import numpy as np
-from fastapi import FastAPI, UploadFile, File, Form
 from io import BytesIO
 from PIL import Image
 
