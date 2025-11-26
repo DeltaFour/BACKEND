@@ -24,4 +24,9 @@ namespace DeltaFour.Maui.Dto
         public string PunchType { get; set; } = "";
         public string ShiftType { get; set; } = "";
     }
+    public sealed class ApiUserRefreshDto
+    {
+        public string? LastPunchType { get; set; }
+        public List<ApiEmployeeAttendanceDto>? LastsEmployeeAttendances { get; set; }
+    }
 }

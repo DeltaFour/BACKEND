@@ -119,15 +119,15 @@ public partial class LoginPage : ContentPage
             {
                 Name = "Carlos Mendes",
                 ShiftType = "Noturno",
-                StartTime = startBrt,   // BRT + Unspecified
-                EndTime = endBrt,       // BRT + Unspecified
+                StartTime = startBrt,
+                EndTime = endBrt,     
                 CompanyName = "DeltaFour Tech",
                 ToleranceMinutes = 10,
                 RecentActivities = new List<RecentActivity>
                 {
                     new()
                     {
-                        PunchTime = outBrt, // BRT + Unspecified
+                        PunchTime = outBrt,
                         PunchType = "OUT",
                         ShiftType = "Noturno"
                     }
@@ -141,9 +141,17 @@ public partial class LoginPage : ContentPage
             ((App)Application.Current).EnterShell();
             await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
         }
-        catch (Exception ex)
+        catch (ApiUnavailableException)
         {
-            await DisplayAlert("Erro", ex.ToString(), "ok");
+            await DisplayAlert("Erro", "Servidor indisponível. Verifique sua conexão ou tente novamente mais tarde.", "OK");
+        }
+        catch (ApiException ex)
+        {
+            await DisplayAlert("Erro", ex.Message, "OK");
+        }
+        catch (Exception)
+        {
+            await DisplayAlert("Erro", "Ocorreu um erro inesperado.", "OK");
         }
         finally
         {

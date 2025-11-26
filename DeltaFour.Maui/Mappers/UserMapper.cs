@@ -1,44 +1,61 @@
 ﻿using DeltaFour.Maui.Dto;
+using DeltaFour.Maui.Local;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace DeltaFour.Maui.Local
+namespace DeltaFour.Maui.Mappers
 {
     public static class UserMapper
     {
         public static LocalUser ToLocalUser(ApiUserDto dto)
         {
-            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
 
-            var start = CombineDateAndTime(dto.StartDate, dto.StartTime);
-            var end = CombineDateAndTime(dto.StartDate, dto.EndTime);
 
-            if (end <= start)
-                end = end.AddDays(1);
+            DateTime start = default;
+            DateTime end = default;
+
+            bool hasSchedule =
+                dto.StartDate != default &&
+                !string.IsNullOrWhiteSpace(dto.StartTime) &&
+                !string.IsNullOrWhiteSpace(dto.EndTime);
+
+            if (hasSchedule)
+            {
+                start = CombineDateAndTime(dto.StartDate, dto.StartTime);
+                end = CombineDateAndTime(dto.StartDate, dto.EndTime);
+
+                if (end <= start)
+                    end = end.AddDays(1);
+            }
 
             return new LocalUser
             {
-                Name = dto.Name,
-                CompanyName = dto.CompanyName,
-                ShiftType = dto.ShiftType,
+                Name = dto.Name ?? string.Empty,
+                CompanyName = dto.CompanyName ?? string.Empty,
+                ShiftType = dto.ShiftType ?? string.Empty,
                 StartTime = start,
                 EndTime = end,
                 ToleranceMinutes = 10,
                 RecentActivities = dto.LastsEmployeeAttendances?
+                    .Where(a => a != null)
                     .Select(ToRecentActivity)
-                    .ToList() ?? new List<RecentActivity>()
+                    .ToList()
+                    ?? new List<RecentActivity>()
             };
         }
 
         private static RecentActivity ToRecentActivity(ApiEmployeeAttendanceDto src)
         {
-            if (src == null) throw new ArgumentNullException(nameof(src));
+            if (src == null)
+                throw new ArgumentNullException(nameof(src));
 
             return new RecentActivity
             {
-                PunchTime = src.PunchTime,
+                PunchTime = src.PunchTime,   
                 PunchType = src.PunchType,
                 ShiftType = src.ShiftType
             };
@@ -60,6 +77,44 @@ namespace DeltaFour.Maui.Local
                 timeOfDay.Minutes,
                 timeOfDay.Seconds,
                 DateTimeKind.Unspecified);
+        }
+
+
+        /// <summary>
+        /// Atualiza as batidas recentes de um usuário já carregado,
+        /// usando o payload enxuto de /api/v1/user/refresh-information.
+        /// Não mexe em Name, CompanyName, StartTime, EndTime etc.
+        /// </summary>
+        public static void ApplyRefresh(LocalUser target, ApiUserRefreshDto refresh)
+        {
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (refresh == null)
+                throw new ArgumentNullException(nameof(refresh));
+
+            if (refresh.LastsEmployeeAttendances == null ||
+                refresh.LastsEmployeeAttendances.Count == 0)
+            {
+                return;
+            }
+
+            target.RecentActivities ??= new List<RecentActivity>();
+
+            foreach (var src in refresh.LastsEmployeeAttendances)
+            {
+                if (src == null)
+                    continue;
+
+                var act = ToRecentActivity(src);
+
+                bool exists = target.RecentActivities.Any(x =>
+                    x.PunchTime == act.PunchTime &&
+                    string.Equals(x.PunchType, act.PunchType, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ShiftType, act.ShiftType, StringComparison.OrdinalIgnoreCase));
+
+                if (!exists)
+                    target.RecentActivities.Add(act);
+            }
         }
     }
 }

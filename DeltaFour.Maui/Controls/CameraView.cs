@@ -1,4 +1,5 @@
 ﻿#if ANDROID
+using DeltaFour.Maui.Handlers;
 using System.Collections.Generic;
 using MLFace = Xamarin.Google.MLKit.Vision.Face.Face;
 #endif
@@ -35,5 +36,13 @@ namespace DeltaFour.Maui.Controls
         internal void OnFacesDetected(IList<MLFace> faces, int width, int height, int rotation)
             => FacesDetected?.Invoke(faces, width, height, rotation);
 #endif
+        public Task<string?> CaptureBase64Async(CancellationToken cancellationToken = default)
+        {
+#if ANDROID
+            if (Handler is CameraViewHandler handler)
+                return handler.CaptureBase64Async(cancellationToken);
+#endif
+            return Task.FromResult<string?>(null);
+        }
     }
 }

@@ -11,4 +11,17 @@ namespace DeltaFour.Maui.Dto
         public string TimePunched { get; set; } = "";
         public string PunchType { get; set; } = "";
     }
+    public sealed class PunchInDto
+    {
+        public string Type { get; set; } = "";
+
+        public string TimePunched { get; set; } = "";
+
+        public string ImageBase64 { get; set; } = "";
+
+        public string ShiftType { get; set; } = "";
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+    }
 }

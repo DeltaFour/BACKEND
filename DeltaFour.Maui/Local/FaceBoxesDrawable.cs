@@ -89,7 +89,18 @@ namespace DeltaFour.Maui.Local
             float scaleX = viewW / ih;
             float scaleY = viewH / iw;
 
-            const float SmoothFactor = 0.2f; // 0 = sem suavizar, 1 = travado no passado
+            // Escala uniforme para não distorcer
+            float scale = MathF.Min(scaleX, scaleY);
+
+            float scaledW = ih * scale;
+            float scaledH = iw * scale;
+
+            float offsetX = dirtyRect.Left + (viewW - scaledW) / 2f;
+            float offsetY = dirtyRect.Top + (viewH - scaledH) / 2f;
+
+            const float SmoothFactor = 0.2f;  
+            const float shrink = 1f;           
+            const float heightMultiplier = 1.2f; 
 
             int index = 0;
             foreach (var face in faces)
@@ -116,17 +127,18 @@ namespace DeltaFour.Maui.Local
                     right = mirroredRight;
                 }
 
-                float vx = dirtyRect.Left + left * scaleX;
-                float vy = dirtyRect.Top + top * scaleY;
-                float vw = (right - left) * scaleX;
-                float vh = (bottom - top) * scaleY;
+                float vx = offsetX + left * scale;
+                float vy = offsetY + top * scale;
+                float vw = (right - left) * scale;
+                float vh = (bottom - top) * scale;
 
-                // Mantém o centro, opcionalmente reduz/expande a caixa
-                const float shrink = 1f;
+                // Mantém o centro, ajustando shrink + heightMultiplier
                 float cx = vx + vw / 2f;
                 float cy = vy + vh / 2f;
+
                 vw *= shrink;
-                vh *= shrink;
+                vh *= shrink * heightMultiplier; // altura controlada aqui
+
                 vx = cx - vw / 2f;
                 vy = cy - vh / 2f;
 

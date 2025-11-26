@@ -1,5 +1,6 @@
 ﻿// Platforms/Android/Handlers/CameraPreviewHandler.Android.cs
 #if ANDROID
+using Android.Hardware.Camera2;
 using AndroidX.Activity;
 using AndroidX.Camera.View;
 using AndroidX.Lifecycle;
@@ -26,7 +27,8 @@ namespace DeltaFour.Maui.Handlers
             };
 
         readonly CameraService _service = new();
-
+        public Task<string?> CaptureBase64Async(CancellationToken cancellationToken = default)
+            => _service.CapturePhotoBase64Async(cancellationToken);
         public CameraViewHandler() : base(Mapper, CommandMapper) { }
 
         protected override PreviewView CreatePlatformView()

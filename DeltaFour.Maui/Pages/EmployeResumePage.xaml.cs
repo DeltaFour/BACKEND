@@ -14,8 +14,9 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Usuário local carregado na tela.
     /// </summary>
-    private IApiService authService;
+    private IApiService apiService;
     private LocalUser? _user;
+    private bool _firstAppearing = true;
     /// <summary>
     /// Indica se o usuário está em expediente no turno atual.
     /// </summary>
@@ -158,7 +159,7 @@ public partial class EmployeResume : ContentPage
 
         try
         {
-            await authService!.LogoutAsync();
+            await apiService!.LogoutAsync();
         }
         catch (Exception ex)
         {
@@ -175,7 +176,7 @@ public partial class EmployeResume : ContentPage
 
     private bool TryResolveDependencies()
     {
-        if (session != null && authService != null)
+        if (session != null && apiService != null)
             return true;
 
         var services =
@@ -186,11 +187,32 @@ public partial class EmployeResume : ContentPage
             return false;
 
         session ??= services.GetRequiredService<ISession>();
-        authService ??= services.GetRequiredService<IApiService>();
+        apiService ??= services.GetRequiredService<IApiService>();
 
         return true;
     }
+    protected override bool OnBackButtonPressed()
+    {
+#if ANDROID
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            bool sair = await DisplayAlert(
+                "Sair",
+                "Deseja sair?",
+                "Sim",
+                "Não");
 
+            if (sair)
+            {
+               OnLogoutClicked(this, EventArgs.Empty);
+            }
+        });
+
+        return true;
+#else
+        return base.OnBackButtonPressed();
+#endif
+    }
     private void UpdateGreetingPrefix(DateTime nowBrt)
     {
         var baseGreetings = new[]
@@ -224,6 +246,41 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Evento de ciclo de vida chamado quando a página aparece.
     /// </summary>
+    /// 
+    private async Task RefreshUserFromApiAsync()
+    {
+        if (!TryResolveDependencies())
+            return;
+
+        if (session?.CurrentUser is not LocalUser user)
+            return;
+
+        try
+        {
+            var updated = await apiService!.RefreshUserAsync(user);
+
+            if (updated is null)
+                return;
+
+            session.CurrentUser = updated;
+
+            var nowBrt = ToBrt(DateTime.UtcNow);
+            _currentNowBrt = nowBrt;
+            FillAllFromUser(nowBrt);
+        }
+        catch (ApiUnavailableException)
+        {
+            await DisplayAlert("Aviso",
+                "Servidor indisponível para atualizar suas informações de ponto.",
+                "OK");
+        }
+        catch (ApiException ex)
+        {
+            Trace.WriteLine($"[EmployeResume] Erro ao atualizar usuário: {ex}");
+        }
+    }
+
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -238,8 +295,20 @@ public partial class EmployeResume : ContentPage
         UpdateRing(nowBrt);
         UpdateActionButtonState(nowBrt);
         UpdateLblHoje();
-        StartRingTimer();
+
+        if (_isInNow && !_shiftCompleted)
+            StartRingTimer();
+        else
+            StopRingTimer();
+        if (_firstAppearing)
+        {
+            _firstAppearing = false;
+            return;
+        }
+
+        _ = RefreshUserFromApiAsync();
     }
+
     /// <summary>
     /// Evento de ciclo de vida chamado quando a página desaparece.
     /// </summary>
@@ -558,11 +627,12 @@ public partial class EmployeResume : ContentPage
 
         var nowBrt = GetNowBrt();
         var punchingOut = _isInNow;
+        var newType = punchingOut ? "OUT" : "IN";
 
         bool canPunch;
         try
         {
-            canPunch = await authService!.CanPunchAsync(nowBrt, punchingOut);
+            canPunch = await apiService!.CanPunchAsync(nowBrt, punchingOut);
         }
         catch (Exception ex)
         {
@@ -578,9 +648,13 @@ public partial class EmployeResume : ContentPage
         {
             await DisplayAlert("Aviso", "API ALLOWED CORRIJIDO.", "OK");
         }
-        await Shell.Current.GoToAsync("//MainTabs/FaceRegisterPage");
+        var typeParam = Uri.EscapeDataString(newType);
+        var timeParam = Uri.EscapeDataString(
+            nowBrt.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
+
+        var route = $"//MainTabs/FaceRegisterPage?punchType={typeParam}&timeBrt={timeParam}";
+        await Shell.Current.GoToAsync(route);
         return;
-        var newType = punchingOut ? "OUT" : "IN";
         var utcNow = ToUtcAssumingBrt(nowBrt);
         var activity = new RecentActivity
         {
@@ -636,25 +710,37 @@ public partial class EmployeResume : ContentPage
     /// </summary>
     private void UpdateRing(DateTime? nowBrtOpt = null)
     {
-        if (_user is null) return;
+        if (_user is null)
+            return;
+
         var rawStart = ToBrt(_user.StartTime);
         var rawEnd = ToBrt(_user.EndTime);
-        bool frozen = _shiftCompleted && _lastOutBrt.HasValue;
-        DateTime now = frozen
-            ? _lastOutBrt!.Value
-            : nowBrtOpt ?? GetNowBrt();
+
+
+        DateTime visualNow;
+        if (_shiftCompleted && _lastOutBrt.HasValue)
+            visualNow = _lastOutBrt.Value;
+        else
+            visualNow = nowBrtOpt ?? GetNowBrt();
+
         int startSec12 = ((rawStart.Hour % 12) * 3600) + rawStart.Minute * 60 + rawStart.Second;
         _ring.StartMarkerAngleDeg = (float)(startSec12 / 43200.0 * 360.0);
+
         int endSec12 = ((rawEnd.Hour % 12) * 3600) + rawEnd.Minute * 60 + rawEnd.Second;
         _ring.EndMarkerAngleDeg = (float)(endSec12 / 43200.0 * 360.0);
+
+
         var tolerance = GetTolerance();
         float tolMins = (float)tolerance.TotalMinutes;
         if (tolMins <= 0f) tolMins = 10f;
         float sweepDeg = tolMins;
         _ring.StartMarkerSweepDeg = sweepDeg;
         _ring.EndMarkerSweepDeg = sweepDeg;
-        int nowSec12 = ((now.Hour % 12) * 3600) + now.Minute * 60 + now.Second;
+
+
+        int nowSec12 = ((visualNow.Hour % 12) * 3600) + visualNow.Minute * 60 + visualNow.Second;
         _ring.HandAngleDeg = (float)(nowSec12 / 43200.0 * 360.0);
+
         if (_shiftCompleted)
         {
             _ring.StartMarkerColor = _ring.CompletedColor;
@@ -670,16 +756,21 @@ public partial class EmployeResume : ContentPage
             _ring.StartMarkerColor = ApplyTwelveHoursFade(
                 _ring.BaseStartMarkerColor,
                 rawStart,
-                now);
+                visualNow);
+
             _ring.EndMarkerColor = ApplyTwelveHoursFade(
                 _ring.BaseEndMarkerColor,
                 rawEnd,
-                now);
+                visualNow);
         }
+
         _ring.ShiftCompleted = _shiftCompleted;
-        UpdateRingProgress(now);
+
+        UpdateRingProgress(visualNow);
+
         ShiftRing.Invalidate();
     }
+
     /// <summary>
     /// Calcula a próxima ocorrência de um horário-modelo a partir de um instante.
     /// </summary>
@@ -707,7 +798,7 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Atualiza a barra de progresso e a barra extra (tardia) do anel com base no horário atual.
     /// </summary>
-    private void UpdateRingProgress(DateTime nowBrt)
+    private void UpdateRingProgress(DateTime visualNow)
     {
         if (_user is null)
         {
@@ -716,6 +807,9 @@ public partial class EmployeResume : ContentPage
             return;
         }
 
+        // Só faz sentido mostrar barra se:
+        // - está em expediente, ou
+        // - o expediente atual já foi concluído (Expediente Encerrado).
         if (!_isInNow && !_shiftCompleted)
         {
             _ring.ShowProgress = false;
@@ -749,7 +843,6 @@ public partial class EmployeResume : ContentPage
             return;
         }
 
-        // Converte ângulos para coordenadas relativas ao início do turno
         float relFromStart(float angle) => (NormalizeAngle(angle) - startDial + 360f) % 360f;
 
         int entrySec12 = ((entryBrt.Hour % 12) * 3600) + entryBrt.Minute * 60 + entryBrt.Second;
@@ -761,13 +854,11 @@ public partial class EmployeResume : ContentPage
         bool entryInsideArc = relEntry <= spanSE;
         bool handInsideArc = relHand <= spanSE;
 
-        float uStartInside = gap;           // início útil = start + gap
-        float uEndInside = spanSE - gap;  // fim útil   = end   - gap
-        float uOvertimeMin = spanSE + gap;  // overtime   = end   + gap
+        float uStartInside = gap;            // início útil = start + gap
+        float uEndInside = spanSE - gap;   // fim útil   = end   - gap
+        float uOvertimeMin = spanSE + gap;   // overtime   = end   + gap
 
-        // Caso 1: entrada fora do arco E ponteiro fora do arco
-        // (entrada antecipada antes do início e ponteiro ainda não chegou no início):
-        // não desenha nenhuma barra.
+        // Entrada fora do arco E ponteiro fora do arco -> nada a mostrar
         if (!entryInsideArc && !handInsideArc)
         {
             _ring.ShowProgress = false;
@@ -775,16 +866,12 @@ public partial class EmployeResume : ContentPage
             return;
         }
 
-        // Define posição "u" da entrada:
-        // - se a entrada estiver dentro do arco, usa a posição real;
-        // - se estiver fora (antecipada), projeta para o começo útil (start+gap).
+        // Posição da entrada (se fora do arco, projeta pro início útil)
         float entryUraw = entryInsideArc ? relEntry : uStartInside;
-        float handUraw = relHand; // ponteiro pode estar dentro ou depois do arco
+        float handUraw = relHand;
 
-        // Clampa a entrada para dentro da faixa útil
         float entryU = Clamp(entryUraw, uStartInside, uEndInside);
 
-        // Se o ponteiro ainda não avançou em relação à entrada dentro do arco, não desenha barra
         float deltaFromEntry = (handUraw - entryU + 360f) % 360f;
         if (deltaFromEntry <= eps)
         {
@@ -793,7 +880,7 @@ public partial class EmployeResume : ContentPage
             return;
         }
 
-        // ---------- Barra normal (do início até o marcador de saída - gap) ----------
+        // -------- Barra normal (do início até o fim do turno) --------
 
         float insideEndU = MathF.Min(handUraw, uEndInside);
 
@@ -803,7 +890,7 @@ public partial class EmployeResume : ContentPage
             _ring.ProgressEndAngleDeg = NormalizeAngle(startDial + insideEndU);
 
             _ring.ProgressColor = _shiftCompleted
-                ? _ring.CompletedColor          // cinza após saída registrada
+                ? _ring.CompletedColor          // cinza se já deu saída
                 : Color.FromArgb("#1e2d69");    // azul durante o expediente
 
             _ring.ShowProgress = true;
@@ -813,13 +900,18 @@ public partial class EmployeResume : ContentPage
             _ring.ShowProgress = false;
         }
 
-        // ---------- Barra extra (tardia) ----------
+        // -------- Barra extra (tardia) --------
 
+        // Usa o dia da ENTRADA pra achar o fim real daquele turno
+        var rawStart = ToBrt(_user.StartTime);
+        var rawEnd = ToBrt(_user.EndTime);
         var tol = GetTolerance();
-        GetShiftWindowForNow(nowBrt, out var shiftStartToday, out var shiftEndToday);
-        var endLimit = shiftEndToday + tol;
 
-        bool afterRealEnd = nowBrt > endLimit;
+        var shiftEndForEntry = GetShiftEndForHit(rawStart, rawEnd, entryBrt);
+        var endLimit = shiftEndForEntry + tol;
+
+        // Overtime só se o horário visual (agora ou saída) passou do fim real + tolerância
+        bool afterRealEnd = visualNow > endLimit;
 
         if (afterRealEnd && handUraw > uOvertimeMin + eps)
         {
@@ -849,6 +941,7 @@ public partial class EmployeResume : ContentPage
             _ring.ShowOvertime = false;
         }
     }
+
 
     /// <summary>
     /// Limita um valor float a um intervalo mínimo e máximo.
@@ -923,11 +1016,28 @@ public partial class EmployeResume : ContentPage
     /// </summary>
     private void OnTimerTick(object? sender, EventArgs e)
     {
-        var nowBrt = GetNowBrt();
-        NowBrtLabel.Text = nowBrt.ToString("HH:mm:ss", PtBr);
-        UpdateRing(nowBrt);
-        UpdateActionButtonState(nowBrt);
+        var nowBrtReal = GetNowBrt();
+
+        DateTime visualNow;
+
+        if (_shiftCompleted && _lastOutBrt.HasValue)
+        {
+            visualNow = _lastOutBrt.Value;
+
+            StopRingTimer();
+        }
+        else
+        {
+            visualNow = nowBrtReal;
+        }
+
+        NowBrtLabel.Text = visualNow.ToString("HH:mm:ss", PtBr);
+
+        UpdateRing(visualNow);
+
+        UpdateActionButtonState(nowBrtReal);
     }
+
     /// <summary>
     /// Interrompe o timer do relógio.
     /// </summary>

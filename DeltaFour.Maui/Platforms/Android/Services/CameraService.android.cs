@@ -1,5 +1,7 @@
 ﻿#if ANDROID
 using Android.Content;
+using Android.Graphics;
+using Android.Runtime;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.ResolutionSelector;
 using AndroidX.Camera.Lifecycle;
@@ -7,10 +9,13 @@ using AndroidX.Camera.View;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
 using DeltaFour.Maui.Controls;
+using Java.IO;
 using Java.Lang;
 using Java.Util.Concurrent;
 using Xamarin.Google.MLKit.Vision.Face;
 using Exception = Java.Lang.Exception;
+using FileIO = System.IO.File;
+using JFile = Java.IO.File;
 using MLFace = Xamarin.Google.MLKit.Vision.Face.Face;
 
 namespace DeltaFour.Maui.Platforms.Android.Services
@@ -28,6 +33,7 @@ namespace DeltaFour.Maui.Platforms.Android.Services
         ImageAnalysis? imageAnalysis;
         FaceAnalyzer? faceAnalyzer;
         IFaceDetector? faceDetector;
+        ImageCapture? imageCapture;
 
         public Action<IList<MLFace>, int, int, int>? FacesDetected { get; set; }
 
@@ -101,7 +107,11 @@ namespace DeltaFour.Maui.Platforms.Android.Services
                     });
 
                 imageAnalysis.SetAnalyzer(cameraExecutor, faceAnalyzer);
-
+                imageCapture?.Dispose();
+                imageCapture = new ImageCapture.Builder()
+                    .SetTargetResolution(ScreenSize)
+                    .SetCaptureMode(ImageCapture.CaptureModeMinimizeLatency)
+                    .Build();
                 try
                 {
                     cameraProvider.UnbindAll();
@@ -115,7 +125,8 @@ namespace DeltaFour.Maui.Platforms.Android.Services
                         lifecycleOwner,
                         selector,
                         preview,
-                        imageAnalysis);
+                        imageAnalysis,
+                        imageCapture);
 
                     System.Diagnostics.Trace.WriteLine($"Camera ligou {camera.CameraInfo}");
                 }
@@ -135,6 +146,128 @@ namespace DeltaFour.Maui.Platforms.Android.Services
             }
             catch { }
         }
+        public Task<string?> CapturePhotoBase64Async(CancellationToken cancellationToken = default)
+        {
+            if (imageCapture == null || context == null || cameraExecutor == null)
+                return Task.FromResult<string?>(null);
+
+            var tcs = new TaskCompletionSource<string?>();
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(() =>
+                {
+                    tcs.TrySetCanceled(cancellationToken);
+                });
+            }
+
+            var fileName = $"punch_{Guid.NewGuid():N}.jpg";
+
+            var file = new JFile(context.CacheDir, fileName);
+
+            var outputOptions = new ImageCapture.OutputFileOptions.Builder(file).Build();
+
+            imageCapture.TakePicture(
+                outputOptions,
+                cameraExecutor,
+                new ImageSavedCallback(
+                    file.AbsolutePath,
+                    path =>
+                    {
+                        try
+                        {
+                            var bytes = FileIO.ReadAllBytes(path);
+                            var base64 = Convert.ToBase64String(bytes);
+                            tcs.TrySetResult(base64);
+
+                            FileIO.Delete(path);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Trace.WriteLine($"CapturePhotoBase64Async read error: {ex.Message}");
+                            tcs.TrySetResult(null);
+                        }
+                    },
+                    ex =>
+                    {
+                        System.Diagnostics.Trace.WriteLine($"CapturePhotoBase64Async failed: {ex.Message}");
+                        tcs.TrySetResult(null);
+                    }));
+
+            return tcs.Task;
+        }
+
+        sealed class ImageSavedCallback : Java.Lang.Object, ImageCapture.IOnImageSavedCallback
+        {
+            readonly string filePath;
+            readonly Action<string> onSuccess;
+            readonly Action<Exception> onError;
+
+            public ImageSavedCallback(
+                string filePath,
+                Action<string> onSuccess,
+                Action<Exception> onError)
+            {
+                this.filePath = filePath;
+                this.onSuccess = onSuccess;
+                this.onError = onError;
+            }
+
+
+            [Register(
+                "onImageSaved",
+                "(Landroidx/camera/core/ImageCapture$OutputFileResults;)V",
+                "GetOnImageSaved_Landroidx_camera_core_ImageCapture_OutputFileResults_Handler")]
+            public void OnImageSaved(ImageCapture.OutputFileResults outputFileResults)
+            {
+                try
+                {
+                    onSuccess(filePath);
+                }
+                catch (Exception ex)
+                {
+                    onError(ex);
+                }
+            }
+
+            [Register(
+                "onError",
+                "(Landroidx/camera/core/ImageCaptureException;)V",
+                "GetOnError_Landroidx_camera_core_ImageCapture_ImageCaptureException_Handler")]
+            public void OnError(ImageCaptureException exception)
+            {
+                onError(exception);
+            }
+
+
+            [Register(
+                "onCaptureStarted",
+                "()V",
+                "GetOnCaptureStartedHandler")]
+            public void OnCaptureStarted()
+            {
+                // opcional: tocar som de obturador, animar UI, etc.
+                System.Diagnostics.Trace.WriteLine("ImageCapture onCaptureStarted");
+            }
+
+            [Register(
+                "onCaptureProcessProgressed",
+                "(I)V",
+                "GetOnCaptureProcessProgressed_IHandler")]
+            public void OnCaptureProcessProgressed(int progress)
+            {
+            }
+
+            [Register(
+                "onPostviewBitmapAvailable",
+                "(Landroid/graphics/Bitmap;)V",
+                "GetOnPostviewBitmapAvailable_Landroid_graphics_Bitmap_Handler")]
+            public void OnPostviewBitmapAvailable(Bitmap bitmap)
+            {
+                bitmap?.Dispose();
+            }
+        }
+
     }
 }
 #endif
