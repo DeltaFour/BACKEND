@@ -6,10 +6,11 @@ namespace DeltaFour.Application.Utils
     {
         static PythonExe()
         {
-            Path = Environment.GetEnvironmentVariable("PYTHON_FUNCTION_PATH")!;
+            Path = Environment.GetEnvironmentVariable("FUNCTION_PYTHON_PATH")!;
         }
 
         private static readonly String Path;
+
         public double? CompareEmbeddings(List<double> embedding1, List<double> embedding2)
         {
             using (Py.GIL())
