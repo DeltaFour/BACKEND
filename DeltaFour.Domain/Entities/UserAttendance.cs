@@ -16,7 +16,7 @@ namespace DeltaFour.Domain.Entities
         
         public Boolean? IsLate { get; set; }
         
-        public int? TimeLate { get; set; }
+        public TimeOnly? TimeLate { get; set; }
         
         public DateTime? UpdatedAt { get; set; }
         

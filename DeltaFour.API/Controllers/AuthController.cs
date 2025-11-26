@@ -11,6 +11,9 @@ namespace DeltaFour.API.Controllers
     [Route("api/v1/auth")]
     public class AuthController(AuthService service) : Controller
     {
+        ///<sumary>
+        ///Make login of user with information related of him and send tokens by cookie
+        ///</sumary>
         [HttpPost("login")]
         public async Task<ActionResult<UserInfoLoginDto>> Login([FromBody] LoginDto loginDto)
         {
@@ -29,7 +32,10 @@ namespace DeltaFour.API.Controllers
             Response.Cookies.Append("RefreshToken", refreshToken.ToString(), options);
             return Ok(service.MapUserInfo(user));
         }
-
+        
+        ///<sumary>
+        ///Check if session of user still authenticated
+        ///</sumary>
         [HttpGet("check-session")]
         public IActionResult CheckSession()
         {
@@ -41,6 +47,9 @@ namespace DeltaFour.API.Controllers
             return Forbid();
         }
 
+        ///<sumary>
+        ///Refresh the token sended in login
+        ///</sumary>
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
         {
@@ -54,7 +63,10 @@ namespace DeltaFour.API.Controllers
             }
             return Forbid();
         }
-
+        
+        ///<sumary>
+        ///Make logout of user
+        ///</sumary>
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -65,6 +77,9 @@ namespace DeltaFour.API.Controllers
             return NoContent();
         }
 
+        ///<sumary>
+        ///Generalized method for configuration of cookies
+        ///</sumary>
         [ApiExplorerSettings(IgnoreApi = true)]
         public CookieOptions Cookie()
         {

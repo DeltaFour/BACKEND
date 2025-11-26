@@ -16,12 +16,12 @@ PythonEngine.Initialize();
 PythonEngine.BeginAllowThreads();
 
 builder.Services.AddControllers()
-     .AddJsonOptions(options =>
-     {
-         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-         
-     });
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+
+    });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConfigJwt(builder.Configuration);
 builder.Services.AddPolicies(builder.Configuration);
@@ -34,14 +34,14 @@ var frontendCors = "frontendCors";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: frontendCors,
-                      policy =>
-                      {
-                          policy
-                          .WithOrigins(allowedHost)
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
-                      });
+        policy =>
+        {
+            policy
+                .WithOrigins(allowedHost)
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
 });
 
 var app = builder.Build();

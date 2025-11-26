@@ -56,7 +56,7 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.CanPunchIn(dto, user)); 
         }
 
-        [HttpPost("punch-in")]
+        [HttpPost("register-point")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
         {
@@ -67,7 +67,15 @@ namespace DeltaFour.API.Controllers
                 return Ok(response.Message());
             }
 
-            return Unauthorized(response.Message());
+            return BadRequest(response.Message());
+        }
+
+        [HttpGet("refresh-information")]
+        [Authorize(Policy = "RH_OR_EMPLOYEE")]
+        public async Task<UserInfoForRefresh> RefreshInformation()
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return await service.RefreshUserInformation(user);
         }
 
         [HttpPost("punch-for-user")]

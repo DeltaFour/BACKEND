@@ -14,8 +14,10 @@ namespace DeltaFour.API.Controllers.SuperAdmin;
 [Authorize(Policy = nameof(RoleType.SUPER_ADMIN))]
 public class CompanyController(StatusService statusService) : ControllerBase
 {
-    private readonly StatusService _statusService = statusService;
 
+    ///<sumary>
+    ///Create company
+    ///</sumary>
     [HttpPost("create")]
     public async Task<IActionResult> Create(
         [FromServices] CreateService createService,
@@ -29,14 +31,20 @@ public class CompanyController(StatusService statusService) : ControllerBase
         return NoContent();
     }
 
+    ///<sumary>
+    ///Activate or disable company
+    ///</sumary>
     [HttpPost("change-status/{id}")]
     public async Task<IActionResult> Active(Guid id)
     {
-        await _statusService.ChangeStatus(id);
+        await statusService.ChangeStatus(id);
 
         return NoContent();
     }
     
+    ///<sumary>
+    ///List all companies registered
+    ///</sumary>
     [HttpGet("list")]
     public async Task<ActionResult<ListCompaniesResponse>> List([FromServices] ListService listService)
     {

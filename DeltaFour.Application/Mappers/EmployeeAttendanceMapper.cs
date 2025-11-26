@@ -16,6 +16,7 @@ namespace DeltaFour.Application.Mappers
                 Coord = new Coordinates(dto.Longitude, dto.Latitude),
                 CreatedBy = userId,
                 IsLate = isLate,
+                TimeLate = timeLated,
             };
         }
         

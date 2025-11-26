@@ -204,28 +204,37 @@ namespace DeltaFour.Application.Service
                     {
                         double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
                             JsonConvert.DeserializeObject<List<double>>(employee.EmployeeFaces.First().FaceTemplate)!);
-                        if (comparing < 75.0)
+                        if (comparing < 50.0)
                         {
                             return PunchInResponse.FNC;
                         }
 
                         Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(ws),
                             TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
-                        
+
                         UserAttendance userAttendance =
                             EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id,
-                                timeCheked, timeCheked ? null : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
-                                                                 TimeOnly.FromDateTime(DateTime.UtcNow)));
+                                timeCheked, timeCheked
+                                    ? null
+                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                            TimeOnly.FromDateTime(DateTime.UtcNow)));
                         repository.EmployeeAttendanceRepository.Create(userAttendance);
                         await repository.Save();
 
                         return PunchInResponse.SCC;
-
                     }
                 }
             }
 
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
+        }
+
+        public async Task<UserInfoForRefresh> RefreshUserInformation(UserContext user)
+        {
+            TreatedUserInformationDto treatUser =
+                await repository.EmployeeRepository.FindUserInformation(user.Email!)! ??
+                throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
+            return EmployeeMapper.MapInformationForRefresh(treatUser);
         }
 
         public async Task PunchForUser(PunchForUserDto dto, UserContext user)
@@ -243,8 +252,13 @@ namespace DeltaFour.Application.Service
                        time <= ws.StartTime.AddMinutes(ws.ToleranceMinutes);
             }
 
-            return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
-                   time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
+            if (type.Equals(PunchType.OUT))
+            {
+                return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
+                       time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
+            }
+
+            return true;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace DeltaFour.Application.Utils
     {
         static PythonExe()
         {
-            Path = @"C:\\Users\\Arthur\\Desktop\\FATEC\\5S\\PI\\BACKEND\\FunctionPython";
+            Path = Environment.GetEnvironmentVariable("PYTHON_FUNCTION_PATH")!;
         }
 
         private static readonly String Path;

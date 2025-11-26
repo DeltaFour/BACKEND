@@ -31,5 +31,15 @@ namespace DeltaFour.Application.Mappers
             e.UpdatedBy = userAuthenticatedId;
             e.UpdatedAt = DateTime.UtcNow;
         }
+        
+        
+        public static UserInfoForRefresh MapInformationForRefresh(TreatedUserInformationDto dto)
+        {
+            return new UserInfoForRefresh()
+            {
+                LastPunchType = dto.LastPunchType,
+                LastsEmployeeAttendances = dto.LastsEmployeeAttendances,
+            };
+        }
     }
 }

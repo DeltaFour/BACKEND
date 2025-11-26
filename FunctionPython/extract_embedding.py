@@ -5,8 +5,6 @@ from io import BytesIO
 from PIL import Image
 
 def extract_embedding(file_byte):
-    # file_obj.seek(0)
-    # image_data = file_obj.read()
 
     img = Image.open(BytesIO(file_byte)).convert("RGB")
     img = np.array(img).astype("uint8")
@@ -17,12 +15,13 @@ def extract_embedding(file_byte):
 
     return encodings[0].tolist()
 
-def calculate_similarity(first_embeddding, second_embeddding):
-    emb1 = np.array(first_embeddding)
-    emb2 = np.array(second_embeddding)
+def calculate_similarity(first_embedding, second_embedding):
+    emb1 = np.array(first_embedding)
+    emb2 = np.array(second_embedding)
 
-    cosine_similarity = np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
-    percent = ((cosine_similarity + 1) / 2) * 100
-    percent = round(float(percent), 2)
+    dist = np.linalg.norm(emb1 - emb2)
+
+    similarity = max(0, 1 - dist)  
+    percent = round(similarity * 100, 2)
 
     return percent
