@@ -17,7 +17,9 @@ namespace DeltaFour.API.Controllers
         public async Task<ActionResult<List<WorkShiftResponseDto>?>> Get()
         {
             var user =  HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(await service.Get(user.CompanyId));
+            var workshifts = await service.Get(user.CompanyId);
+
+            return Ok(workshifts ?? new List<WorkShiftResponseDto>());
         }
         
         [HttpPost("create")]
