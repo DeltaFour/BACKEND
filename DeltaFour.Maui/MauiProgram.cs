@@ -40,8 +40,10 @@ public static class MauiProgram
 #endif
         builder.Services.AddSingleton(sp =>
         {
-            var httpClientHandler = new HttpClientHandler();
-            HttpMessageHandler handler = httpClientHandler;
+            var httpClientHandler = new HttpClientHandler
+            {
+                UseCookies = false
+            }; HttpMessageHandler handler = httpClientHandler;
 #if ANDROID
             handler = new LoggingHandler(handler);
             var authHandler = sp.GetRequiredService<CustomAuthHandler>();
@@ -50,6 +52,7 @@ public static class MauiProgram
 #endif
             var client = new HttpClient(handler)
             {
+               
                 BaseAddress = new Uri("https://zb3467wz-5212.brs.devtunnels.ms/"),
                 Timeout = TimeSpan.FromSeconds(30)
             };

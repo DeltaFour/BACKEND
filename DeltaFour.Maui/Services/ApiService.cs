@@ -250,39 +250,24 @@ namespace DeltaFour.Maui.Services
         /// Atualiza as batidas recentes do usuário a partir de endpoint enxuto.
         /// </summary>
         /// <returns>Usuário atualizado ou o mesmo usuário em caso de falha.</returns>
-        public async Task<LocalUser?> RefreshUserAsync(
-     LocalUser currentUser,
-     CancellationToken cancellationToken = default)
+        public async Task<LocalUser?> RefreshUserAsync(LocalUser currentUser, CancellationToken cancellationToken = default)
         {
             if (currentUser is null)
                 throw new ArgumentNullException(nameof(currentUser));
-
             try
             {
-                using var response = await _httpClient.GetAsync(
-                    "api/v1/user/refresh-information",
-                    cancellationToken);
-
+                using var request = new HttpRequestMessage(HttpMethod.Get, "api/v1/user/refresh-information");
+                request.Headers.Add("X-Bypass-Auth", "true");
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
                 if (!response.IsSuccessStatusCode)
                     return currentUser;
-
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-
                 var refreshDto = JsonSerializer.Deserialize<ApiUserDto>(
                     responseBody,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 if (refreshDto is null)
                     return currentUser;
-
                 UserMapper.ApplyRefresh(currentUser, refreshDto);
-
-                _session.CurrentUser = currentUser;
-                await _session.SaveAsync();
-
                 return currentUser;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -292,9 +277,7 @@ namespace DeltaFour.Maui.Services
             catch (HttpRequestException ex)
             {
                 Trace.WriteLine($"[API] Erro de rede em RefreshUserAsync: {ex}");
-                throw new ApiUnavailableException(
-                    "Não foi possível atualizar as informações do usuário (servidor indisponível).",
-                    ex);
+                throw new ApiUnavailableException("Não foi possível atualizar as informações do usuário (servidor indisponível).", ex);
             }
             catch (Exception ex)
             {
@@ -302,6 +285,7 @@ namespace DeltaFour.Maui.Services
                 throw new ApiException("Erro inesperado ao atualizar as informações do usuário.", ex);
             }
         }
+
 
         /// <summary>
         /// Verifica com o backend se a sessão atual ainda é válida.
@@ -311,9 +295,10 @@ namespace DeltaFour.Maui.Services
         {
             try
             {
-                using var response = await _httpClient.GetAsync(
-                    "api/v1/auth/check-session",
-                    cancellationToken);
+                using var request = new HttpRequestMessage(HttpMethod.Get, "api/v1/auth/check-session");
+                request.Headers.Add("X-Bypass-Auth", "true");
+
+                using var response = await _httpClient.SendAsync(request, cancellationToken);
                 return response.IsSuccessStatusCode;
             }
             catch (HttpRequestException ex)
@@ -329,6 +314,7 @@ namespace DeltaFour.Maui.Services
             }
         }
 
+
         /// <summary>
         /// Solicita ao backend a renovação da sessão usando o refresh token.
         /// </summary>
@@ -339,6 +325,7 @@ namespace DeltaFour.Maui.Services
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/auth/refresh-token");
                 request.Headers.Add("X-Bypass-Auth", "true");
+
                 using var response = await _httpClient.SendAsync(request, cancellationToken);
                 return response.IsSuccessStatusCode;
             }
@@ -354,6 +341,7 @@ namespace DeltaFour.Maui.Services
                 throw new ApiException("Erro inesperado ao renovar a sessão.", ex);
             }
         }
+
 
         /// <summary>
         /// DTO de requisição de login enviado ao backend.

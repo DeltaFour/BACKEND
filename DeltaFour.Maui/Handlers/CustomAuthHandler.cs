@@ -19,13 +19,12 @@ namespace DeltaFour.Maui.Handlers
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
         }
-
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
 #if ANDROID
-            Trace.WriteLine($"[AUTH-HANDLER ANDROID] {request.Method} {request.RequestUri}");
+            //Trace.WriteLine($"[AUTH-HANDLER ANDROID] {request.Method} {request.RequestUri}");
 #endif
             if (request.Headers.Contains(BypassHeaderName))
                 return await SendDownstreamAsync(request, cancellationToken);
@@ -78,8 +77,7 @@ namespace DeltaFour.Maui.Handlers
             if (response.IsSuccessStatusCode)
                 return true;
 
-            if (response.StatusCode == HttpStatusCode.Forbidden ||
-                 response.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.StatusCode == HttpStatusCode.Forbidden)
                 return await RefreshTokenAsync(originalRequest, cancellationToken);
 
             return false;
@@ -96,6 +94,94 @@ namespace DeltaFour.Maui.Handlers
 
             using var response = await SendDownstreamAsync(request, cancellationToken);
             return response.IsSuccessStatusCode;
+        }
+
+        private async Task<HttpResponseMessage> SendDownstreamAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            AddAuthCookiesIfPresent(request);
+
+            var response = await base.SendAsync(request, cancellationToken);
+
+            await CaptureTokensFromSetCookieAsync(response);
+
+            return response;
+        }
+
+        private void AddAuthCookiesIfPresent(HttpRequestMessage request)
+        {
+            //Trace.WriteLine($"[AUTH] AddAuthCookies Jwt={_session.JwtToken} Refresh={_session.RefreshToken}");
+
+            if (string.IsNullOrEmpty(_session.JwtToken) &&
+                string.IsNullOrEmpty(_session.RefreshToken))
+                return;
+
+            var parts = new System.Collections.Generic.List<string>();
+
+            if (!string.IsNullOrEmpty(_session.JwtToken))
+                parts.Add($"Jwt={_session.JwtToken}");
+
+            if (!string.IsNullOrEmpty(_session.RefreshToken))
+                parts.Add($"RefreshToken={_session.RefreshToken}");
+
+            request.Headers.Remove("Cookie");
+            request.Headers.Add("Cookie", string.Join("; ", parts));
+        }
+
+        private async Task CaptureTokensFromSetCookieAsync(HttpResponseMessage response)
+        {
+            var uri = response.RequestMessage?.RequestUri;
+            var path = uri?.AbsolutePath.ToLowerInvariant() ?? string.Empty;
+
+            var isLogin = path.Contains("/api/v1/auth/login");
+            var isRefresh = path.Contains("/api/v1/auth/refresh-token");
+            var isLogout = path.Contains("/api/v1/auth/logout");
+
+            var canUpdateTokens = isLogin || isRefresh || isLogout;
+            if (!canUpdateTokens)
+                return;
+
+            if (!response.Headers.TryGetValues("Set-Cookie", out var setCookies))
+                return;
+
+            string? newJwt = null;
+            string? newRefresh = null;
+
+            foreach (var sc in setCookies)
+            {
+                var firstPart = sc.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(firstPart))
+                    continue;
+
+                var kv = firstPart.Split('=', 2);
+                if (kv.Length != 2)
+                    continue;
+
+                var name = kv[0].Trim();
+                var value = kv[1].Trim();
+
+                if (name.Equals("Jwt", StringComparison.OrdinalIgnoreCase))
+                    newJwt = value;
+                else if (name.Equals("RefreshToken", StringComparison.OrdinalIgnoreCase))
+                    newRefresh = value;
+            }
+
+            if (!isLogout)
+            {
+                if (!string.IsNullOrEmpty(newJwt))
+                    _session.JwtToken = newJwt;
+
+                if (!string.IsNullOrEmpty(newRefresh))
+                    _session.RefreshToken = newRefresh;
+            }
+            else
+            {
+                _session.JwtToken = null;
+                _session.RefreshToken = null;
+            }
+
+            await _session.SaveAsync();
         }
 
         private static Uri BuildAbsoluteUri(HttpRequestMessage originalRequest, string relativePath)
@@ -133,75 +219,6 @@ namespace DeltaFour.Maui.Handlers
 
             clone.Version = request.Version;
             return clone;
-        }
-        private async Task<HttpResponseMessage> SendDownstreamAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            AddAuthCookiesIfPresent(request);
-
-            var response = await base.SendAsync(request, cancellationToken);
-
-            await CaptureTokensFromSetCookieAsync(response);
-
-            return response;
-        }
-
-        private void AddAuthCookiesIfPresent(HttpRequestMessage request)
-        {
-            if (string.IsNullOrEmpty(_session.JwtToken) &&
-                string.IsNullOrEmpty(_session.RefreshToken))
-                return;
-
-            var parts = new System.Collections.Generic.List<string>();
-
-            if (!string.IsNullOrEmpty(_session.JwtToken))
-                parts.Add($"Jwt={_session.JwtToken}");
-
-            if (!string.IsNullOrEmpty(_session.RefreshToken))
-                parts.Add($"RefreshToken={_session.RefreshToken}");
-
-            request.Headers.Remove("Cookie");
-            request.Headers.Add("Cookie", string.Join("; ", parts));
-        }
-
-        private async Task CaptureTokensFromSetCookieAsync(HttpResponseMessage response)
-        {
-            if (!response.Headers.TryGetValues("Set-Cookie", out var setCookies))
-                return;
-
-            string? newJwt = null;
-            string? newRefresh = null;
-
-            foreach (var sc in setCookies)
-            {
-                var firstPart = sc.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(firstPart))
-                    continue;
-
-                var kv = firstPart.Split('=', 2);
-                if (kv.Length != 2)
-                    continue;
-
-                var name = kv[0].Trim();
-                var value = kv[1].Trim();
-
-                if (name.Equals("Jwt", StringComparison.OrdinalIgnoreCase))
-                    newJwt = value;
-                else if (name.Equals("RefreshToken", StringComparison.OrdinalIgnoreCase))
-                    newRefresh = value;
-            }
-
-            if (newJwt is null && newRefresh is null)
-                return;
-
-            if (newJwt is not null)
-                _session.JwtToken = newJwt;
-
-            if (newRefresh is not null)
-                _session.RefreshToken = newRefresh;
-
-            await _session.SaveAsync();
         }
     }
 }

@@ -66,15 +66,14 @@ namespace DeltaFour.Maui
                 try
                 {
                     var ok = await api.CheckSessionAsync();
+
                     if (!ok)
                     {
                         var refreshed = await api.TryRefreshTokenAsync();
                         if (refreshed)
-                        {
-                            await session.SaveAsync();
                             ok = await api.CheckSessionAsync();
-                        }
                     }
+
                     if (ok)
                     {
                         try
@@ -97,6 +96,7 @@ namespace DeltaFour.Maui
                         {
                             Trace.WriteLine($"[App] Falha ao atualizar usuário após restaurar sessão: {ex}");
                         }
+
                         EnterShell();
                         await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
                         return;
