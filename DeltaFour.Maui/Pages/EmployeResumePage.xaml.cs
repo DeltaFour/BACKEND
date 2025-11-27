@@ -178,11 +178,35 @@ public partial class EmployeResume : ContentPage
     /// <summary>
     /// Efetua logout, limpa sessão e navega para a tela de login.
     /// </summary>
-    private async void OnLogoutClicked(object? sender, EventArgs e)
+    async void OnLogoutClicked(object? sender, EventArgs e)
     {
+        var app = (App)Application.Current;
+        app.MainPage = new ContentPage
+        {
+            BackgroundColor = Color.FromArgb("#F5F8FB"),
+            Content = new Grid
+            {
+                Children =
+            {
+                new ActivityIndicator
+                {
+                    IsRunning = true,
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Center
+                },
+                new Label
+                {
+                    Text = "Saindo...",
+                    VerticalOptions = LayoutOptions.End,
+                    HorizontalOptions = LayoutOptions.Center,
+                    Margin = new Thickness(0,0,0,40)
+                }
+            }
+            }
+        };
         if (!TryResolveDependencies())
         {
-            await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
+            await app.ExitToLoginAsync();
             return;
         }
         try
@@ -193,13 +217,9 @@ public partial class EmployeResume : ContentPage
         {
             Trace.WriteLine($"Erro no logout da API: {ex}");
         }
-        session!.IsAuthenticated = false;
-        session.CurrentUser = null;
-        _user = null;
-        RecentItems.Clear();
-        await session.ClearAsync();
-        await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
+        await app.ExitToLoginAsync();
     }
+
 
     /// <summary>
     /// Resolve ISession e IApiService a partir do container de DI.

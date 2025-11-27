@@ -14,7 +14,6 @@ namespace DeltaFour.Maui.Mappers
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-
             DateTime start = default;
             DateTime end = default;
 
@@ -40,7 +39,7 @@ namespace DeltaFour.Maui.Mappers
                 StartTime = start,
                 EndTime = end,
                 ToleranceMinutes = 10,
-                RecentActivities = dto.LastsEmployeeAttendances?
+                RecentActivities = dto.LastUserAttendances?
                     .Where(a => a != null)
                     .Select(ToRecentActivity)
                     .ToList()
@@ -55,7 +54,7 @@ namespace DeltaFour.Maui.Mappers
 
             return new RecentActivity
             {
-                PunchTime = src.PunchTime,   
+                PunchTime = src.PunchTime,
                 PunchType = src.PunchType,
                 ShiftType = src.ShiftType
             };
@@ -79,11 +78,8 @@ namespace DeltaFour.Maui.Mappers
                 DateTimeKind.Unspecified);
         }
 
-
         /// <summary>
-        /// Atualiza as batidas recentes de um usuário já carregado,
-        /// usando o payload enxuto de /api/v1/user/refresh-information.
-        /// Não mexe em Name, CompanyName, StartTime, EndTime etc.
+        /// Atualiza todas as informações do usuário com o payload de refresh.
         /// </summary>
         public static void ApplyRefresh(LocalUser target, ApiUserDto refresh)
         {
@@ -92,12 +88,10 @@ namespace DeltaFour.Maui.Mappers
             if (refresh == null)
                 throw new ArgumentNullException(nameof(refresh));
 
-            // Campos básicos
             target.Name = refresh.Name ?? string.Empty;
             target.CompanyName = refresh.CompanyName ?? string.Empty;
             target.ShiftType = refresh.ShiftType ?? string.Empty;
 
-            // Horário de turno (mesma lógica de ToLocalUser)
             DateTime start = default;
             DateTime end = default;
 
@@ -118,20 +112,17 @@ namespace DeltaFour.Maui.Mappers
                 target.EndTime = end;
             }
 
-            // Últimas batidas
-            if (refresh.LastsEmployeeAttendances == null ||
-                refresh.LastsEmployeeAttendances.Count == 0)
+            if (refresh.LastUserAttendances == null ||
+                refresh.LastUserAttendances.Count == 0)
             {
                 target.RecentActivities = new List<RecentActivity>();
                 return;
             }
 
-            target.RecentActivities = refresh.LastsEmployeeAttendances
+            target.RecentActivities = refresh.LastUserAttendances
                 .Where(a => a != null)
                 .Select(ToRecentActivity)
                 .ToList();
         }
-
-
     }
 }
