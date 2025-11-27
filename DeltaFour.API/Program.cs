@@ -50,12 +50,9 @@ app.UseCors(frontendCors);
 
 AppDomain.CurrentDomain.ProcessExit += (s, e) => PythonEngine.Shutdown();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
