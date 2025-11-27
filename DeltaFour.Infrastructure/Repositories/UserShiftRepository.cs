@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class EmployeeShiftRepository(AppDbContext context) : IEmployeeShiftRepository
+    public class UserShiftRepository(AppDbContext context) : IUserShiftRepository
     {
         public async Task<UserShift?> Find(Expression<Func<UserShift, bool>> predicate)
         {
@@ -18,9 +18,9 @@ namespace DeltaFour.Infrastructure.Repositories
             context.EmployeeShifts.Add(userShift);
         }
         
-        public void CreateAll(List<UserShift> employeeShifts)
+        public void CreateAll(List<UserShift> userShifts)
         {
-            context.EmployeeShifts.AddRange(employeeShifts);
+            context.EmployeeShifts.AddRange(userShifts);
         }
         
         public void Update(UserShift userShift)
@@ -37,13 +37,13 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.EmployeeShifts.Remove(userShift);
         }
-        public void UpdateAll(List<UserShift> employeeShifts)
+        public void UpdateAll(List<UserShift> userShifts)
         {
-            context.EmployeeShifts.UpdateRange(employeeShifts);
+            context.EmployeeShifts.UpdateRange(userShifts);
         }
-        public void DeleteAll(List<UserShift> employeeShifts)
+        public void DeleteAll(List<UserShift> userShifts)
         {
-            context.EmployeeShifts.RemoveRange(employeeShifts);
+            context.EmployeeShifts.RemoveRange(userShifts);
         }
     }
 }

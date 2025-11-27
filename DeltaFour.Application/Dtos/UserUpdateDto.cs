@@ -1,6 +1,6 @@
 ﻿namespace DeltaFour.Application.Dtos
 {
-    public class EmployeeUpdateDto
+    public class UserUpdateDto
     {
         public Guid Id { get; set; }
         
@@ -10,6 +10,6 @@
         
         public Boolean IsAllowedBypassCoord { get; set; }
         
-        public List<EmployeeShiftDto> EmployeeShift { get; set; }
+        public List<UserShiftDto> UserShift { get; set; }
     }
 }

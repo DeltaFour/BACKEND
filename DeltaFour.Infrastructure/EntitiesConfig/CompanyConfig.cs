@@ -23,7 +23,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(c => c.UpdatedAt).HasColumnName("updated_at");
             builder.Property(c => c.UpdatedBy).HasColumnName("updated_by");
             builder.Property(c => c.AddressId).HasColumnName("address_id");
-            builder.HasMany(c => c.Employees).WithOne(u => u.Company).HasForeignKey(u => u.CompanyId)
+            builder.HasMany(c => c.User).WithOne(u => u.Company).HasForeignKey(u => u.CompanyId)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.HasOne<Address>(c => c.Address).WithOne(a => a.Company).HasForeignKey<Company>(c => c.AddressId)
                 .OnDelete(DeleteBehavior.Cascade);

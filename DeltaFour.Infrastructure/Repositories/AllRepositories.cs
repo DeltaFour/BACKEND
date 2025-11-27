@@ -5,26 +5,26 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class AllRepositories(AppDbContext context) : IUnitOfWork
     {
-        private IEmployeeRepository? _userRepository;
-        private IEmployeeAuthRepository? _userAuthRepository;
+        private IUserRepository? _userRepository;
+        private IUserAuthRepository? _userAuthRepository;
         private ICompanyRepository? _companyRepository;
         private IRoleRepository? _roleRepository;
         private IRolePermissionRepository? _rolePermissionRepository;
         private IActionRepository? _actionRepository;
         private ILocationRepository? _locationRepository;
         private IWorkShiftRepository? _workShiftRepository;
-        private IEmployeeAttendanceRepository? _employeeAttendanceRepository;
-        private IEmployeeShiftRepository? _employeeShiftRepository;
-        private IEmployeeFaceRepository? _employeeFaceRepository;
+        private IUserAttendanceRepository? _employeeAttendanceRepository;
+        private IUserShiftRepository? _employeeShiftRepository;
+        private IUserFaceRepository? _employeeFaceRepository;
 
-        public IEmployeeRepository EmployeeRepository
+        public IUserRepository UserRepository
         {
-            get { return _userRepository ??= new EmployeeRepository(context); }
+            get { return _userRepository ??= new UserRepository(context); }
         }
 
-        public IEmployeeAuthRepository EmployeeAuthRepository
+        public IUserAuthRepository UserAuthRepository
         {
-            get { return _userAuthRepository ??= new EmployeeAuthRepository(context); }
+            get { return _userAuthRepository ??= new UserAuthRepository(context); }
         }
 
         public ICompanyRepository CompanyRepository
@@ -57,19 +57,19 @@ namespace DeltaFour.Infrastructure.Repositories
             get { return _workShiftRepository ??= new WorkShiftRepository(context); }
         }
 
-        public IEmployeeAttendanceRepository EmployeeAttendanceRepository
+        public IUserAttendanceRepository UserAttendanceRepository
         {
-            get { return _employeeAttendanceRepository ??= new EmployeeAttendanceRepository(context); }
+            get { return _employeeAttendanceRepository ??= new UserAttendanceRepository(context); }
         }
 
-        public IEmployeeShiftRepository EmployeeShiftRepository
+        public IUserShiftRepository UserShiftRepository
         {
-            get { return _employeeShiftRepository ??= new EmployeeShiftRepository(context); }
+            get { return _employeeShiftRepository ??= new UserShiftRepository(context); }
         }
 
-        public IEmployeeFaceRepository EmployeeFaceRepository
+        public IUserFaceRepository UserFaceRepository
         {
-            get { return _employeeFaceRepository ??= new EmployeeFaceRepository(context); }
+            get { return _employeeFaceRepository ??= new UserFaceRepository(context); }
         }
 
         public async Task Save()

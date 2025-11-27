@@ -23,7 +23,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(r => r.CompanyId).HasColumnName("company_id").IsRequired();
             builder.HasOne(r => r.Company).WithMany(c => c.Roles).IsRequired()
                 .HasForeignKey(r => r.CompanyId);
-            builder.HasMany(r => r.Employee).WithOne(e => e.Role).HasForeignKey(e => e.RoleId);
+            builder.HasMany(r => r.User).WithOne(e => e.Role).HasForeignKey(e => e.RoleId);
             builder.HasMany(r => r.RolePermissions).WithOne(rp => rp.Role).HasForeignKey(rp => rp.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

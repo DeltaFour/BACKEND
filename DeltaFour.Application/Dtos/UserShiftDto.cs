@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Application.Dtos
 {
-    public class EmployeeShiftDto
+    public class UserShiftDto
     {
         public Guid? Id { get; set; }
         

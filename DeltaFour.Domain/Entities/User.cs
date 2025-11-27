@@ -30,13 +30,13 @@ public class User : BaseEntity
     
     public Role? Role { get; set; }
     
-    public UserAuth? EmployeeAuth { get; set; }
+    public UserAuth? UserAuth { get; set; }
     
     public Company Company { get; set; }
     
-    public List<UserShift>? EmployeeShifts { get; set; }
+    public List<UserShift>? UserShifts { get; set; }
     
-    public List<UserAttendance>? EmployeeAttendances { get; set; }
+    public List<UserAttendance>? UserAttendances { get; set; }
     
-    public List<UserFace>? EmployeeFaces { get; set; }
+    public List<UserFace>? UserFaces { get; set; }
 }

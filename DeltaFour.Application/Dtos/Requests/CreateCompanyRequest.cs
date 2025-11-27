@@ -12,5 +12,5 @@ public class CreateCompanyRequest
     public string? Cnpj { get; set; }
 
     [Required]
-    public EmployeeRequest? Employee { get; set; }
+    public UserRequest? User { get; set; }
 }

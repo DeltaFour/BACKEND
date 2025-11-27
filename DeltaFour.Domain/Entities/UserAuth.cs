@@ -1,16 +1,16 @@
 ﻿namespace DeltaFour.Domain.Entities
 {
-    public class UserAuth(Guid employeeId, string? refreshToken, DateTime expiresAt)
+    public class UserAuth(Guid UserId, string? refreshToken, DateTime expiresAt)
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         
-        public Guid EmployeeId { get; set; } = employeeId;
+        public Guid UserId { get; set; } = UserId;
         
         public string? RefreshToken { get; set; } = refreshToken;
         
         public DateTime ExpiresAt { get; set; } = expiresAt;
         
-        public User? Employee { get; set; }
+        public User? User { get; set; }
 
         public bool IsExpired()
         {

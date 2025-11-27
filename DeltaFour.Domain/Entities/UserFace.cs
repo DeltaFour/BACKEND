@@ -1,8 +1,8 @@
 ﻿namespace DeltaFour.Domain.Entities
 {
-    public class UserFace(Guid employeeId, string faceTemplate, Guid createdBy) : BaseEntity
+    public class UserFace(Guid UserId, string faceTemplate, Guid createdBy) : BaseEntity
     {
-        public Guid EmployeeId { get; set; } = employeeId;
+        public Guid UserId { get; set; } = UserId;
 
         public string FaceTemplate { get; set; } = faceTemplate;
 
@@ -12,7 +12,7 @@
         
         public Guid CreatedBy { get; set; } = createdBy;
 
-        public User? Employee { get; set; }
+        public User? User { get; set; }
 
     }
 }

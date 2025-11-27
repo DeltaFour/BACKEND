@@ -12,6 +12,9 @@ namespace DeltaFour.API.Controllers
     [ApiController]
     public class WorkShiftController(WorkShiftService service) : Controller
     {
+        ///<sumary>
+        ///List all WorkShifts from company
+        ///</sumary>
         [HttpGet("list")]
         [Authorize]
         public async Task<ActionResult<List<WorkShiftResponseDto>?>> Get()
@@ -20,6 +23,9 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.Get(user.CompanyId));
         }
         
+        ///<sumary>
+        ///Create WorkShift
+        ///</sumary>
         [HttpPost("create")]
         [Authorize]
         public async Task<IActionResult> Post([FromBody] WorkShiftDto dto)
@@ -29,6 +35,9 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
+        ///<sumary>
+        ///Update Workshift
+        ///</sumary>
         [HttpPatch("update")]
         [Authorize]
         public async Task<IActionResult> Put([FromBody] WorkShiftUpdateDto dto)
@@ -38,6 +47,9 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
+        ///<sumary>
+        ///Change the status from WorkShift
+        ///</sumary>
         [HttpDelete("change-status/{workShiftId}")]
         [Authorize]
         public async Task<IActionResult> Delete(Guid workShiftId)

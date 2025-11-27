@@ -4,9 +4,12 @@ using DeltaFour.Domain.ValueObjects.Dtos;
 
 namespace DeltaFour.Application.Mappers
 {
-    public static class EmployeeMapper
+    public static class UserMapper
     {
-        public static User FromCreateDto(EmployeeCreateDto dto, Guid roleId, UserContext createdBy)
+        ///<sumary>
+        ///Map information from CreateDto to User
+        ///</sumary>
+        public static User FromCreateDto(UserCreateDto dto, Guid roleId, UserContext createdBy)
         {
             return new User()
             {
@@ -23,23 +26,16 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        public static void UpdateDataEmployeeByUpdateDto(EmployeeUpdateDto dto, User e, Guid userAuthenticatedId)
+        ///<sumary>
+        ///Replace information from User
+        ///</sumary>
+        public static void UpdateDataUserByUpdateDto(UserUpdateDto dto, User e, Guid userAuthenticatedId)
         {
             e.Name = dto.Name;
             e.Cellphone = dto.CellPhone;
             e.IsAllowedBypassCoord = dto.IsAllowedBypassCoord;
             e.UpdatedBy = userAuthenticatedId;
             e.UpdatedAt = DateTime.UtcNow;
-        }
-        
-        
-        public static UserInfoForRefresh MapInformationForRefresh(TreatedUserInformationDto dto)
-        {
-            return new UserInfoForRefresh()
-            {
-                LastPunchType = dto.LastPunchType,
-                LastsEmployeeAttendances = dto.LastsEmployeeAttendances,
-            };
         }
     }
 }

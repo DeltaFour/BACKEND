@@ -23,7 +23,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(ws => ws.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ws => ws.CreatedBy).HasColumnName("created_by").IsRequired();
             builder.Property(ws => ws.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.HasMany(ws => ws.EmployeeShifts).WithOne(es => es.WorkShift).HasForeignKey(es => es.ShiftId);
+            builder.HasMany(ws => ws.UserShifts).WithOne(es => es.WorkShift).HasForeignKey(es => es.ShiftId);
             builder.HasOne(ws => ws.Company).WithMany(c => c.WorkShifts).HasForeignKey(ws => ws.CompanyId);
         }
     }

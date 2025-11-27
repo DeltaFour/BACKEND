@@ -19,10 +19,13 @@ namespace DeltaFour.Application.Service
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
 
+        ///<sumary>
+        ///Operation for log user
+        ///</sumary>
         public async Task<TreatedUserInformationDto?> Login(LoginDto dto)
         {
             TreatedUserInformationDto? user =
-                await repositories.EmployeeRepository.FindUserInformation(dto.Email);
+                await repositories.UserRepository.FindUserInformation(dto.Email);
             using var hash = SHA256.Create();
             byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
             var hashPassowrd = new StringBuilder();
@@ -38,20 +41,26 @@ namespace DeltaFour.Application.Service
             return null;
         }
 
+        ///<sumary>
+        ///Operation for mapUserInformation to response
+        ///</sumary>
         public UserInfoLoginDto MapUserInfo(TreatedUserInformationDto dto)
         {
             return AuthMapper.MapUserToUserInfoLoginDto(dto);
         }
 
-        public string CreateToken(TreatedUserInformationDto employee)
+        ///<sumary>
+        ///Create tonken for loggin
+        ///</sumary>
+        public string CreateToken(TreatedUserInformationDto user)
         {
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
             var signingCredentials = new SigningCredentials(rsaPrivateKey, SecurityAlgorithms.RsaSha256);
-            UserContext context = AuthMapper.UserContext(employee);
+            UserContext context = AuthMapper.UserContext(user);
             IDictionary<string, object> signingKeys = new Dictionary<string, object>()
             {
                 { "user", JsonConvert.SerializeObject(context) },
-                { "Role", employee.RoleName }
+                { "Role", user.RoleName }
             };
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
@@ -66,12 +75,15 @@ namespace DeltaFour.Application.Service
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<Guid> CreateRefreshToken(TreatedUserInformationDto employee, string jwt)
+        ///<sumary>
+        ///Create refresh token for loggin
+        ///</sumary>
+        public async Task<Guid> CreateRefreshToken(TreatedUserInformationDto user, string jwt)
         {
-            UserAuth? userAuth = await repositories.EmployeeAuthRepository.Find(u => u.EmployeeId == employee.Id);
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(u => u.UserId == user.Id);
             if (userAuth != null)
             {
-                repositories.EmployeeAuthRepository.Delete(userAuth);
+                repositories.UserAuthRepository.Delete(userAuth);
             }
             var tokenHandler = new JsonWebTokenHandler();
             var rsaPublicKey = new RsaSecurityKey(PublicKey);
@@ -80,38 +92,47 @@ namespace DeltaFour.Application.Service
             
             var tokenEncrypted = tokenHandler.EncryptToken(jwt, encryptingCredentials);
 
-            userAuth = new UserAuth(employee.Id, tokenEncrypted, DateTime.UtcNow.AddHours(24));
-            repositories.EmployeeAuthRepository.Create(userAuth);
+            userAuth = new UserAuth(user.Id, tokenEncrypted, DateTime.UtcNow.AddHours(24));
+            repositories.UserAuthRepository.Create(userAuth);
             await repositories.Save();
             return userAuth.Id;
         }
 
+        ///<sumary>
+        ///Remake the token of loggin
+        ///</sumary>
         public async Task<string?> RemakeToken(string refreshToken, string token)
         {
             UserAuth? userAuth =
-                await repositories.EmployeeAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
+                await repositories.UserAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
             if (userAuth != null && userAuth.IsExpired())
             {
                 User user =
-                    await repositories.EmployeeRepository.FindIncludingRole(u => u.Id == GetUserIdFromToken(token)) ??
+                    await repositories.UserRepository.FindIncludingRole(u => u.Id == GetUserIdFromToken(token)) ??
                     throw new BadHttpRequestException("Ops, algo deu errado");
-                return CreateToken(AuthMapper.FromEmployeeToTreatedUserInfo(user));
+                return CreateToken(AuthMapper.FromUserToTreatedUserInfo(user));
             }
 
             return null;
         }
 
+        ///<sumary>
+        ///Operation for logout user
+        ///</sumary>
         public async Task Logout(string refreshToken)
         {
             UserAuth? userAuth =
-                await repositories.EmployeeAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
+                await repositories.UserAuthRepository.Find(ua => ua.Id == Guid.Parse(refreshToken));
             if (userAuth != null)
             {
-                repositories.EmployeeAuthRepository.Delete(userAuth);
+                repositories.UserAuthRepository.Delete(userAuth);
                 await repositories.Save();
             }
         }
 
+        ///<sumary>
+        ///Get id from token
+        ///</sumary>
         private Guid GetUserIdFromToken(string cookieToken)
         {
             var handler = new JwtSecurityTokenHandler();

@@ -5,9 +5,9 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeRepository :  IBaseRepository<User>
+    public interface IUserRepository :  IBaseRepository<User>
     {
-        Task<List<EmployeeResponseDto>> GetAll(Guid companyId);
+        Task<List<UserResponseDto>> GetAll(Guid companyId);
         
         Task<Boolean> FindAny(Expression<Func<User, bool>> predicate);
         

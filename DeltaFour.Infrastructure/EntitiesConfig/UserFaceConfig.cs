@@ -11,14 +11,14 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.ToTable("user_face");
             builder.HasKey(ef => ef.Id);
             builder.Property(ef => ef.Id).HasColumnName("id");
-            builder.Property(ef => ef.EmployeeId).HasColumnName("employee_id").IsRequired();
+            builder.Property(ef => ef.UserId).HasColumnName("employee_id").IsRequired();
             builder.Property(ef => ef.FaceTemplate).IsRequired();
             builder.Property(ef => ef.UpdatedAt).HasColumnName("updated_at");
             builder.Property(ef => ef.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ef => ef.CreatedBy).HasColumnName("created_by").IsRequired();
             builder.Property(ef => ef.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.HasOne<User>(ef => ef.Employee).WithMany(e => e.EmployeeFaces)
-                .HasForeignKey(e => e.EmployeeId);
+            builder.HasOne<User>(ef => ef.User).WithMany(e => e.UserFaces)
+                .HasForeignKey(e => e.UserId);
         }
     }
 }

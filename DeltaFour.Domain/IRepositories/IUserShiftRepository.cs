@@ -3,11 +3,11 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeShiftRepository : IBaseRepository<UserShift>
+    public interface IUserShiftRepository : IBaseRepository<UserShift>
     {
         void Create(UserShift userAttendance);
         
-        void CreateAll(List<UserShift> employeeShifts);
+        void CreateAll(List<UserShift> userShifts);
         
         void Update(UserShift userAttendance);
         
@@ -15,8 +15,8 @@ namespace DeltaFour.Domain.IRepositories
 
         Task<Boolean> FindAny(Expression<Func<UserShift, bool>> predicate);
         
-        void UpdateAll(List<UserShift> employeeShifts);
+        void UpdateAll(List<UserShift> userShifts);
         
-        void DeleteAll(List<UserShift> employeeShifts);
+        void DeleteAll(List<UserShift> userShifts);
     }
 }

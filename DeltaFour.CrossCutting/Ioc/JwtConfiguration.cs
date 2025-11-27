@@ -6,6 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DeltaFour.CrossCutting.Ioc
 {
+    ///<sumary>
+    ///Configuration for Jwt
+    ///</sumary>
     public static class JwtConfiguration
     {
         public static IServiceCollection AddConfigJwt

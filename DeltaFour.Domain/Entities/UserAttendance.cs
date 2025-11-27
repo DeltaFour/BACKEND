@@ -4,7 +4,7 @@ namespace DeltaFour.Domain.Entities
 {
     public class UserAttendance : BaseEntity 
     {
-        public Guid EmployeeId { get; set; }
+        public Guid UserId { get; set; }
         
         public DateTime PunchTime { get; set; }
         
@@ -24,6 +24,6 @@ namespace DeltaFour.Domain.Entities
          
         public Guid? UpdatedBy { get; set; }
         
-        public User? Employee { get; set; }
+        public User? User { get; set; }
     }
 }

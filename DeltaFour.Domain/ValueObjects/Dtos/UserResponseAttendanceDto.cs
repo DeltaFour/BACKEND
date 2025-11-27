@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Domain.ValueObjects.Dtos
 {
-    public class EmployeeResponseAttendanceDto
+    public class UserResponseAttendanceDto
     {
         public Guid Id { get; set; }
         

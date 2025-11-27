@@ -7,34 +7,36 @@ using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
 using GeoAPI.CoordinateSystems;
 using Microsoft.AspNetCore.Http;
-using NetTopologySuite;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.Geometries.Utilities;
 using Newtonsoft.Json;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using System.Security.Cryptography;
 using System.Text;
-using Coordinates = DeltaFour.Domain.Entities.Coordinates;
 
 namespace DeltaFour.Application.Service
 {
-    public class EmployeeService(AllRepositories repository, PythonExe pythonExe)
+    public class UserService(AllRepositories repository, PythonExe pythonExe)
     {
-        public async Task<List<EmployeeResponseDto>> GetAllByCompany(Guid companyId)
+        ///<sumary>
+        ///Operation for get all users from company
+        ///</sumary>
+        public async Task<List<UserResponseDto>> GetAllByCompany(Guid companyId)
         {
-            List<EmployeeResponseDto> employees = await repository.EmployeeRepository.GetAll(companyId);
-            if (employees.Count != 0)
+            List<UserResponseDto> users = await repository.UserRepository.GetAll(companyId);
+            if (users.Count != 0)
             {
-                return employees;
+                return users;
             }
 
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        public async Task Create(EmployeeCreateDto dto, UserContext userAuthenticated)
+        ///<sumary>
+        ///Operation for create user
+        ///</sumary>
+        public async Task Create(UserCreateDto dto, UserContext userAuthenticated)
         {
-            if (await repository.EmployeeRepository.FindAny(e =>
+            if (await repository.UserRepository.FindAny(e =>
                     e.Email == dto.Email && e.CompanyId == userAuthenticated.CompanyId) is false)
             {
                 Role? role = await repository.RoleRepository.Find(r => r.Name == dto.RoleName);
@@ -49,8 +51,8 @@ namespace DeltaFour.Application.Service
                     }
 
                     dto.Password = hashPassowrd.ToString();
-                    User user = EmployeeMapper.FromCreateDto(dto, role.Id, userAuthenticated);
-                    repository.EmployeeRepository.Create(user);
+                    User user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
+                    repository.UserRepository.Create(user);
 
                     String imageForDecode = dto.ImageBase64.Split(',')[1];
 
@@ -61,64 +63,67 @@ namespace DeltaFour.Application.Service
 
                     UserFace userFace =
                         new UserFace(user.Id, embeddingSerialized, userAuthenticated.Id);
-                    repository.EmployeeFaceRepository.Create(userFace);
+                    repository.UserFaceRepository.Create(userFace);
 
-                    List<UserShift> employeeShifts = new List<UserShift>();
-                    foreach (var shift in dto.EmployeeShift)
+                    List<UserShift> userShifts = new List<UserShift>();
+                    foreach (var shift in dto.UserShift)
                     {
-                        employeeShifts.Add(ShiftMapper.FromCreateEmployeeDto(shift, user.Id, userAuthenticated.Id));
+                        userShifts.Add(ShiftMapper.FromCreateUserDto(shift, user.Id, userAuthenticated.Id));
                     }
 
-                    repository.EmployeeShiftRepository.CreateAll(employeeShifts);
+                    repository.UserShiftRepository.CreateAll(userShifts);
                     await repository.Save();
                 }
             }
         }
 
-        public async Task Update(EmployeeUpdateDto dto, UserContext userAuthenticated)
+        ///<sumary>
+        ///Operation for update user
+        ///</sumary>
+        public async Task Update(UserUpdateDto dto, UserContext userAuthenticated)
         {
-            User? employee = await repository.EmployeeRepository.FindIncluding(dto.Id);
-            if (employee != null)
+            User? user = await repository.UserRepository.FindIncluding(dto.Id);
+            if (user != null)
             {
-                EmployeeMapper.UpdateDataEmployeeByUpdateDto(dto, employee, userAuthenticated.Id);
-                repository.EmployeeRepository.Update(employee);
+                UserMapper.UpdateDataUserByUpdateDto(dto, user, userAuthenticated.Id);
+                repository.UserRepository.Update(user);
 
-                List<UserShift> employeeShiftsCreate = new List<UserShift>();
-                List<UserShift> employeeShiftsUpdate = new List<UserShift>();
-                foreach (var shift in dto.EmployeeShift)
+                List<UserShift> userShiftsCreate = new List<UserShift>();
+                List<UserShift> userShiftsUpdate = new List<UserShift>();
+                foreach (var shift in dto.UserShift)
                 {
                     if (shift.Id == null)
                     {
-                        employeeShiftsCreate.Add(
-                            ShiftMapper.FromCreateEmployeeDto(shift, employee.Id, userAuthenticated.Id));
+                        userShiftsCreate.Add(
+                            ShiftMapper.FromCreateUserDto(shift, user.Id, userAuthenticated.Id));
                     }
                     else
                     {
-                        var employeeShift = employee.EmployeeShifts!
+                        var userShift = user.UserShifts!
                             .Find(es => es.Id == shift.Id)!;
-                        ShiftMapper.UpdateEmployeeShift(employeeShift, shift, userAuthenticated.Id);
-                        employeeShiftsUpdate.Add(employeeShift);
+                        ShiftMapper.UpdateUserShift(userShift, shift, userAuthenticated.Id);
+                        userShiftsUpdate.Add(userShift);
                     }
                 }
 
-                List<UserShift> employeeShiftsRemove = new List<UserShift>();
-                foreach (var shift in employee.EmployeeShifts!)
+                List<UserShift> userShiftsRemove = new List<UserShift>();
+                foreach (var shift in user.UserShifts!)
                 {
-                    if (!dto.EmployeeShift.Exists(shiftDto => shiftDto.Id == shift.Id))
+                    if (!dto.UserShift.Exists(shiftDto => shiftDto.Id == shift.Id))
                     {
-                        employeeShiftsRemove.Add(shift);
+                        userShiftsRemove.Add(shift);
                     }
                 }
 
-                if (employeeShiftsRemove.Count > 0)
+                if (userShiftsRemove.Count > 0)
                 {
-                    employee.EmployeeShifts.RemoveAll(ex => employeeShiftsRemove
+                    user.UserShifts.RemoveAll(ex => userShiftsRemove
                         .Exists(exRemove => exRemove.Id == ex.Id));
-                    repository.EmployeeShiftRepository.DeleteAll(employeeShiftsRemove);
+                    repository.UserShiftRepository.DeleteAll(userShiftsRemove);
                 }
 
-                repository.EmployeeShiftRepository.CreateAll(employeeShiftsCreate);
-                repository.EmployeeShiftRepository.UpdateAll(employeeShiftsUpdate);
+                repository.UserShiftRepository.CreateAll(userShiftsCreate);
+                repository.UserShiftRepository.UpdateAll(userShiftsUpdate);
 
                 await repository.Save();
                 return;
@@ -127,13 +132,16 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        public async Task Delete(Guid employeeId)
+        ///<sumary>
+        ///Operation for change the status from user
+        ///</sumary>
+        public async Task Delete(Guid userId)
         {
-            User? employee = await repository.EmployeeRepository.Find(e => e.Id == employeeId);
-            if (employee != null)
+            User? user = await repository.UserRepository.Find(e => e.Id == userId);
+            if (user != null)
             {
-                employee.IsActive = !employee.IsActive;
-                repository.EmployeeRepository.Update(employee);
+                user.IsActive = !user.IsActive;
+                repository.UserRepository.Update(user);
                 await repository.Save();
                 return;
             }
@@ -141,24 +149,35 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Internal error, please contact the support team.");
         }
 
+        ///<sumary>
+        ///Operation for check if user can punch
+        ///</sumary>
         public async Task<Boolean> CanPunchIn(CanPunchDto dto, UserContext user)
         {
             WorkShiftPunchDto? workShift =
-                await repository.WorkShiftRepository.GetByEmployeeIdAndIsActive(user.Id, user.CompanyId);
-            if (workShift != null && CheckTime(workShift, dto.TimePunched, dto.PunchType))
+                await repository.WorkShiftRepository.GetByUserIdAndIsActive(user.Id, user.CompanyId);
+            if (workShift != null && dto.PunchType.Equals(PunchType.IN))
             {
                 return true;
+            }
+
+            if (workShift != null && dto.PunchType.Equals(PunchType.OUT))
+            {
+                return CheckIfCanOut(workShift, dto.TimePunched, dto.PunchType);
             }
 
             return false;
         }
 
-        public async Task<PunchInResponse> PunchIn(PunchDto dto, UserContext user)
+        ///<sumary>
+        ///Operation for punch for user
+        ///</sumary>
+        public async Task<PunchInResponse> PunchIn(PunchDto dto, UserContext userContext)
         {
-            User? employee = await repository.EmployeeRepository.FindForPunchIn(user.Id);
-            if (employee != null)
+            User? user = await repository.UserRepository.FindForPunchIn(userContext.Id);
+            if (user != null)
             {
-                if (!user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
+                if (!userContext.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
                 {
                     var csFactory = new CoordinateSystemFactory();
                     var ctFactory = new CoordinateTransformationFactory();
@@ -179,31 +198,31 @@ namespace DeltaFour.Application.Service
 
                     var userCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(dto.Longitude, dto.Latitude));
                     var companyCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(
-                        employee!.Company.CompanyGeolocation!.Coord.Longitude,
-                        employee.Company.CompanyGeolocation.Coord.Latitude));
+                        user!.Company.CompanyGeolocation!.Coord.Longitude,
+                        user.Company.CompanyGeolocation.Coord.Latitude));
 
                     Double distance = userCoord.Distance(companyCoord);
-                    if (distance > employee.Company.CompanyGeolocation.RadiusMeters)
+                    if (distance > user.Company.CompanyGeolocation.RadiusMeters)
                     {
                         return PunchInResponse.OFR;
                     }
                 }
-                else if (!user.IsAllowedBypassCoord && dto is { Latitude: 0, Longitude: 0 })
+                else if (!userContext.IsAllowedBypassCoord && dto is { Latitude: 0, Longitude: 0 })
                 {
                     throw new BadHttpRequestException("Ocorreu um erro");
                 }
 
 
-                WorkShift? ws = employee.EmployeeShifts?.Find(es => es.IsActive)?.WorkShift;
+                WorkShift? ws = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
                 if (ws != null)
                 {
                     byte[] base64 = Convert.FromBase64String(dto.ImageBase64.Split(',')[1]);
                     var embeddingToVerify = pythonExe.ExtractEmbedding(base64);
 
-                    if (embeddingToVerify != null && employee.EmployeeFaces != null)
+                    if (embeddingToVerify != null && user.UserFaces != null)
                     {
                         double? comparing = pythonExe.CompareEmbeddings(embeddingToVerify,
-                            JsonConvert.DeserializeObject<List<double>>(employee.EmployeeFaces.First().FaceTemplate)!);
+                            JsonConvert.DeserializeObject<List<double>>(user.UserFaces.First().FaceTemplate)!);
                         if (comparing < 50.0)
                         {
                             return PunchInResponse.FNC;
@@ -213,12 +232,12 @@ namespace DeltaFour.Application.Service
                             TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
 
                         UserAttendance userAttendance =
-                            EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id,
+                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
                                 timeCheked, timeCheked
                                     ? null
                                     : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                             TimeOnly.FromDateTime(DateTime.UtcNow)));
-                        repository.EmployeeAttendanceRepository.Create(userAttendance);
+                        repository.UserAttendanceRepository.Create(userAttendance);
                         await repository.Save();
 
                         return PunchInResponse.SCC;
@@ -229,21 +248,30 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        public async Task<UserInfoForRefresh> RefreshUserInformation(UserContext user)
+        ///<sumary>
+        ///Operation for refresh information from user
+        ///</sumary>
+        public async Task<UserInfoLoginDto> RefreshUserInformation(UserContext user)
         {
             TreatedUserInformationDto treatUser =
-                await repository.EmployeeRepository.FindUserInformation(user.Email!)! ??
+                await repository.UserRepository.FindUserInformation(user.Email!)! ??
                 throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
-            return EmployeeMapper.MapInformationForRefresh(treatUser);
+            return AuthMapper.MapUserToUserInfoLoginDto(treatUser);
         }
 
+        ///<sumary>
+        ///Operation for punch for other user
+        ///</sumary>
         public async Task PunchForUser(PunchForUserDto dto, UserContext user)
         {
-            UserAttendance userAttendance = EmployeeAttendanceMapper.EmployeeAttendanceFromDto(dto, user.Id);
-            repository.EmployeeAttendanceRepository.Create(userAttendance);
+            UserAttendance userAttendance = UserAttendanceMapper.UserAttendanceFromDto(dto, user.Id);
+            repository.UserAttendanceRepository.Create(userAttendance);
             await repository.Save();
         }
 
+        ///<sumary>
+        ///Operation for check the time that user is punching, and return true or false, depends on time of WorkShift
+        ///</sumary>
         private Boolean CheckTime(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
         {
             if (type.Equals(PunchType.IN))
@@ -256,9 +284,17 @@ namespace DeltaFour.Application.Service
             {
                 return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
                        time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
-            }
+            } 
 
             return true;
+        }
+
+        ///<sumary>
+        ///Operation for check if user can punch out in correctly time
+        ///</sumary>
+        private Boolean CheckIfCanOut(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
+        {
+            return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time;
         }
     }
 }

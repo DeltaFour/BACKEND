@@ -6,7 +6,10 @@ namespace DeltaFour.Application.Mappers
 {
     public static class AuthMapper
     {
-        public static TreatedUserInformationDto FromEmployeeToTreatedUserInfo(User user)
+        ///<sumary>
+        ///Map information from user to TreatedUserInformation
+        ///</sumary>
+        public static TreatedUserInformationDto FromUserToTreatedUserInfo(User user)
         {
             return new TreatedUserInformationDto()
             {
@@ -20,19 +23,25 @@ namespace DeltaFour.Application.Mappers
             };
         }
         
-        public static UserContext UserContext (TreatedUserInformationDto employee)
+        ///<sumary>
+        ///Map information from TreatedUserInformation to the UserContext
+        ///</sumary>
+        public static UserContext UserContext(TreatedUserInformationDto user)
         {
             return new UserContext()
             {
-                Id = employee.Id,
-                Name = employee.Name,
-                Email = employee.Email,
-                RoleId = employee.RoleId,
-                IsAllowedBypassCoord = employee.IsAllowedBypassCoord,
-                CompanyId = employee.CompanyId,
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                RoleId = user.RoleId,
+                IsAllowedBypassCoord = user.IsAllowedBypassCoord,
+                CompanyId = user.CompanyId,
             };
         }
 
+        ///<sumary>
+        ///Map information from user to UserInfoLoginDto
+        ///</sumary>
         public static UserInfoLoginDto MapUserToUserInfoLoginDto(TreatedUserInformationDto dto)
         {
             UserInfoLoginDto teste = new UserInfoLoginDto()
@@ -40,12 +49,12 @@ namespace DeltaFour.Application.Mappers
                 Name = dto.Name,
                 CompanyName = dto.CompanyName,
                 Role = dto.RoleName,
-                StartDate = dto.EmployeeShift?.StartDate!,
-                ShiftType = dto.EmployeeShift?.ShiftType!,
-                StartTime = dto.EmployeeShift?.StartTime!,
-                EndTime = dto.EmployeeShift?.EndTime!,
+                StartDate = dto.UserShift?.StartDate!,
+                ShiftType = dto.UserShift?.ShiftType!,
+                StartTime = dto.UserShift?.StartTime!,
+                EndTime = dto.UserShift?.EndTime!,
                 LastPunchType = dto.LastPunchType!,
-                LastsEmployeeAttendances = dto.LastsEmployeeAttendances!
+                LastUserAttendances = dto.LastsUserAttendances!
             };
             return teste;
         }
