@@ -26,10 +26,10 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
 
         public String? CompanyName { get; set; }
 
-        public EmployeeShiftInformationDto? EmployeeShift { get; set; }
+        public UserShiftInformationDto? UserShift { get; set; }
 
         public PunchType? LastPunchType { get; set; }
 
-        public List<LastEmployeeAttendancesDto>? LastsEmployeeAttendances { get; set; }
+        public List<LastUserAttendancesDto>? LastsUserAttendances { get; set; }
     }
 }

@@ -29,16 +29,16 @@ public class UserConfig : IEntityTypeConfiguration<User>
             .HasColumnName("created_at");
         builder.Property(e => e.CompanyId).HasColumnName("company_id").IsRequired();
         builder.Property(e => e.RoleId).HasColumnName("role_id");
-        builder.HasOne<Company>(e => e.Company).WithMany(c => c.Employees)
+        builder.HasOne<Company>(e => e.Company).WithMany(c => c.User)
             .HasForeignKey(e => e.CompanyId);
-        builder.HasOne<UserAuth>(e => e.EmployeeAuth).WithOne(ea => ea.Employee)
-            .HasForeignKey<UserAuth>(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(e => e.Role).WithMany(r => r.Employee).HasForeignKey(e => e.RoleId);
-        builder.HasMany(e => e.EmployeeShifts).WithOne(es => es.Employee).HasForeignKey(es => es.EmployeeId)
+        builder.HasOne<UserAuth>(e => e.UserAuth).WithOne(ea => ea.User)
+            .HasForeignKey<UserAuth>(ea => ea.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(e => e.Role).WithMany(r => r.User).HasForeignKey(e => e.RoleId);
+        builder.HasMany(e => e.UserShifts).WithOne(es => es.User).HasForeignKey(es => es.UserId)
             .OnDelete(DeleteBehavior.Cascade);
-        builder.HasMany(e => e.EmployeeAttendances).WithOne(ea => ea.Employee)
-            .HasForeignKey(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasMany(e => e.EmployeeFaces).WithOne(e => e.Employee)
-            .HasForeignKey(ea => ea.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(e => e.UserAttendances).WithOne(ea => ea.User)
+            .HasForeignKey(ea => ea.UserId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasMany(e => e.UserFaces).WithOne(e => e.User)
+            .HasForeignKey(ea => ea.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }

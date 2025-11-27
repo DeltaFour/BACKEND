@@ -3,13 +3,16 @@ using DeltaFour.Domain.Entities;
 
 namespace DeltaFour.Application.Mappers
 {
-    public static class EmployeeAttendanceMapper
+    public static class UserAttendanceMapper
     {
-        public static UserAttendance EmployeeAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
+        ///<sumary>
+        ///Map information from UserAttendance to UserAttendance
+        ///</sumary>
+        public static UserAttendance UserAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
         {
             return new UserAttendance()
             {
-                EmployeeId = userId,
+                UserId = userId,
                 PunchTime = dto.TimePunched,
                 PunchType = dto.Type,
                 ShiftType = dto.ShiftType,
@@ -20,11 +23,14 @@ namespace DeltaFour.Application.Mappers
             };
         }
         
-        public static UserAttendance EmployeeAttendanceFromDto(PunchForUserDto dto, Guid userId)
+        ///<sumary>
+        ///Overload from previous method 
+        ///</sumary>
+        public static UserAttendance UserAttendanceFromDto(PunchForUserDto dto, Guid userId)
         {
             return new UserAttendance()
             {
-                EmployeeId = dto.EmployeeId,
+                UserId = dto.UserId,
                 PunchTime = dto.TimePunched,
                 PunchType = dto.Type,
                 ShiftType = dto.ShiftType,

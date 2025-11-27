@@ -7,12 +7,12 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class EmployeeRepository(AppDbContext context) : IEmployeeRepository
+    public class UserRepository(AppDbContext context) : IUserRepository
     {
-        public async Task<List<EmployeeResponseDto>> GetAll(Guid companyId)
+        public async Task<List<UserResponseDto>> GetAll(Guid companyId)
         {
             return await context.Employees.Where(e => e.IsActive == true && e.CompanyId == companyId)
-                .Select(e => new EmployeeResponseDto()
+                .Select(e => new UserResponseDto()
                 {
                     Id = e.Id,
                     Name = e.Name,
@@ -22,7 +22,7 @@ namespace DeltaFour.Infrastructure.Repositories
                     IsActive = e.IsActive,
                     IsAllowedBypassCoord = e.IsAllowedBypassCoord,
                     LastLogin = e.LastLogin,
-                    ShiftDto = e.EmployeeShifts!.Select(s => new EmployeeResponseShiftsDto()
+                    ShiftDto = e.UserShifts!.Select(s => new UserResponseShiftsDto()
                     {
                         Id = s.Id,
                         StartDate = s.StartDate,
@@ -49,14 +49,14 @@ namespace DeltaFour.Infrastructure.Repositories
         public async Task<User?> FindIncluding(Guid id)
         {
             return await context.Employees.Where(e => e.Id == id)
-                .Include(e => e.EmployeeShifts).SingleOrDefaultAsync();
+                .Include(e => e.UserShifts).SingleOrDefaultAsync();
         }
 
         public async Task<User?> FindForPunchIn(Guid id)
         {
-            return await context.Employees.Where(e => e.Id == id).Include(e => e.EmployeeFaces)
+            return await context.Employees.Where(e => e.Id == id).Include(e => e.UserFaces)
                 .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
-                .Include(e => e.EmployeeShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
+                .Include(e => e.UserShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
         }
 
         public void Create(User user)
@@ -78,18 +78,18 @@ namespace DeltaFour.Infrastructure.Repositories
                 Password = e.Password!,
                 CompanyId = e.CompanyId,
                 CompanyName = e.Company.Name,
-                EmployeeShift =
-                    e.EmployeeShifts!.Where(es => es.IsActive == true)
-                        .Select(es => new EmployeeShiftInformationDto()
+                UserShift =
+                    e.UserShifts!.Where(es => es.IsActive == true)
+                        .Select(es => new UserShiftInformationDto()
                         {
                             StartDate = es.StartDate,
                             ShiftType = es.WorkShift!.ShiftType,
                             StartTime = es.WorkShift.StartTime,
                             EndTime = es.WorkShift.EndTime
                         }).FirstOrDefault(),
-                LastPunchType = e.EmployeeAttendances!.OrderBy(ea => ea.CreatedAt).Last().PunchType,
-                LastsEmployeeAttendances = e.EmployeeAttendances!.OrderByDescending(ea => ea.CreatedAt).Select(ea =>
-                        new LastEmployeeAttendancesDto()
+                LastPunchType = e.UserAttendances!.OrderBy(ea => ea.CreatedAt).Last().PunchType,
+                LastsUserAttendances = e.UserAttendances!.OrderByDescending(ea => ea.CreatedAt).Select(ea =>
+                        new LastUserAttendancesDto()
                         {
                             PunchType = ea.PunchType,
                             ShiftType = ea.ShiftType,

@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Application.Dtos.Requests;
 
-public class EmployeeRequest
+public class UserRequest
 {
     [Required]
     [EmailAddress]

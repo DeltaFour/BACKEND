@@ -15,6 +15,6 @@ namespace DeltaFour.Application.Dtos
         public ShiftType ShiftType { get; set; }
         
         [Required]
-        public Guid EmployeeId { get; set; }
+        public Guid UserId { get; set; }
     }
 }

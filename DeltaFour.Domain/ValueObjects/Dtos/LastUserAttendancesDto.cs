@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Domain.ValueObjects.Dtos
 {
-    public class LastEmployeeAttendancesDto
+    public class LastUserAttendancesDto
     {
         public PunchType? PunchType { get; set; }
         

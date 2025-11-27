@@ -6,7 +6,7 @@ namespace DeltaFour.Domain.Entities
     {
         public Guid ShiftId { get; set; }
         
-        public Guid EmployeeId { get; set; }
+        public Guid UserId { get; set; }
         
         public Boolean IsActive { get; set; }
         
@@ -20,7 +20,7 @@ namespace DeltaFour.Domain.Entities
         
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
         
-        public User? Employee { get; set; }
+        public User? User { get; set; }
         
         public WorkShift? WorkShift { get; set; }
     }

@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeAuthRepository : IBaseRepository<UserAuth>
+    public interface IUserAuthRepository : IBaseRepository<UserAuth>
     {
         void Create(UserAuth userAuth);
         void Update(UserAuth userAuth);

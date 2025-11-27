@@ -40,12 +40,12 @@ namespace DeltaFour.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<WorkShiftPunchDto?> GetByEmployeeIdAndIsActive(Guid employeeId, Guid companyId)
+        public async Task<WorkShiftPunchDto?> GetByUserIdAndIsActive(Guid userId, Guid companyId)
         {
             var query = from ws in context.WorkShifts
                 join es in context.EmployeeShifts on ws.Id equals es.ShiftId
                 where es.IsActive == true &&
-                      es.EmployeeId == employeeId
+                      es.UserId == userId
                       && ws.CompanyId == companyId
                 select new WorkShiftPunchDto()
                 {

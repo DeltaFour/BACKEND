@@ -3,7 +3,7 @@ using DeltaFour.Domain.Enum;
 
 namespace DeltaFour.Domain.ValueObjects.Dtos
 {
-    public class EmployeeResponseDto
+    public class UserResponseDto
     {
         public Guid Id { get; set; }
 
@@ -21,6 +21,6 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
 
         public DateTime? LastLogin { get; set; }
         
-        public List<EmployeeResponseShiftsDto>? ShiftDto { get; set; }
+        public List<UserResponseShiftsDto>? ShiftDto { get; set; }
     }
 }

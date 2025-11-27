@@ -19,7 +19,7 @@ namespace DeltaFour.Domain.Entities
         public Company? Company { get; set; }
         
         [JsonIgnore]
-        public List<User>? Employee { get; set; }
+        public List<User>? User { get; set; }
         
         public List<RolePermission>? RolePermissions { get; set; }
     }

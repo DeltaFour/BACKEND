@@ -12,42 +12,57 @@ namespace DeltaFour.API.Controllers
     [Route("api/v1/user")]
     [Authorize]
     [ApiController]
-    public class UserController(EmployeeService service) : Controller
+    public class UserController(UserService service) : Controller
     {
+        ///<sumary>
+        ///List all user from company
+        ///</sumary>
         [HttpGet("list")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<ActionResult<List<EmployeeResponseDto>>> GetAllByCompany()
+        public async Task<ActionResult<List<UserResponseDto>>> GetAllByCompany()
         {
-            var employee = HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(await service.GetAllByCompany(employee.CompanyId));
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(await service.GetAllByCompany(user.CompanyId));
         }
 
+        ///<sumary>
+        ///Create user for company
+        ///</sumary>
         [HttpPost("create")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> Create([FromBody] EmployeeCreateDto employeeCreateDto)
+        public async Task<IActionResult> Create([FromBody] UserCreateDto userCreateDto)
         {
-            var employee = HttpContext.GetUserAuthenticated<UserContext>(); 
-            await service.Create(employeeCreateDto, employee);
+            var user = HttpContext.GetUserAuthenticated<UserContext>(); 
+            await service.Create(userCreateDto, user);
             return Ok();
         }
 
+        ///<sumary>
+        ///Update user of company
+        ///</sumary>
         [HttpPatch("update")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> Update([FromBody] EmployeeUpdateDto employeeUpdateDto)
+        public async Task<IActionResult> Update([FromBody] UserUpdateDto userUpdateDto)
         {
-            var employee = HttpContext.GetUserAuthenticated<UserContext>();
-            await service.Update(employeeUpdateDto, employee);
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            await service.Update(userUpdateDto, user);
             return Ok();
         }
 
-        [HttpDelete("change-status/{employeeId}")]
+        ///<sumary>
+        ///Change the status from a specific user
+        ///</sumary>
+        [HttpDelete("change-status/{userId}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> ChangeStatus(Guid employeeId)
+        public async Task<IActionResult> ChangeStatus(Guid userId)
         {
-            await service.Delete(employeeId);
+            await service.Delete(userId);
             return Ok();
         }
 
+        ///<sumary>
+        ///Check if user can punch
+        ///</sumary>
         [HttpPost("allowed-punch")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
@@ -56,6 +71,9 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.CanPunchIn(dto, user)); 
         }
 
+        ///<sumary>
+        ///Punch for user
+        ///</sumary>
         [HttpPost("register-point")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
@@ -70,14 +88,20 @@ namespace DeltaFour.API.Controllers
             return BadRequest(response.Message());
         }
 
+        ///<sumary>
+        ///Refresh information of user logged
+        ///</sumary>
         [HttpGet("refresh-information")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
-        public async Task<UserInfoForRefresh> RefreshInformation()
+        public async Task<UserInfoLoginDto> RefreshInformation()
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
             return await service.RefreshUserInformation(user);
         }
 
+        ///<sumary>
+        ///Other user can punch for specific user
+        ///</sumary>
         [HttpPost("punch-for-user")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> PunchForUser([FromBody] PunchForUserDto dto)

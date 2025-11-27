@@ -14,7 +14,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.ToTable("user_attendance");
             builder.HasKey(ea => ea.Id);
             builder.Property(ea => ea.Id).HasColumnName("id");
-            builder.Property(ea => ea.EmployeeId).HasColumnName("employee_id").IsRequired();
+            builder.Property(ea => ea.UserId).HasColumnName("employee_id").IsRequired();
             builder.Property(ea => ea.PunchTime).HasColumnName("punch_time").IsRequired();
             builder.Property(ea => ea.PunchType) .HasConversion(
                 v => v.ToString(), v => (PunchType)Enum.Parse(typeof(PunchType), v)
@@ -30,8 +30,8 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(ea => ea.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ea => ea.CreatedBy).HasColumnName("created_by").IsRequired();
             builder.Property(ea => ea.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.HasOne<User>(ea => ea.Employee).WithMany(e => e.EmployeeAttendances)
-                .HasForeignKey(ea => ea.EmployeeId);
+            builder.HasOne<User>(ea => ea.User).WithMany(e => e.UserAttendances)
+                .HasForeignKey(ea => ea.UserId);
         }
     }
 }

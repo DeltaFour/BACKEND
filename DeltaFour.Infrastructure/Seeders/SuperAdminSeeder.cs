@@ -15,7 +15,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
     {
         var email = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
 
-        return await unitOfWork.EmployeeRepository.FindAny(e => e.Email == email);
+        return await unitOfWork.UserRepository.FindAny(e => e.Email == email);
     }
 
     private Company SaveCompanySuperAdmin()
@@ -87,7 +87,7 @@ public class SuperAdminSeeder(IUnitOfWork unitOfWork)
             IsAllowedBypassCoord = isAllowedBypassCoord,
         };
 
-        unitOfWork.EmployeeRepository.Create(employee);
+        unitOfWork.UserRepository.Create(employee);
     }
 
     public async Task SeedAsync()

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace DeltaFour.Infrastructure.Repositories
 {
-    public class EmployeeFaceRepository(AppDbContext context) : IEmployeeFaceRepository
+    public class UserFaceRepository(AppDbContext context) : IUserFaceRepository
     {
         public async Task<UserFace?> Find(Expression<Func<UserFace, bool>> predicate)
         {
@@ -20,13 +20,13 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.EmployeeFaces.Remove(userFace);
         }
-        public void CreateAll(List<UserFace> employees)
+        public void CreateAll(List<UserFace> users)
         {
-            context.EmployeeFaces.AddRange(employees);
+            context.EmployeeFaces.AddRange(users);
         }
-        public void DeleteAll(List<UserFace> employees)
+        public void DeleteAll(List<UserFace> users)
         {
-            context.EmployeeFaces.RemoveRange(employees);
+            context.EmployeeFaces.RemoveRange(users);
         }
     }
 }

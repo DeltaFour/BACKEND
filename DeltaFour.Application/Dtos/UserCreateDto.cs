@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Application.Dtos
 {
-    public class EmployeeCreateDto
+    public class UserCreateDto
     {
         [Required]
         public String? Name { get; set; }
@@ -20,7 +20,7 @@ namespace DeltaFour.Application.Dtos
         public String? CellPhone { get; set; }
         
         [Required]
-        public List<EmployeeShiftDto> EmployeeShift { get; set; }
+        public List<UserShiftDto> UserShift { get; set; }
         
         [Required]
         public String ImageBase64 { get; set; }

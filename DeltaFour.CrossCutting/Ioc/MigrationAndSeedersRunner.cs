@@ -12,6 +12,9 @@ namespace DeltaFour.CrossCutting.Ioc;
 
 public static class MigrationAndSeedersRunner
 {
+    ///<sumary>
+    ///Configuration for migrations and seeder
+    ///</sumary>
     public async static Task ApplyMigrationsAndSeedAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();

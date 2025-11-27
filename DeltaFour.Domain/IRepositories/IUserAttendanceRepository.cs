@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Domain.IRepositories
 {
-    public interface IEmployeeAttendanceRepository : IBaseRepository<UserAttendance>
+    public interface IUserAttendanceRepository : IBaseRepository<UserAttendance>
     {
         void Create(UserAttendance userAttendance);
         

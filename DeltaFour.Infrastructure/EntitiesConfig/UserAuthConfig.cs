@@ -18,9 +18,9 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(u => u.Id).HasColumnName("id");
             builder.Property(ua => ua.RefreshToken).HasColumnName("refresh_token").IsRequired();
             builder.Property(ua => ua.ExpiresAt).HasColumnName("expires_at").IsRequired();
-            builder.Property(ua => ua.EmployeeId).HasColumnName("employee_id");
-            builder.HasOne(au => au.Employee).WithOne(u => u.EmployeeAuth)
-                .HasForeignKey<UserAuth>(ua => ua.EmployeeId);
+            builder.Property(ua => ua.UserId).HasColumnName("employee_id");
+            builder.HasOne(au => au.User).WithOne(u => u.UserAuth)
+                .HasForeignKey<UserAuth>(ua => ua.UserId);
         }
 
     }

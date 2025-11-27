@@ -11,6 +11,9 @@ public class CreateService(IUnitOfWork unitOfWork)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
+    ///<sumary>
+    ///Operation for create company for new user
+    ///</sumary>
     private CompanyEntity SaveCompany(CreateCompanyRequest request, Guid userId)
     {
         var company = new CompanyEntity()
@@ -25,7 +28,10 @@ public class CreateService(IUnitOfWork unitOfWork)
 
         return company;
     }
-
+    
+    ///<sumary>
+    ///Operation for create role for new user
+    ///</sumary>
     private Role SaveRole(Guid companyId, Guid userId)
     {
         var role = new Role()
@@ -41,8 +47,11 @@ public class CreateService(IUnitOfWork unitOfWork)
         return role;
     }
 
-    private User SaveFirstEmployee(
-        EmployeeRequest request,
+    ///<sumary>
+    ///Operation for create the new user
+    ///</sumary>
+    private User SaveFirstUser(
+        UserRequest request,
         Guid companyId,
         Guid createdBy,
         Guid roleId
@@ -55,7 +64,7 @@ public class CreateService(IUnitOfWork unitOfWork)
         {
             hashPassowrd.Append(b.ToString("x2"));
         }
-        var employee = new User()
+        var user = new User()
         {
             Name = request.Name,
             Email = request.Email,
@@ -67,17 +76,20 @@ public class CreateService(IUnitOfWork unitOfWork)
             IsConfirmed = true,
         };
 
-        _unitOfWork.EmployeeRepository.Create(employee);
+        _unitOfWork.UserRepository.Create(user);
 
-        return employee;
+        return user;
     }
 
+    ///<sumary>
+    ///Unified operation for create all at the same time
+    ///</sumary>
     public async Task Create(CreateCompanyRequest request, Guid createdBy)
     {
         var company = SaveCompany(request, createdBy);
         var role = SaveRole(company.Id, createdBy);
         
-        SaveFirstEmployee(request.Employee!, company.Id, createdBy, role.Id);
+        SaveFirstUser(request.User!, company.Id, createdBy, role.Id);
 
         await _unitOfWork.Save();
     }

@@ -21,6 +21,6 @@ namespace DeltaFour.Application.Dtos
 
         public PunchType? LastPunchType { get; set; }
 
-        public List<LastEmployeeAttendancesDto>? LastsEmployeeAttendances { get; set; }
+        public List<LastUserAttendancesDto>? LastUserAttendances { get; set; }
     }
 }

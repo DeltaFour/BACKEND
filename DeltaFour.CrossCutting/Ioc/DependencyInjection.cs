@@ -15,6 +15,9 @@ namespace DeltaFour.CrossCutting.Ioc;
 
 public static class DependencyInjection
 {
+    ///<sumary>
+    ///Configuration for Dependency injection and enviroment
+    ///</sumary>
     public static IServiceCollection AddInfrastructure
     (
         this IServiceCollection services,
@@ -35,10 +38,10 @@ public static class DependencyInjection
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
                     uoptions => uoptions.UseNetTopologySuite()));
-            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-            services.AddScoped<IEmployeeAuthRepository, EmployeeAuthRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserAuthRepository, UserAuthRepository>();
             services.AddScoped<AuthService>();
-            services.AddScoped<EmployeeService>();
+            services.AddScoped<UserService>();
             services.AddScoped<WorkShiftService>();
             services.AddScoped<AllRepositories>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
@@ -47,10 +50,10 @@ public static class DependencyInjection
             services.AddScoped<IActionRepository, ActionRepository>();
             services.AddScoped<ILocationRepository, LocationRepository>();
             services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
-            services.AddScoped<IEmployeeAttendanceRepository, EmployeeAttendanceRepository>();
-            services.AddScoped<IEmployeeShiftRepository, EmployeeShiftRepository>();
+            services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
+            services.AddScoped<IUserShiftRepository, UserShiftRepository>();
             services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
-            services.AddScoped<IEmployeeFaceRepository, EmployeeFaceRepository>();
+            services.AddScoped<IUserFaceRepository, UserFaceRepository>();
             services.AddScoped<IUnitOfWork, AllRepositories>();
             services.AddScoped<PythonExe>();
             services.AddScoped<SuperAdminSeeder>();

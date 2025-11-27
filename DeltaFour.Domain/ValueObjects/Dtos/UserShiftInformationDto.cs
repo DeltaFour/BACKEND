@@ -2,7 +2,7 @@
 
 namespace DeltaFour.Domain.ValueObjects.Dtos
 {
-    public class EmployeeShiftInformationDto
+    public class UserShiftInformationDto
     {
         public DateTime? StartDate { get; set; }
         

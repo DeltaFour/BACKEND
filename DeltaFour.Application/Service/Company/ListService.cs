@@ -7,6 +7,9 @@ public class ListService(IUnitOfWork unitOfWork)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
+    ///<sumary>
+    ///Operation for list all companies
+    ///</sumary>
     public async Task<ListCompaniesResponse> Get()
     {
         var companies = await _unitOfWork.CompanyRepository.FindAll(c => new GetCompaniesItemResponse
