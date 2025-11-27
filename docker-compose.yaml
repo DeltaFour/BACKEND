@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  deltafour.api:
+  ponto-eletronico-api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: delta-four-api
+    image: ponto-eletronico-api:latest
     ports:
       - "8080:8080"
     env_file:
