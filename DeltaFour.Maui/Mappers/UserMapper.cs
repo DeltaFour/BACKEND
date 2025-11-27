@@ -85,36 +85,53 @@ namespace DeltaFour.Maui.Mappers
         /// usando o payload enxuto de /api/v1/user/refresh-information.
         /// Não mexe em Name, CompanyName, StartTime, EndTime etc.
         /// </summary>
-        public static void ApplyRefresh(LocalUser target, ApiUserRefreshDto refresh)
+        public static void ApplyRefresh(LocalUser target, ApiUserDto refresh)
         {
             if (target == null)
                 throw new ArgumentNullException(nameof(target));
             if (refresh == null)
                 throw new ArgumentNullException(nameof(refresh));
 
+            // Campos básicos
+            target.Name = refresh.Name ?? string.Empty;
+            target.CompanyName = refresh.CompanyName ?? string.Empty;
+            target.ShiftType = refresh.ShiftType ?? string.Empty;
+
+            // Horário de turno (mesma lógica de ToLocalUser)
+            DateTime start = default;
+            DateTime end = default;
+
+            bool hasSchedule =
+                refresh.StartDate != default &&
+                !string.IsNullOrWhiteSpace(refresh.StartTime) &&
+                !string.IsNullOrWhiteSpace(refresh.EndTime);
+
+            if (hasSchedule)
+            {
+                start = CombineDateAndTime(refresh.StartDate, refresh.StartTime);
+                end = CombineDateAndTime(refresh.StartDate, refresh.EndTime);
+
+                if (end <= start)
+                    end = end.AddDays(1);
+
+                target.StartTime = start;
+                target.EndTime = end;
+            }
+
+            // Últimas batidas
             if (refresh.LastsEmployeeAttendances == null ||
                 refresh.LastsEmployeeAttendances.Count == 0)
             {
+                target.RecentActivities = new List<RecentActivity>();
                 return;
             }
 
-            target.RecentActivities ??= new List<RecentActivity>();
-
-            foreach (var src in refresh.LastsEmployeeAttendances)
-            {
-                if (src == null)
-                    continue;
-
-                var act = ToRecentActivity(src);
-
-                bool exists = target.RecentActivities.Any(x =>
-                    x.PunchTime == act.PunchTime &&
-                    string.Equals(x.PunchType, act.PunchType, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ShiftType, act.ShiftType, StringComparison.OrdinalIgnoreCase));
-
-                if (!exists)
-                    target.RecentActivities.Add(act);
-            }
+            target.RecentActivities = refresh.LastsEmployeeAttendances
+                .Where(a => a != null)
+                .Select(ToRecentActivity)
+                .ToList();
         }
+
+
     }
 }

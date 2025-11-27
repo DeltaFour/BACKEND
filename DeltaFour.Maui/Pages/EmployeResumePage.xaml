@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    Shell.TabBarIsVisible="True"
+    Shell.TabBarIsVisible="False"
     Shell.NavBarIsVisible="True"
     Shell.BackgroundColor="{StaticResource Surface}"
         >
@@ -23,7 +23,7 @@
     </Shell.TitleView>
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Order="Secondary" Text="Configurações" />
+        <ToolbarItem Order="Secondary" Text="Enviar Feedback" Clicked="OnEnviarFeedbackClicked"/>
         <ToolbarItem Order="Secondary" Text="Sair" Clicked="OnLogoutClicked"/>
     </ContentPage.ToolbarItems>
     <Grid
@@ -305,13 +305,15 @@
                VerticalOptions="Fill"
                Color="#EEF1F5"/>
                 </Grid>
-
                 <Label Grid.Row="1" Grid.Column="0"
-           Padding="6,2"
-           Text="{Binding LastPunchText}"
-           FontSize="12"
-           TextColor="{StaticResource Muted}"
-           VerticalTextAlignment="Center"/>
+       Padding="6,2"
+       FontSize="12"
+       TextColor="{StaticResource Muted}"
+       VerticalTextAlignment="Center">
+                    <Label.FormattedText>
+                        <Binding Path="LastPunchFormatted" />
+                    </Label.FormattedText>
+                </Label>
 
                 <Label Grid.Row="1" Grid.Column="2"
            Padding="6,2"
@@ -324,8 +326,8 @@
                 <ImageButton Grid.Row="2" Grid.Column="2"
                         HorizontalOptions="Start"
                         Source="chevron"
-                        HeightRequest="10"
-                        WidthRequest="10"
+                        HeightRequest="20"
+                        WidthRequest="20"
                         Pressed="OnActionButtonPressed"
                         Released="OnActionButtonReleased"
                         CornerRadius="16"

@@ -8,10 +8,6 @@ using System.Threading.Tasks;
 using DeltaFour.Maui.Services;
 using System.Diagnostics;
 using System.Globalization;
-
-
-
-
 #if ANDROID
 using DeltaFour.Maui.Local;
 using MLFace = Xamarin.Google.MLKit.Vision.Face.Face;
@@ -28,26 +24,23 @@ namespace DeltaFour.Maui.Pages
         public string PunchType { get; set; } = "";
         private string _timeBrtString = "";
         private DateTime? _punchTimeBrt;
+        bool _allowIcon = true;
 
+        /// <summary>
+        /// Representa o horário da batida em BRT recebido por query string.
+        /// </summary>
         public string TimeBrtString
         {
             get => _timeBrtString;
             set
             {
                 _timeBrtString = value;
-
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     _punchTimeBrt = null;
                     return;
                 }
-
-                if (DateTime.TryParseExact(
-                        value,
-                        "yyyy-MM-dd'T'HH:mm:ss.fff",
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out var dt))
+                if (DateTime.TryParseExact(value, "yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
                 {
                     _punchTimeBrt = DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
                 }
@@ -57,23 +50,23 @@ namespace DeltaFour.Maui.Pages
                 }
             }
         }
+
+        /// <summary>
+        /// Resolve as dependências de sessão e serviço de API a partir do container.
+        /// </summary>
+        /// <returns>True se as dependências foram resolvidas.</returns>
         private bool TryResolveDependencies()
         {
             if (session != null && apiService != null)
                 return true;
-
-            var services =
-                Handler?.MauiContext?.Services ??
-                Application.Current?.Handler?.MauiContext?.Services;
-
+            var services = Handler?.MauiContext?.Services ?? Application.Current?.Handler?.MauiContext?.Services;
             if (services == null)
                 return false;
-
             session ??= services.GetRequiredService<ISession>();
             apiService ??= services.GetRequiredService<IApiService>();
-
             return true;
         }
+
         enum FaceStatus
         {
             NoFace,
@@ -116,185 +109,203 @@ namespace DeltaFour.Maui.Pages
         CancellationTokenSource? _countdownCts;
         bool _finished;
 
+        /// <summary>
+        /// Inicializa a página de registro facial e configura bindings e handlers.
+        /// </summary>
         public FaceRegisterPage()
         {
             InitializeComponent();
-
             BindingContext = this;
             _currentStatus = FaceStatus.NoFace;
             FaceStatusText = "Rosto não detectado!";
-
 #if ANDROID
             FacesOverlay.Drawable = _boxesDrawable;
             Preview.FacesDetected += OnFacesDetected;
             StatusIcon.Data = NoFaceGeometry;
 #endif
-
             UpdateIconVisibility();
         }
 
+        /// <summary>
+        /// Executado quando a página aparece; reinicia estado visual e captura.
+        /// </summary>
         protected override void OnAppearing()
         {
             base.OnAppearing();
-
             _finished = false;
             _currentStatus = FaceStatus.NoFace;
             FaceStatusText = "Rosto não detectado!";
-
             CancelCountdown();
-
 #if ANDROID
             FacesOverlay.Drawable = _boxesDrawable;
-
             Preview.FacesDetected -= OnFacesDetected;
             Preview.FacesDetected += OnFacesDetected;
-
             StatusIcon.Data = NoFaceGeometry;
-            Preview.IsActive = true; 
+            Preview.IsActive = true;
 #endif
-
             UpdateIconVisibility();
         }
 
+        /// <summary>
+        /// Executado quando a página desaparece; limpa handlers e preview.
+        /// </summary>
         protected override void OnDisappearing()
         {
 #if ANDROID
             Preview.FacesDetected -= OnFacesDetected;
             CancelCountdown();
-
             _boxesDrawable.UpdateFaces(Array.Empty<MLFace>(), 0, 0, 0, true);
             FacesOverlay.Invalidate();
             Preview.IsActive = false;
 #endif
-
             base.OnDisappearing();
         }
 
+        /// <summary>
+        /// Atualiza a visibilidade do ícone de status conforme a contagem.
+        /// </summary>
         void UpdateIconVisibility()
         {
-            // Ícone só some enquanto a contagem está ativa
-            StatusIcon.IsVisible = _countdownCts == null;
+            StatusIcon.IsVisible = _allowIcon && _countdownCts == null;
         }
+
+        /// <summary>
+        /// Registra o ponto na API após captura de imagem e localização.
+        /// </summary>
+        /// <returns>Tarefa assíncrona de registro.</returns>
         async Task RegisterPunchAsync(CancellationToken token)
         {
             if (!TryResolveDependencies())
             {
-                FaceStatusText = "Erro interno. Tente novamente.";
+                _finished = false;
+                _currentStatus = FaceStatus.NoFace;
+                SetMessageWithoutIcon("Erro interno. Tente novamente.");
                 return;
             }
-
 #if ANDROID
-
-            FaceStatusText = "Capturando imagem...";
-            string imageBase64 = await Preview.CaptureBase64Async(token);
-            if (string.IsNullOrEmpty(imageBase64))
-            {
-                FaceStatusText = "Erro em capturar imagem. Tente novamente.";
-                Preview.IsActive = true;
-                return;
-            }
-
-            FaceStatusText = "Registrando ponto...";
-            _finished = true;
-          
-            double latitude = 0;
-            double longitude = 0;
+            bool captureDone = false;
             try
             {
-                var location = await Geolocation.Default.GetLocationAsync(
-                    new GeolocationRequest(GeolocationAccuracy.Medium),
-                    token);
-
-                if (location != null)
+                FaceStatusText = "Capturando imagem...";
+                string imageBase64 = await Preview.CaptureBase64Async(token);
+                if (string.IsNullOrEmpty(imageBase64))
                 {
-                    latitude = location.Latitude;
-                    longitude = location.Longitude;
+                    _finished = false;
+                    _currentStatus = FaceStatus.NoFace;
+                    SetMessageWithoutIcon("Erro em capturar imagem. Tente novamente.");
+                    Preview.IsActive = true;
+                    return;
                 }
-                Trace.WriteLine($"Location: {latitude}, {longitude}");
-            }
-            catch
-            {
-            }
-            DateTime punchTime;
-            if (_punchTimeBrt.HasValue)
-            {
-                punchTime = _punchTimeBrt.Value;
-                Trace.WriteLine($"Time BRT (via navigation): {punchTime}");
-            }
-            else
-            {
-                punchTime = DateTime.UtcNow;
-                Trace.WriteLine($"PunchTime (UTC fallback): {punchTime:o}");
-            }
-            var shiftType = session?.CurrentUser.ShiftType ?? "DEFAULT";
-            Trace.WriteLine($"Testes {shiftType}");
-            Trace.WriteLine($"{apiService} API");
-            FaceStatusText = "Isso pode demorar um pouco...";
-            var ok = await apiService!.PunchInAsync(
-                punchTime,
-                imageBase64,
-                shiftType,
-                PunchType,
-                latitude,
-                longitude,
-                token);
-
-            if (ok)
-            {
-                FaceStatusText = "Ponto registrado com sucesso!";
-                Preview.IsActive = false;
+                captureDone = true;
                 _finished = true;
-                await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
+                FaceStatusText = "Registrando ponto...";
+                double latitude = 0;
+                double longitude = 0;
+                try
+                {
+                    var location = await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium), token);
+                    if (location != null)
+                    {
+                        latitude = location.Latitude;
+                        longitude = location.Longitude;
+                    }
+                    Trace.WriteLine($"Location: {latitude}, {longitude}");
+                }
+                catch
+                {
+                }
+                DateTime punchTime;
+                if (_punchTimeBrt.HasValue)
+                {
+                    punchTime = _punchTimeBrt.Value;
+                    Trace.WriteLine($"Time BRT (via navigation): {punchTime}");
+                }
+                else
+                {
+                    punchTime = DateTime.UtcNow;
+                    Trace.WriteLine($"PunchTime (UTC fallback): {punchTime:o}");
+                }
+                var shiftType = session?.CurrentUser?.ShiftType ?? "DEFAULT";
+                FaceStatusText = "Isso pode demorar um pouco...";
+                var ok = await apiService!.PunchInAsync(punchTime, imageBase64, shiftType, PunchType, latitude, longitude, token);
+                if (ok)
+                {
+                    SetMessageWithoutIcon("Ponto registrado com sucesso!");
+                    Preview.IsActive = false;
+                    await Task.Delay(2500);
+                    await Shell.Current.GoToAsync("//MainTabs/EmployeResumePage");
+                }
+                else
+                {
+                    SetMessageWithoutIcon("Falha ao registrar. Tente novamente.");
+                    await Task.Delay(2500);
+                    _finished = false;
+                    _currentStatus = FaceStatus.NoFace;
+                    Preview.IsActive = true;
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                FaceStatusText = "Falha ao registrar. Tente novamente.";
+                if (!captureDone)
+                {
+                    _finished = false;
+                    _currentStatus = FaceStatus.NoFace;
+                }
+            }
+            catch (Exception ex)
+            {
+                _finished = false;
+                _currentStatus = FaceStatus.NoFace;
+                Trace.WriteLine($"Erro ao registrar ponto: {ex}");
+                SetMessageWithoutIcon("Falha ao registrar. Tente novamente.");
                 Preview.IsActive = true;
             }
 #endif
         }
+
+        /// <summary>
+        /// Cancela a contagem regressiva em andamento para registro automático.
+        /// </summary>
         void CancelCountdown()
         {
             if (_countdownCts is null)
                 return;
-
             _countdownCts.Cancel();
             _countdownCts.Dispose();
             _countdownCts = null;
-
             UpdateIconVisibility();
         }
 
+        /// <summary>
+        /// Inicia a contagem regressiva enquanto o rosto permanece em posição perfeita.
+        /// </summary>
+        /// <returns>Tarefa assíncrona da contagem regressiva.</returns>
         async Task StartCountdownAsync()
         {
             if (_countdownCts is not null || _finished)
                 return;
-
             _countdownCts = new CancellationTokenSource();
             UpdateIconVisibility();
-
             var token = _countdownCts.Token;
             const int seconds = 3;
             int remaining = seconds;
-
             try
             {
                 while (remaining > 0)
                 {
                     if (_currentStatus != FaceStatus.Perfect || _finished)
                         throw new TaskCanceledException();
-
-                    FaceStatusText = $"Perfeito. Registrando ponto em {remaining}s...";
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        FaceStatusText = $"Perfeito. Registrando ponto em {remaining}s...";
+                    });
                     await Task.Delay(1000, token);
                     remaining--;
                 }
-
                 await RegisterPunchAsync(token);
-
             }
             catch (TaskCanceledException)
             {
-                // saiu da posição ideal / cancelou
             }
             finally
             {
@@ -302,22 +313,34 @@ namespace DeltaFour.Maui.Pages
             }
         }
 
-#if ANDROID
-        void SetStatus(FaceStatus status, string text)
+        /// <summary>
+        /// Define a mensagem de status desabilitando a exibição do ícone.
+        /// </summary>
+        void SetMessageWithoutIcon(string text)
         {
-            _currentStatus = status;
-
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                // usa binding
                 FaceStatusText = text;
+                _allowIcon = false;
+                UpdateIconVisibility();
+            });
+        }
 
+#if ANDROID
+        /// <summary>
+        /// Atualiza o estado visual e textual do status do rosto.
+        /// </summary>
+        void SetStatus(FaceStatus status, string text, bool showIcon = true)
+        {
+            _currentStatus = status;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                FaceStatusText = text;
                 switch (status)
                 {
                     case FaceStatus.NoFace:
                         StatusIcon.Data = NoFaceGeometry;
                         break;
-
                     case FaceStatus.TooFar:
                     case FaceStatus.TooClose:
                     case FaceStatus.OutOfEllipse:
@@ -325,29 +348,28 @@ namespace DeltaFour.Maui.Pages
                         StatusIcon.Data = WarningGeometry;
                         break;
                 }
-
-                // visibilidade controlada pela contagem
+                _allowIcon = showIcon;
                 UpdateIconVisibility();
             });
         }
 
+        /// <summary>
+        /// Verifica se o rosto está dentro da área elíptica desenhada na tela.
+        /// </summary>
+        /// <returns>True se o rosto estiver dentro da elipse.</returns>
         bool IsFaceInsideEllipse(MLFace face, int imgW, int imgH)
         {
             double viewW = Preview.Width;
             double viewH = Preview.Height;
-
             if (viewW <= 0 || viewH <= 0)
                 return true;
-
             var box = face.BoundingBox;
             if (box == null)
                 return false;
-
             float left = box.Left;
             float top = box.Top;
             float right = box.Right;
             float bottom = box.Bottom;
-
             const bool isFront = true;
             if (isFront)
             {
@@ -357,41 +379,33 @@ namespace DeltaFour.Maui.Pages
                 left = mirroredLeft;
                 right = mirroredRight;
             }
-
             float scaleX = (float)(viewW / imgH);
             float scaleY = (float)(viewH / imgW);
-
             double vx = left * scaleX;
             double vy = top * scaleY;
             double vw = (right - left) * scaleX;
             double vh = (bottom - top) * scaleY;
-
             double cx = vx + vw / 2.0;
             double cy = vy + vh / 2.0;
-
             double centerX = viewW / 2.0;
             double centerY = viewH / 2.0;
-
             double radius = Math.Min(viewW, viewH) * 0.55;
-
             double dx = cx - centerX;
             double dy = cy - centerY;
             double dist = Math.Sqrt(dx * dx + dy * dy);
-
             double faceRadius = Math.Min(vw, vh) / 2.0;
-
             return dist + faceRadius * 0.5 <= radius;
         }
 
+        /// <summary>
+        /// Processa faces detectadas pela câmera e controla a contagem para registro.
+        /// </summary>
         void OnFacesDetected(IList<MLFace> faces, int width, int height, int rotation)
         {
             if (_finished)
                 return;
-
-            // desenho das caixas (opcional)
             _boxesDrawable.UpdateFaces(faces, width, height, rotation, isFrontCamera: true);
             FacesOverlay.Invalidate();
-
             if (faces is null || faces.Count == 0 || width <= 0 || height <= 0)
             {
                 if (_currentStatus != FaceStatus.NoFace)
@@ -401,15 +415,13 @@ namespace DeltaFour.Maui.Pages
                 }
                 return;
             }
-
             MLFace? bestFace = null;
             float bestArea = 0;
-
             foreach (var f in faces)
             {
                 var box = f.BoundingBox;
-                if (box is null) continue;
-
+                if (box is null)
+                    continue;
                 float w = box.Width();
                 float h = box.Height();
                 float area = w * h;
@@ -419,7 +431,6 @@ namespace DeltaFour.Maui.Pages
                     bestFace = f;
                 }
             }
-
             if (bestFace is null)
             {
                 if (_currentStatus != FaceStatus.NoFace)
@@ -429,7 +440,6 @@ namespace DeltaFour.Maui.Pages
                 }
                 return;
             }
-
             if (!IsFaceInsideEllipse(bestFace, width, height))
             {
                 if (_currentStatus != FaceStatus.OutOfEllipse)
@@ -439,13 +449,10 @@ namespace DeltaFour.Maui.Pages
                 }
                 return;
             }
-
             var bb = bestFace.BoundingBox;
             var faceHeightRatio = bb.Height() / (double)height;
-
             const double MinRatio = 0.25;
             const double MaxRatio = 0.55;
-
             if (faceHeightRatio < MinRatio)
             {
                 if (_currentStatus != FaceStatus.TooFar)
@@ -466,7 +473,7 @@ namespace DeltaFour.Maui.Pages
             {
                 if (_currentStatus != FaceStatus.Perfect)
                 {
-                    SetStatus(FaceStatus.Perfect, "Perfeito. Mantenha o rosto na área...");
+                    SetStatus(FaceStatus.Perfect, "Perfeito. Mantenha o rosto na área...", showIcon: false);
                     _ = StartCountdownAsync();
                 }
             }

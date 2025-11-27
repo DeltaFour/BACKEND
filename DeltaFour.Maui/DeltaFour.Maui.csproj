@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\deltafour.svg" color="#7db0f0" />
+    <MauiIcon Include="Resources\AppIcon\deltafournoname.svg"  color="#ffffff" />
     <MauiSplashScreen Include="Resources\Splash\deltafour.svg" Color="#f4f7f8" BaseSize="128,128" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />

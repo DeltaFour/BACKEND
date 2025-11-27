@@ -27,7 +27,6 @@ namespace DeltaFour.Maui.Platforms.Android.Services
             this.onFacesDetected = onFacesDetected ?? throw new ArgumentNullException(nameof(onFacesDetected));
         }
 
-        // IMPLEMENTAÇÃO OBRIGATÓRIA DO ANALYZER
         [Register(
             "analyze",
             "(Landroidx/camera/core/ImageProxy;)V",
