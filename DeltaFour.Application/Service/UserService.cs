@@ -54,7 +54,8 @@ namespace DeltaFour.Application.Service
                     User user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
                     repository.UserRepository.Create(user);
 
-                    String imageForDecode = dto.ImageBase64.Split(',')[1];
+                    var imageParts = dto.ImageBase64.Split(',');
+                    var imageForDecode = imageParts.Length > 1 ? imageParts[1] : dto.ImageBase64;
 
                     byte[] imageBytes = Convert.FromBase64String(imageForDecode);
 
