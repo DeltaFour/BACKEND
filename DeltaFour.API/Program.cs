@@ -2,14 +2,14 @@ using DeltaFour.CrossCutting.Ioc;
 using DeltaFour.CrossCutting.Middleware;
 using DotNetEnv;
 using Python.Runtime;
-using System.Text.Json.Serialization;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-String dll = Environment.GetEnvironmentVariable("PYTHONNET_PYDLL")!;
+string dll = Environment.GetEnvironmentVariable("PYTHONNET_PYDLL")!;
 
 Runtime.PythonDLL = dll;
 PythonEngine.Initialize();
@@ -19,14 +19,39 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-
     });
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConfigJwt(builder.Configuration);
 builder.Services.AddPolicies(builder.Configuration);
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath);
+
+    options.UseAllOfToExtendReferenceSchemas();
+    
+    options.MapType<TimeOnly>(() => new Microsoft.OpenApi.Models.OpenApiSchema
+    {
+        Type = "string",
+        Format = "time",
+        Example = new Microsoft.OpenApi.Any.OpenApiString("19:00:00")
+    });
+    
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "DeltaFour.API",
+        Version = "0.0.1",
+        Description = "API da plataforma DeltaFour.",
+    });
+});
 
 var allowedHost = Environment.GetEnvironmentVariable("ALLOWED_HOST")!;
 var frontendCors = "frontendCors";
@@ -50,11 +75,12 @@ app.UseCors(frontendCors);
 
 AppDomain.CurrentDomain.ProcessExit += (s, e) => PythonEngine.Shutdown();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 await app.ApplyMigrationsAndSeedAsync();

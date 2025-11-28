@@ -50,7 +50,7 @@ namespace DeltaFour.Application.Service
         }
 
         ///<sumary>
-        ///Create tonken for loggin
+        ///Create token for login
         ///</sumary>
         public string CreateToken(TreatedUserInformationDto user)
         {
@@ -78,9 +78,9 @@ namespace DeltaFour.Application.Service
         ///<sumary>
         ///Create refresh token for loggin
         ///</sumary>
-        public async Task<Guid> CreateRefreshToken(TreatedUserInformationDto user, string jwt)
+        public async Task<Guid> CreateRefreshToken(Guid userId, string jwt)
         {
-            UserAuth? userAuth = await repositories.UserAuthRepository.Find(u => u.UserId == user.Id);
+            UserAuth? userAuth = await repositories.UserAuthRepository.Find(u => u.UserId == userId);
             if (userAuth != null)
             {
                 repositories.UserAuthRepository.Delete(userAuth);
@@ -92,14 +92,14 @@ namespace DeltaFour.Application.Service
             
             var tokenEncrypted = tokenHandler.EncryptToken(jwt, encryptingCredentials);
 
-            userAuth = new UserAuth(user.Id, tokenEncrypted, DateTime.UtcNow.AddHours(24));
+            userAuth = new UserAuth(userId, tokenEncrypted, DateTime.UtcNow.AddHours(24));
             repositories.UserAuthRepository.Create(userAuth);
             await repositories.Save();
             return userAuth.Id;
         }
 
         ///<sumary>
-        ///Remake the token of loggin
+        ///Remake the token of login
         ///</sumary>
         public async Task<string?> RemakeToken(string refreshToken, string token)
         {
@@ -114,6 +114,12 @@ namespace DeltaFour.Application.Service
             }
 
             return null;
+        }
+
+        public async Task<Guid> RemakeRefreshToken(string token)
+        {
+            Guid userId =  GetUserIdFromToken(token);
+            return await CreateRefreshToken(userId, token);
         }
 
         ///<sumary>

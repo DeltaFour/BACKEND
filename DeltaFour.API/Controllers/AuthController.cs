@@ -11,9 +11,13 @@ namespace DeltaFour.API.Controllers
     [Route("api/v1/auth")]
     public class AuthController(AuthService service) : Controller
     {
-        ///<sumary>
-        ///Make login of user with information related of him and send tokens by cookie
-        ///</sumary>
+        /// <summary>
+        /// Realiza o login do usuário usando suas credenciais e retorna os tokens de autenticação via cookies.
+        /// </summary>
+        /// <remarks>
+        /// Este endpoint valida o usuário, gera o token JWT e o token de refresh,
+        /// e os envia no response através de cookies seguros.
+        /// </remarks>
         [HttpPost("login")]
         public async Task<ActionResult<UserInfoLoginDto>> Login([FromBody] LoginDto loginDto)
         {
@@ -24,7 +28,7 @@ namespace DeltaFour.API.Controllers
             }
 
             string jwt = service.CreateToken(user);
-            Guid refreshToken = await service.CreateRefreshToken(user, jwt);
+            Guid refreshToken = await service.CreateRefreshToken(user.Id, jwt);
 
             CookieOptions options = Cookie();
 
@@ -33,9 +37,13 @@ namespace DeltaFour.API.Controllers
             return Ok(service.MapUserInfo(user));
         }
         
-        ///<sumary>
-        ///Check if session of user still authenticated
-        ///</sumary>
+        /// <summary>
+        /// Verifica se o usuário ainda possui uma sessão autenticada.
+        /// </summary>
+        /// <remarks>
+        /// Caso o token JWT enviado via cookie ainda esteja válido, retorna 204 (NoContent).
+        /// Caso contrário, retorna 403 (Forbid).
+        /// </remarks>
         [HttpGet("check-session")]
         public IActionResult CheckSession()
         {
@@ -47,9 +55,13 @@ namespace DeltaFour.API.Controllers
             return Forbid();
         }
 
-        ///<sumary>
-        ///Refresh the token sended in login
-        ///</sumary>
+        /// <summary>
+        /// Revalida a sessão do usuário gerando um novo JWT a partir do refresh token.
+        /// </summary>
+        /// <remarks>
+        /// O refresh token é lido dos cookies e, se válido, gera um novo JWT.
+        /// Caso o refresh token esteja expirado ou inválido, retorna 403.
+        /// </remarks>
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
         {
@@ -58,15 +70,20 @@ namespace DeltaFour.API.Controllers
             var jwt = await service.RemakeToken(cookieRefresh,cookieToken);
             if (jwt != null)
             {
+                var refreshToken = await service.RemakeRefreshToken(jwt);
+                Response.Cookies.Append("RefreshToken", refreshToken.ToString(), Cookie());
                 Response.Cookies.Append("Jwt", jwt, Cookie());
                 return NoContent();
             }
             return Forbid();
         }
         
-        ///<sumary>
-        ///Make logout of user
-        ///</sumary>
+        /// <summary>
+        /// Realiza o logout do usuário removendo todos os cookies de autenticação.
+        /// </summary>
+        /// <remarks>
+        /// Deleta o JWT e o refresh token armazenados nos cookies e invalida o refresh token no servidor.
+        /// </remarks>
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
@@ -78,7 +95,7 @@ namespace DeltaFour.API.Controllers
         }
 
         ///<sumary>
-        ///Generalized method for configuration of cookies
+        ///Internal generalized method for configuration of cookies
         ///</sumary>
         [ApiExplorerSettings(IgnoreApi = true)]
         public CookieOptions Cookie()

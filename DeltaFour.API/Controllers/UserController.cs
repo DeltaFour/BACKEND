@@ -14,9 +14,12 @@ namespace DeltaFour.API.Controllers
     [ApiController]
     public class UserController(UserService service) : Controller
     {
-        ///<sumary>
-        ///List all user from company
-        ///</sumary>
+        /// <summary>
+        /// Lista todos os usuários vinculados à empresa do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Disponível apenas para usuários com papel ADMIN ou RH.
+        /// </remarks>
         [HttpGet("list")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<ActionResult<List<UserResponseDto>>> GetAllByCompany()
@@ -25,9 +28,12 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.GetAllByCompany(user.CompanyId));
         }
 
-        ///<sumary>
-        ///Create user for company
-        ///</sumary>
+        /// <summary>
+        /// Cria um novo usuário dentro da empresa do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Disponível apenas para ADMIN ou RH.
+        /// </remarks>
         [HttpPost("create")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Create([FromBody] UserCreateDto userCreateDto)
@@ -37,9 +43,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        ///<sumary>
-        ///Update user of company
-        ///</sumary>
+        /// <summary>
+        /// Atualiza as informações de um usuário pertencente à empresa.
+        /// </summary>
+        /// <remarks>
+        /// Apenas ADMIN ou RH podem realizar a atualização.
+        /// </remarks>
         [HttpPatch("update")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Update([FromBody] UserUpdateDto userUpdateDto)
@@ -49,9 +58,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        ///<sumary>
-        ///Change the status from a specific user
-        ///</sumary>
+        /// <summary>
+        /// Altera o status de um usuário (ativo/inativo).
+        /// </summary>
+        /// <remarks>
+        /// Apenas ADMIN ou RH podem desativar ou reativar um usuário.
+        /// </remarks>
         [HttpDelete("change-status/{userId}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> ChangeStatus(Guid userId)
@@ -60,9 +72,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        ///<sumary>
-        ///Check if user can punch
-        ///</sumary>
+        /// <summary>
+        /// Verifica se o usuário está autorizado a registrar um novo ponto.
+        /// </summary>
+        /// <remarks>
+        /// Disponível para ADMIN, RH ou EMPLOYEE.
+        /// </remarks>
         [HttpPost("allowed-punch")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
@@ -71,9 +86,12 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.CanPunchIn(dto, user)); 
         }
 
-        ///<sumary>
-        ///Punch for user
-        ///</sumary>
+        /// <summary>
+        /// Registra o ponto de entrada ou saída do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Realiza validações e retorna mensagens de erro caso o registro não seja permitido.
+        /// </remarks>
         [HttpPost("register-point")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
@@ -88,9 +106,12 @@ namespace DeltaFour.API.Controllers
             return BadRequest(response.Message());
         }
 
-        ///<sumary>
-        ///Refresh information of user logged
-        ///</sumary>
+        /// <summary>
+        /// Atualiza e retorna informações do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Utilizado geralmente após login ou quando é necessário atualizar dados locais.
+        /// </remarks>
         [HttpGet("refresh-information")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<UserInfoLoginDto> RefreshInformation()
@@ -99,9 +120,12 @@ namespace DeltaFour.API.Controllers
             return await service.RefreshUserInformation(user);
         }
 
-        ///<sumary>
-        ///Other user can punch for specific user
-        ///</sumary>
+        /// <summary>
+        /// Permite que um usuário autorizado registre o ponto para outro usuário específico.
+        /// </summary>
+        /// <remarks>
+        /// Apenas ADMIN ou RH podem utilizar este endpoint.
+        /// </remarks>
         [HttpPost("punch-for-user")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> PunchForUser([FromBody] PunchForUserDto dto)

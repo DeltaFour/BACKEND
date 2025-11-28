@@ -12,9 +12,12 @@ namespace DeltaFour.API.Controllers
     [ApiController]
     public class WorkShiftController(WorkShiftService service) : Controller
     {
-        ///<sumary>
-        ///List all WorkShifts from company
-        ///</sumary>
+        /// <summary>
+        /// Lista todos os turnos de trabalho da empresa do usuário autenticado.
+        /// </summary>
+        /// <remarks>
+        /// Retorna todos os WorkShifts ativos e inativos.
+        /// </remarks>
         [HttpGet("list")]
         [Authorize]
         public async Task<ActionResult<List<WorkShiftResponseDto>?>> Get()
@@ -25,9 +28,12 @@ namespace DeltaFour.API.Controllers
             return Ok(workshifts ?? new List<WorkShiftResponseDto>());
         }
         
-        ///<sumary>
-        ///Create WorkShift
-        ///</sumary>
+        /// <summary>
+        /// Cria um novo turno de trabalho para a empresa.
+        /// </summary>
+        /// <remarks>
+        /// Apenas usuários autenticados podem criar turnos.
+        /// </remarks>
         [HttpPost("create")]
         [Authorize]
         public async Task<IActionResult> Post([FromBody] WorkShiftDto dto)
@@ -37,9 +43,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        ///<sumary>
-        ///Update Workshift
-        ///</sumary>
+        /// <summary>
+        /// Atualiza as informações de um turno de trabalho existente.
+        /// </summary>
+        /// <remarks>
+        /// Permite alterar horários, tolerâncias e demais dados.
+        /// </remarks>
         [HttpPatch("update")]
         [Authorize]
         public async Task<IActionResult> Put([FromBody] WorkShiftUpdateDto dto)
@@ -49,9 +58,12 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
-        ///<sumary>
-        ///Change the status from WorkShift
-        ///</sumary>
+        /// <summary>
+        /// Altera o status de um turno de trabalho (ativo/inativo).
+        /// </summary>
+        /// <remarks>
+        /// O turno deixa de ser utilizado imediatamente ao ser desativado.
+        /// </remarks>
         [HttpDelete("change-status/{workShiftId}")]
         [Authorize]
         public async Task<IActionResult> Delete(Guid workShiftId)

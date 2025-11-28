@@ -15,9 +15,12 @@ namespace DeltaFour.API.Controllers.SuperAdmin;
 public class CompanyController(StatusService statusService) : ControllerBase
 {
 
-    ///<sumary>
-    ///Create company
-    ///</sumary>
+    /// <summary>
+    /// Cria uma nova empresa no sistema.
+    /// </summary>
+    /// <remarks>
+    /// O usuário autenticado deve possuir permissão de SUPER_ADMIN.
+    /// </remarks>
     [HttpPost("create")]
     public async Task<IActionResult> Create(
         [FromServices] CreateService createService,
@@ -31,9 +34,12 @@ public class CompanyController(StatusService statusService) : ControllerBase
         return NoContent();
     }
 
-    ///<sumary>
-    ///Activate or disable company
-    ///</sumary>
+    /// <summary>
+    /// Altera o status (ativo/inativo) de uma empresa.
+    /// </summary>
+    /// <remarks>
+    /// O SUPER_ADMIN pode ativar ou desativar qualquer empresa cadastrada.
+    /// </remarks>
     [HttpPost("change-status/{id}")]
     public async Task<IActionResult> Active(Guid id)
     {
@@ -42,9 +48,12 @@ public class CompanyController(StatusService statusService) : ControllerBase
         return NoContent();
     }
     
-    ///<sumary>
-    ///List all companies registered
-    ///</sumary>
+    /// <summary>
+    /// Lista todas as empresas cadastradas no sistema.
+    /// </summary>
+    /// <remarks>
+    /// Retorna as informações de todas as empresas, independentemente do status.
+    /// </remarks>
     [HttpGet("list")]
     public async Task<ActionResult<ListCompaniesResponse>> List([FromServices] ListService listService)
     {
