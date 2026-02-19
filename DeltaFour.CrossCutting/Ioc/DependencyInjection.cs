@@ -1,11 +1,23 @@
-﻿using DeltaFour.Infrastructure.Context;
+﻿using DeltaFour.Application.Service;
+using DeltaFour.Application.Utils;
+using DeltaFour.Application.Service.Company;
+using DeltaFour.Domain.IRepositories;
+using DeltaFour.Infrastructure.Context;
+using DeltaFour.Infrastructure.Repositories;
+using DeltaFour.Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using CreateCompanyService = DeltaFour.Application.Service.Company.CreateService;
+using ListCompanyService = DeltaFour.Application.Service.Company.ListService;
 
 namespace DeltaFour.CrossCutting.Ioc;
+
 public static class DependencyInjection
 {
+    ///<sumary>
+    ///Configuration for Dependency injection and enviroment
+    ///</sumary>
     public static IServiceCollection AddInfrastructure
     (
         this IServiceCollection services,
@@ -21,12 +33,35 @@ public static class DependencyInjection
         }
         else
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING")!;
 
             services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
+                    uoptions => uoptions.UseNetTopologySuite()));
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserAuthRepository, UserAuthRepository>();
+            services.AddScoped<AuthService>();
+            services.AddScoped<UserService>();
+            services.AddScoped<WorkShiftService>();
+            services.AddScoped<AllRepositories>();
+            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IActionRepository, ActionRepository>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
+            services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
+            services.AddScoped<IUserShiftRepository, UserShiftRepository>();
+            services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
+            services.AddScoped<IUserFaceRepository, UserFaceRepository>();
+            services.AddScoped<IUnitOfWork, AllRepositories>();
+            services.AddScoped<PythonExe>();
+            services.AddScoped<SuperAdminSeeder>();
+            services.AddScoped<RoleSeeder>();
+            services.AddScoped<StatusService>();
+            services.AddScoped<CreateCompanyService>();
+            services.AddScoped<ListCompanyService>();
         }
-
         return services;
     }
 }

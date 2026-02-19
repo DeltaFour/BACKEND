@@ -1,0 +1,59 @@
+﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.IRepositories;
+using DeltaFour.Domain.ValueObjects.Dtos;
+using DeltaFour.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+
+namespace DeltaFour.Infrastructure.Repositories
+{
+    public class WorkShiftRepository(AppDbContext context) : IWorkShiftRepository
+    {
+        public async Task<WorkShift?> Find(Expression<Func<WorkShift, bool>> predicate)
+        {
+            return await context.WorkShifts.FirstOrDefaultAsync(predicate);
+        }
+        public void Create(WorkShift workShift)
+        {
+            context.WorkShifts.Add(workShift);
+        }
+        public void Update(WorkShift workShift)
+        {
+            context.WorkShifts.Update(workShift);
+        }
+        public void Delete(WorkShift workShift)
+        {
+            context.WorkShifts.Remove(workShift);
+        }
+
+        public async Task<List<WorkShiftResponseDto>> FindAll(Expression<Func<WorkShift, bool>> predicate)
+        {
+            return await context.WorkShifts.Where(predicate)
+                .Select(ws => new WorkShiftResponseDto()
+                {
+                    Id = ws.Id,
+                    ShiftType = ws.ShiftType,
+                    StartTime = ws.StartTime,
+                    EndTime = ws.EndTime,
+                    ToleranceMinutes = ws.ToleranceMinutes
+                })
+                .ToListAsync();
+        }
+
+        public async Task<WorkShiftPunchDto?> GetByUserIdAndIsActive(Guid userId, Guid companyId)
+        {
+            var query = from ws in context.WorkShifts
+                join es in context.EmployeeShifts on ws.Id equals es.ShiftId
+                where es.IsActive == true &&
+                      es.UserId == userId
+                      && ws.CompanyId == companyId
+                select new WorkShiftPunchDto()
+                {
+                    StartTime = ws.StartTime,
+                    EndTime = ws.EndTime,
+                    ToleranceMinutes = ws.ToleranceMinutes
+                };
+            return await query.FirstOrDefaultAsync();
+        }
+    }
+}
