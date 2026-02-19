@@ -6,9 +6,9 @@ namespace DeltaFour.CrossCutting.Ioc;
 
 public static class AuthorizationConfiguration
 {
-    ///<sumary>
+    ///<summary>
     ///Configuration for policy
-    ///</sumary>
+    ///</summary>
     public static IServiceCollection AddPolicies
     (
         this IServiceCollection service,

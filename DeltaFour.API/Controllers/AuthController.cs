@@ -94,9 +94,9 @@ namespace DeltaFour.API.Controllers
             return NoContent();
         }
 
-        ///<sumary>
+        ///<summary>
         ///Internal generalized method for configuration of cookies
-        ///</sumary>
+        ///</summary>
         [ApiExplorerSettings(IgnoreApi = true)]
         public CookieOptions Cookie()
         {

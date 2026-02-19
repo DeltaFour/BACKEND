@@ -4,9 +4,9 @@ using System.Security.Claims;
 
 namespace DeltaFour.CrossCutting.Middleware
 {
-    ///<sumary>
+    ///<summary>
     ///Function for extract user from context
-    ///</sumary>
+    ///</summary>
     public static class ContextUser
     {
         public static T GetUserAuthenticated<T>(this HttpContext context)

@@ -19,9 +19,9 @@ namespace DeltaFour.Application.Service
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
 
-        ///<sumary>
+        ///<summary>
         ///Operation for log user
-        ///</sumary>
+        ///</summary>
         public async Task<TreatedUserInformationDto?> Login(LoginDto dto)
         {
             TreatedUserInformationDto? user =
@@ -41,17 +41,17 @@ namespace DeltaFour.Application.Service
             return null;
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for mapUserInformation to response
-        ///</sumary>
+        ///</summary>
         public UserInfoLoginDto MapUserInfo(TreatedUserInformationDto dto)
         {
             return AuthMapper.MapUserToUserInfoLoginDto(dto);
         }
 
-        ///<sumary>
+        ///<summary>
         ///Create token for login
-        ///</sumary>
+        ///</summary>
         public string CreateToken(TreatedUserInformationDto user)
         {
             var rsaPrivateKey = new RsaSecurityKey(PrivateKey);
@@ -75,9 +75,9 @@ namespace DeltaFour.Application.Service
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        ///<sumary>
+        ///<summary>
         ///Create refresh token for loggin
-        ///</sumary>
+        ///</summary>
         public async Task<Guid> CreateRefreshToken(Guid userId, string jwt)
         {
             UserAuth? userAuth = await repositories.UserAuthRepository.Find(u => u.UserId == userId);
@@ -98,9 +98,9 @@ namespace DeltaFour.Application.Service
             return userAuth.Id;
         }
 
-        ///<sumary>
+        ///<summary>
         ///Remake the token of login
-        ///</sumary>
+        ///</summary>
         public async Task<string?> RemakeToken(string refreshToken, string token)
         {
             UserAuth? userAuth =
@@ -122,9 +122,9 @@ namespace DeltaFour.Application.Service
             return await CreateRefreshToken(userId, token);
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for logout user
-        ///</sumary>
+        ///</summary>
         public async Task Logout(string refreshToken)
         {
             UserAuth? userAuth =
@@ -136,9 +136,9 @@ namespace DeltaFour.Application.Service
             }
         }
 
-        ///<sumary>
+        ///<summary>
         ///Get id from token
-        ///</sumary>
+        ///</summary>
         private Guid GetUserIdFromToken(string cookieToken)
         {
             var handler = new JwtSecurityTokenHandler();

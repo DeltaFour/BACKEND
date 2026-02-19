@@ -6,9 +6,9 @@ namespace DeltaFour.Application.Mappers
 {
     public static class UserMapper
     {
-        ///<sumary>
+        ///<summary>
         ///Map information from CreateDto to User
-        ///</sumary>
+        ///</summary>
         public static User FromCreateDto(UserCreateDto dto, Guid roleId, UserContext createdBy)
         {
             return new User()
@@ -26,9 +26,9 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        ///<sumary>
+        ///<summary>
         ///Replace information from User
-        ///</sumary>
+        ///</summary>
         public static void UpdateDataUserByUpdateDto(UserUpdateDto dto, User e, Guid userAuthenticatedId)
         {
             e.Name = dto.Name;

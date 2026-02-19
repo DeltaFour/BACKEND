@@ -2,9 +2,9 @@
 
 namespace DeltaFour.Application.RsaKeys
 {
-    ///<sumary>
+    ///<summary>
     ///Operation get private or public keys
-    ///</sumary>
+    ///</summary>
     public static class GetRsaKeys
     {
         public static RSA GetPrivateKey(string caminho)

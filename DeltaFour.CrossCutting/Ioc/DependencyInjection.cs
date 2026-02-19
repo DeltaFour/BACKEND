@@ -15,9 +15,9 @@ namespace DeltaFour.CrossCutting.Ioc;
 
 public static class DependencyInjection
 {
-    ///<sumary>
+    ///<summary>
     ///Configuration for Dependency injection and enviroment
-    ///</sumary>
+    ///</summary>
     public static IServiceCollection AddInfrastructure
     (
         this IServiceCollection services,

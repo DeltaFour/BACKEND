@@ -9,9 +9,9 @@ namespace DeltaFour.Application.Service
 {
     public class WorkShiftService(AllRepositories allRepositories)
     {
-        ///<sumary>
+        ///<summary>
         ///Operation for get all WorkShift from company
-        ///</sumary>
+        ///</summary>
         public async Task<List<WorkShiftResponseDto>?> Get(Guid companyId)
         {
             List<WorkShiftResponseDto> workShifts =
@@ -24,9 +24,9 @@ namespace DeltaFour.Application.Service
             return null;
         }
         
-        ///<sumary>
+        ///<summary>
         ///Operation for create WorkShift
-        ///</sumary>
+        ///</summary>
         public async Task Create(WorkShiftDto dto, UserContext user)
         {
             WorkShift workShift = WorkShiftMapper.CreateFromDto(dto, user);
@@ -34,9 +34,9 @@ namespace DeltaFour.Application.Service
             await allRepositories.Save();
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for update WorkShift
-        ///</sumary>
+        ///</summary>
         public async Task Update(WorkShiftUpdateDto dto, UserContext user)
         {
             WorkShift? workShift = await allRepositories.WorkShiftRepository.Find(ws => ws.Id == dto.Id);
@@ -51,9 +51,9 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno!");
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for change status from WorkShift 
-        ///</sumary>
+        ///</summary>
         public async Task Delete(Guid workShiftId, Guid companyId)
         {
             if (!await allRepositories.UserShiftRepository.FindAny(es => es.ShiftId == workShiftId))

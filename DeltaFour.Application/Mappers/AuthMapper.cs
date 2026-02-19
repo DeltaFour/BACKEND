@@ -6,9 +6,9 @@ namespace DeltaFour.Application.Mappers
 {
     public static class AuthMapper
     {
-        ///<sumary>
+        ///<summary>
         ///Map information from user to TreatedUserInformation
-        ///</sumary>
+        ///</summary>
         public static TreatedUserInformationDto FromUserToTreatedUserInfo(User user)
         {
             return new TreatedUserInformationDto()
@@ -23,9 +23,9 @@ namespace DeltaFour.Application.Mappers
             };
         }
         
-        ///<sumary>
+        ///<summary>
         ///Map information from TreatedUserInformation to the UserContext
-        ///</sumary>
+        ///</summary>
         public static UserContext UserContext(TreatedUserInformationDto user)
         {
             return new UserContext()
@@ -39,9 +39,9 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        ///<sumary>
+        ///<summary>
         ///Map information from user to UserInfoLoginDto
-        ///</sumary>
+        ///</summary>
         public static UserInfoLoginDto MapUserToUserInfoLoginDto(TreatedUserInformationDto dto)
         {
             UserInfoLoginDto teste = new UserInfoLoginDto()

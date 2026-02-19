@@ -5,9 +5,9 @@ namespace DeltaFour.Application.Mappers
 {
     public static class ShiftMapper
     {
-        ///<sumary>
+        ///<summary>
         ///Map information from CreateUserDto to UserShift
-        ///</sumary>
+        ///</summary>
         public static UserShift FromCreateUserDto(UserShiftDto dto, Guid userId, Guid userAuthenticatedId)
         {
             return new UserShift()
@@ -21,9 +21,9 @@ namespace DeltaFour.Application.Mappers
             };
         }
 
-        ///<sumary>
+        ///<summary>
         ///Replace information from UserShift
-        ///</sumary>
+        ///</summary>
         public static void UpdateUserShift(UserShift shift, UserShiftDto dto, Guid userAuthenticatedId)
         {
             shift.StartDate = dto.StartDate;

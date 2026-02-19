@@ -5,9 +5,9 @@ namespace DeltaFour.Application.Mappers
 {
     public static class UserAttendanceMapper
     {
-        ///<sumary>
+        ///<summary>
         ///Map information from UserAttendance to UserAttendance
-        ///</sumary>
+        ///</summary>
         public static UserAttendance UserAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
         {
             return new UserAttendance()
@@ -23,9 +23,9 @@ namespace DeltaFour.Application.Mappers
             };
         }
         
-        ///<sumary>
+        ///<summary>
         ///Overload from previous method 
-        ///</sumary>
+        ///</summary>
         public static UserAttendance UserAttendanceFromDto(PunchForUserDto dto, Guid userId)
         {
             return new UserAttendance()

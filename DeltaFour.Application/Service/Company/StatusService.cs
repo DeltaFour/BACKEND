@@ -11,9 +11,9 @@ public class StatusService
         _unitOfWork = unitOfWork;
     }
 
-    ///<sumary>
+    ///<summary>
     ///Operation for change the status from specific company
-    ///</sumary>
+    ///</summary>
     public async Task ChangeStatus(Guid companyId)
     {
         var company = await _unitOfWork.CompanyRepository.Find(c => c.Id == companyId);

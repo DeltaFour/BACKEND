@@ -17,9 +17,9 @@ namespace DeltaFour.Application.Service
 {
     public class UserService(AllRepositories repository, PythonExe pythonExe)
     {
-        ///<sumary>
+        ///<summary>
         ///Operation for get all users from company
-        ///</sumary>
+        ///</summary>
         public async Task<List<UserResponseDto>> GetAllByCompany(Guid companyId)
         {
             List<UserResponseDto> users = await repository.UserRepository.GetAll(companyId);
@@ -31,9 +31,9 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for create user
-        ///</sumary>
+        ///</summary>
         public async Task Create(UserCreateDto dto, UserContext userAuthenticated)
         {
             if (await repository.UserRepository.FindAny(e =>
@@ -78,9 +78,9 @@ namespace DeltaFour.Application.Service
             }
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for update user
-        ///</sumary>
+        ///</summary>
         public async Task Update(UserUpdateDto dto, UserContext userAuthenticated)
         {
             User? user = await repository.UserRepository.FindIncluding(dto.Id);
@@ -133,9 +133,9 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for change the status from user
-        ///</sumary>
+        ///</summary>
         public async Task Delete(Guid userId)
         {
             User? user = await repository.UserRepository.Find(e => e.Id == userId);
@@ -150,9 +150,9 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Internal error, please contact the support team.");
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for check if user can punch
-        ///</sumary>
+        ///</summary>
         public async Task<Boolean> CanPunchIn(CanPunchDto dto, UserContext user)
         {
             WorkShiftPunchDto? workShift =
@@ -170,9 +170,9 @@ namespace DeltaFour.Application.Service
             return false;
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for punch for user
-        ///</sumary>
+        ///</summary>
         public async Task<PunchInResponse> PunchIn(PunchDto dto, UserContext userContext)
         {
             User? user = await repository.UserRepository.FindForPunchIn(userContext.Id);
@@ -249,9 +249,9 @@ namespace DeltaFour.Application.Service
             throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for refresh information from user
-        ///</sumary>
+        ///</summary>
         public async Task<UserInfoLoginDto> RefreshUserInformation(UserContext user)
         {
             TreatedUserInformationDto treatUser =
@@ -260,9 +260,9 @@ namespace DeltaFour.Application.Service
             return AuthMapper.MapUserToUserInfoLoginDto(treatUser);
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for punch for other user
-        ///</sumary>
+        ///</summary>
         public async Task PunchForUser(PunchForUserDto dto, UserContext user)
         {
             UserAttendance userAttendance = UserAttendanceMapper.UserAttendanceFromDto(dto, user.Id);
@@ -270,9 +270,9 @@ namespace DeltaFour.Application.Service
             await repository.Save();
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for check the time that user is punching, and return true or false, depends on time of WorkShift
-        ///</sumary>
+        ///</summary>
         private Boolean CheckTime(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
         {
             if (type.Equals(PunchType.IN))
@@ -290,9 +290,9 @@ namespace DeltaFour.Application.Service
             return true;
         }
 
-        ///<sumary>
+        ///<summary>
         ///Operation for check if user can punch out in correctly time
-        ///</sumary>
+        ///</summary>
         private Boolean CheckIfCanOut(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
         {
             return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time;

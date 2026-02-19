@@ -11,9 +11,9 @@ public class CreateService(IUnitOfWork unitOfWork)
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    ///<sumary>
+    ///<summary>
     ///Operation for create company for new user
-    ///</sumary>
+    ///</summary>
     private CompanyEntity SaveCompany(CreateCompanyRequest request, Guid userId)
     {
         var company = new CompanyEntity()
@@ -29,9 +29,9 @@ public class CreateService(IUnitOfWork unitOfWork)
         return company;
     }
     
-    ///<sumary>
+    ///<summary>
     ///Operation for create role for new user
-    ///</sumary>
+    ///</summary>
     private Role SaveRole(Guid companyId, Guid userId)
     {
         var role = new Role()
@@ -47,9 +47,9 @@ public class CreateService(IUnitOfWork unitOfWork)
         return role;
     }
 
-    ///<sumary>
+    ///<summary>
     ///Operation for create the new user
-    ///</sumary>
+    ///</summary>
     private User SaveFirstUser(
         UserRequest request,
         Guid companyId,
@@ -81,9 +81,9 @@ public class CreateService(IUnitOfWork unitOfWork)
         return user;
     }
 
-    ///<sumary>
+    ///<summary>
     ///Unified operation for create all at the same time
-    ///</sumary>
+    ///</summary>
     public async Task Create(CreateCompanyRequest request, Guid createdBy)
     {
         var company = SaveCompany(request, createdBy);
