@@ -6,3 +6,101 @@ riderModule.iml
 /_ReSharper.Caches/
 .idea
 DeltaFour.API/appsettings.Development.json
+.env
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+app.key
+app.pub
+Image
+
+# ASP.NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+_UpgradeReport_Files/
+Backup*/ 
+UpgradeLog*.XML
+UpgradeLog*.htm
+*.bak
+*.sql
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# Rider
+.idea/
+*.sln.iml
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# NuGet
+*.nupkg
+# The packages folder can be ignored if not supporting earlier versions of Visual Studio
+**/packages/*
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/build/
+#!**/packages/repositories.config
+*.snupkg
+# NuGet v3's project.json files produces more ignoreable files
+project.lock.json
+project.fragment.lock.json
+# NuGet v4
+nuget.exe
+
+# Npm
+node_modules/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# StyleCop
+StyleCopReport.xml
+
+# User-specific files
+*.rsuser
+*.rsuser.cake
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code
+.vscode/
+
+# Log files
+*.log
+
+# IIS
+[Ii][Nn][Ee][Tt][Pp][Uu][Bb]/
+
+.htm
