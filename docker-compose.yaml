@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  ponto-eletronico-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ponto-eletronico-api:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./DeltaFour.API/.env
+    depends_on:
+      - mysql-db
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    env_file:
+      - ./DeltaFour.API/.env
+    environment:
+      MYSQL_ROOT_PASSWORD: "12345678"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
