@@ -7,14 +7,14 @@ namespace DeltaFour.Application.Dtos
     {
         [Required]
         public ShiftType ShiftType { get; set; }
-        
+
         [Required]
-        public TimeOnly StartTime  { get; set; }
-        
+        public TimeOnly StartTime { get; set; }
+
         [Required]
-        public TimeOnly EndTime  { get; set; }
-        
+        public TimeOnly EndTime { get; set; }
+
         [Required]
-        public int ToleranceMinutes  { get; set; }
+        public int ToleranceMinutes { get; set; }
     }
 }

@@ -15,7 +15,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
         builder.Property(e => e.Email).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("email");
         builder.Property(e => e.Password).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("password");
         builder.Property(e => e.Cellphone).HasMaxLength(14).HasColumnName("cellphone");
-        builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");  
+        builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");
         builder.Property(e => e.IsConfirmed).IsRequired().HasColumnName("is_confirmed");
         builder.Property(e => e.IsAllowedBypassCoord).IsRequired().HasColumnName("is_allowed_by_pass_coord");
         builder.Property(e => e.LastLogin).HasColumnName("last_login");

@@ -1,23 +1,21 @@
-﻿using System.Drawing;
-
-namespace DeltaFour.Domain.Entities
+﻿namespace DeltaFour.Domain.Entities
 {
     public class CompanyGeolocation : BaseEntity
     {
-        public Guid CompanyId { get; set; } 
-        
+        public Guid CompanyId { get; set; }
+
         public Coordinates Coord { get; set; }
-        
+
         public int RadiusMeters { get; set; }
-        
+
         public bool IsActive { get; set; }
-        
+
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-        
+
         public Guid? UpdatedBy { get; set; }
-        
+
         public Guid CreatedBy { get; set; }
-        
+
         public Company? Company { get; set; }
     }
 }

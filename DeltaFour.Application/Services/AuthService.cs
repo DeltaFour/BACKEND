@@ -2,19 +2,19 @@
 using DeltaFour.Application.Mappers;
 using DeltaFour.Application.RsaKeys;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
-using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
-using Newtonsoft.Json;
 using System.Text;
 
-namespace DeltaFour.Application.Service
+namespace DeltaFour.Application.Services
 {
-    public class AuthService(AllRepositories repositories)
+    public class AuthService(IUnitOfWork repositories)
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
@@ -89,7 +89,7 @@ namespace DeltaFour.Application.Service
             var rsaPublicKey = new RsaSecurityKey(PublicKey);
             var encryptingCredentials = new EncryptingCredentials(rsaPublicKey, SecurityAlgorithms.RsaOAEP,
                 SecurityAlgorithms.Aes256CbcHmacSha512);
-            
+
             var tokenEncrypted = tokenHandler.EncryptToken(jwt, encryptingCredentials);
 
             userAuth = new UserAuth(userId, tokenEncrypted, DateTime.UtcNow.AddHours(24));
@@ -118,7 +118,7 @@ namespace DeltaFour.Application.Service
 
         public async Task<Guid> RemakeRefreshToken(string token)
         {
-            Guid userId =  GetUserIdFromToken(token);
+            Guid userId = GetUserIdFromToken(token);
             return await CreateRefreshToken(userId, token);
         }
 

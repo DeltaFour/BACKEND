@@ -13,7 +13,7 @@ using ProjNet.CoordinateSystems.Transformations;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace DeltaFour.Application.Service
+namespace DeltaFour.Application.Services
 {
     public class UserService(AllRepositories repository, PythonExe pythonExe)
     {
@@ -285,7 +285,7 @@ namespace DeltaFour.Application.Service
             {
                 return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
                        time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
-            } 
+            }
 
             return true;
         }

@@ -6,15 +6,15 @@ public class UserRequest
 {
     [Required]
     [EmailAddress]
-    public string? Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(128)]
     [MinLength(3)]
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(32)]
     [MinLength(8)]
-    public string? Password { get; set; }
+    public string Password { get; set; } = string.Empty;
 }

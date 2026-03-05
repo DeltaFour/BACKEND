@@ -24,12 +24,12 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.Companies.Add(company);
         }
-        
+
         public void Update(Company company)
         {
             context.Companies.Update(company);
         }
-        
+
         public void Delete(Company company)
         {
             context.Companies.Remove(company);

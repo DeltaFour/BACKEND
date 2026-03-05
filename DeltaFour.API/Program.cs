@@ -1,5 +1,4 @@
 using DeltaFour.CrossCutting.Ioc;
-using DeltaFour.CrossCutting.Middleware;
 using DotNetEnv;
 using Python.Runtime;
 using System.Reflection;
@@ -37,14 +36,14 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(xmlPath);
 
     options.UseAllOfToExtendReferenceSchemas();
-    
+
     options.MapType<TimeOnly>(() => new Microsoft.OpenApi.Models.OpenApiSchema
     {
         Type = "string",
         Format = "time",
         Example = new Microsoft.OpenApi.Any.OpenApiString("19:00:00")
     });
-    
+
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "DeltaFour.API",

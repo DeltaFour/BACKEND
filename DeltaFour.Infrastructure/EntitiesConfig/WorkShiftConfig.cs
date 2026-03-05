@@ -13,7 +13,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).HasColumnName("id");
             builder.Property(ws => ws.ShiftType).HasConversion(
-                v => v.ToString(), v => (ShiftType)Enum.Parse(typeof(ShiftType), v) 
+                v => v.ToString(), v => (ShiftType)Enum.Parse(typeof(ShiftType), v)
             ).HasColumnName("shift_type").IsRequired();
             builder.Property(ws => ws.StartTime).HasColumnName("starter_time").IsRequired();
             builder.Property(ws => ws.EndTime).HasColumnName("end_time").IsRequired();

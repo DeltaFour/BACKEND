@@ -15,8 +15,8 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasMany(a => a.RolePermissions).WithOne(rp => rp.Action)
                 .HasForeignKey(rp => rp.ActionId);
             builder.HasData(
-                new Action { Name = "list" }, 
-                new Action { Name = "create" }, 
+                new Action { Name = "list" },
+                new Action { Name = "create" },
                 new Action { Name = "update" },
                 new Action { Name = "delete" }
                 );

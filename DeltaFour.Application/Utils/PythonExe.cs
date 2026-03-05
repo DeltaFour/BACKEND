@@ -22,7 +22,7 @@ namespace DeltaFour.Application.Utils
                 return (double?)result;
             }
         }
-        
+
         public List<double>? ExtractEmbedding(byte[] base64Image)
         {
             using (Py.GIL())
@@ -42,6 +42,6 @@ namespace DeltaFour.Application.Utils
             }
         }
     }
-    
-    
+
+
 }

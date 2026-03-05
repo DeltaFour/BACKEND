@@ -7,9 +7,9 @@
         public string FaceTemplate { get; set; } = faceTemplate;
 
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
-        
+
         public Guid? UpdatedBy { get; set; }
-        
+
         public Guid CreatedBy { get; set; } = createdBy;
 
         public User? User { get; set; }

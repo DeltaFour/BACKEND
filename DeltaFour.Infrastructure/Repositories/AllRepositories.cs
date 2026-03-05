@@ -34,7 +34,7 @@ namespace DeltaFour.Infrastructure.Repositories
 
         public IRoleRepository RoleRepository
         {
-            get { return _roleRepository ??= new RoleRepository(context); } 
+            get { return _roleRepository ??= new RoleRepository(context); }
         }
 
         public IRolePermissionRepository RolePermissionRepository

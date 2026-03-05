@@ -7,7 +7,7 @@ namespace DeltaFour.Application.Dtos
     {
         [Required]
         public TimeOnly TimePunched { get; set; }
-        
+
         [Required]
         public PunchType PunchType { get; set; }
     }

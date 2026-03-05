@@ -12,7 +12,7 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.Roles.FirstOrDefaultAsync(predicate);
         }
-        
+
         public void Create(Role role)
         {
             context.Roles.Add(role);
@@ -22,12 +22,12 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.Roles.AnyAsync(predicate);
         }
-        
+
         public void Update(Role role)
         {
             context.Roles.Update(role);
         }
-        
+
         public void Delete(Role role)
         {
             context.Roles.Remove(role);

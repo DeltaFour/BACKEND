@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using DeltaFour.Domain.Entities;
 
 namespace DeltaFour.Application.Dtos.Requests;
 
 public class CreateCompanyRequest
 {
     [Required]
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required]
-    public string? Cnpj { get; set; }
+    public string Cnpj { get; set; } = string.Empty;
 
     [Required]
     public UserRequest? User { get; set; }

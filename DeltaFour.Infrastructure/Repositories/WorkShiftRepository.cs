@@ -43,16 +43,16 @@ namespace DeltaFour.Infrastructure.Repositories
         public async Task<WorkShiftPunchDto?> GetByUserIdAndIsActive(Guid userId, Guid companyId)
         {
             var query = from ws in context.WorkShifts
-                join es in context.EmployeeShifts on ws.Id equals es.ShiftId
-                where es.IsActive == true &&
-                      es.UserId == userId
-                      && ws.CompanyId == companyId
-                select new WorkShiftPunchDto()
-                {
-                    StartTime = ws.StartTime,
-                    EndTime = ws.EndTime,
-                    ToleranceMinutes = ws.ToleranceMinutes
-                };
+                        join es in context.EmployeeShifts on ws.Id equals es.ShiftId
+                        where es.IsActive == true &&
+                              es.UserId == userId
+                              && ws.CompanyId == companyId
+                        select new WorkShiftPunchDto()
+                        {
+                            StartTime = ws.StartTime,
+                            EndTime = ws.EndTime,
+                            ToleranceMinutes = ws.ToleranceMinutes
+                        };
             return await query.FirstOrDefaultAsync();
         }
     }

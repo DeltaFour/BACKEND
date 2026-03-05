@@ -7,13 +7,13 @@ namespace DeltaFour.Application.Dtos
     {
         [Required]
         public PunchType Type { get; set; }
-        
+
         [Required]
         public DateTime TimePunched { get; set; }
-        
+
         [Required]
         public ShiftType ShiftType { get; set; }
-        
+
         [Required]
         public Guid UserId { get; set; }
     }

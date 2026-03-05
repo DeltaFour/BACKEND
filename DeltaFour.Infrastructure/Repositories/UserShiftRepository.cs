@@ -12,17 +12,17 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.EmployeeShifts.FirstOrDefaultAsync(predicate);
         }
-        
+
         public void Create(UserShift userShift)
         {
             context.EmployeeShifts.Add(userShift);
         }
-        
+
         public void CreateAll(List<UserShift> userShifts)
         {
             context.EmployeeShifts.AddRange(userShifts);
         }
-        
+
         public void Update(UserShift userShift)
         {
             context.EmployeeShifts.Update(userShift);
@@ -32,7 +32,7 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.EmployeeShifts.AnyAsync(predicate);
         }
-        
+
         public void Delete(UserShift userShift)
         {
             context.EmployeeShifts.Remove(userShift);

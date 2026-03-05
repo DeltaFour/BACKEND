@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using System.Security.Claims;
 
 namespace DeltaFour.CrossCutting.Middleware
 {

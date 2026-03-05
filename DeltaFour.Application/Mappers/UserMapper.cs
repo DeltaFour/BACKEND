@@ -1,6 +1,5 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Domain.Entities;
-using DeltaFour.Domain.ValueObjects.Dtos;
 
 namespace DeltaFour.Application.Mappers
 {

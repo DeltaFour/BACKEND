@@ -1,5 +1,4 @@
 ﻿using DeltaFour.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace DeltaFour.Domain.IRepositories
 {

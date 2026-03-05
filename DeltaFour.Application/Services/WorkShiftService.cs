@@ -5,7 +5,7 @@ using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
-namespace DeltaFour.Application.Service
+namespace DeltaFour.Application.Services
 {
     public class WorkShiftService(AllRepositories allRepositories)
     {
@@ -23,7 +23,7 @@ namespace DeltaFour.Application.Service
 
             return null;
         }
-        
+
         ///<summary>
         ///Operation for create WorkShift
         ///</summary>

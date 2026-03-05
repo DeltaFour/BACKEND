@@ -1,5 +1,5 @@
 ﻿using DeltaFour.Application.Dtos;
-using DeltaFour.Application.Service;
+using DeltaFour.Application.Services;
 using DeltaFour.CrossCutting.Middleware;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.ValueObjects.Dtos;
@@ -22,12 +22,12 @@ namespace DeltaFour.API.Controllers
         [Authorize]
         public async Task<ActionResult<List<WorkShiftResponseDto>?>> Get()
         {
-            var user =  HttpContext.GetUserAuthenticated<UserContext>();
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
             var workshifts = await service.Get(user.CompanyId);
 
             return Ok(workshifts ?? new List<WorkShiftResponseDto>());
         }
-        
+
         /// <summary>
         /// Cria um novo turno de trabalho para a empresa.
         /// </summary>

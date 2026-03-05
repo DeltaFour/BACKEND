@@ -22,7 +22,7 @@ namespace DeltaFour.Application.Mappers
                 TimeLate = timeLated,
             };
         }
-        
+
         ///<summary>
         ///Overload from previous method 
         ///</summary>

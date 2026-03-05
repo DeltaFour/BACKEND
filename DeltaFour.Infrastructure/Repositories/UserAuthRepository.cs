@@ -24,7 +24,7 @@ namespace DeltaFour.Infrastructure.Repositories
             context.Auth.Remove(userAuth);
 
         }
-        
+
         public void Update(UserAuth userAuth)
         {
             context.Auth.Update(userAuth);

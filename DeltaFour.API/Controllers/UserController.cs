@@ -1,5 +1,5 @@
 ﻿using DeltaFour.Application.Dtos;
-using DeltaFour.Application.Service;
+using DeltaFour.Application.Services;
 using DeltaFour.CrossCutting.Middleware;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
@@ -38,7 +38,7 @@ namespace DeltaFour.API.Controllers
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> Create([FromBody] UserCreateDto userCreateDto)
         {
-            var user = HttpContext.GetUserAuthenticated<UserContext>(); 
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
             await service.Create(userCreateDto, user);
             return Ok();
         }
@@ -81,9 +81,9 @@ namespace DeltaFour.API.Controllers
         [HttpPost("allowed-punch")]
         [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<ActionResult<Boolean>> CheckIfCanPunchIn([FromBody] CanPunchDto dto)
-        {   
-            var user =  HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(await service.CanPunchIn(dto, user)); 
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(await service.CanPunchIn(dto, user));
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> PunchForUser([FromBody] PunchForUserDto dto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
-            await  service.PunchForUser(dto, user);
+            await service.PunchForUser(dto, user);
             return Ok();
         }
     }

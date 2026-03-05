@@ -2,10 +2,10 @@
 {
     public class Location
     {
-        public Guid Id { get; set; } =  Guid.NewGuid();
-        
+        public Guid Id { get; set; } = Guid.NewGuid();
+
         public string? Name { get; set; }
-        
+
         public List<RolePermission>? RolePermissions { get; set; }
     }
 }

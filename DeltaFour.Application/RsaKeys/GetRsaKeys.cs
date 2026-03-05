@@ -14,7 +14,7 @@ namespace DeltaFour.Application.RsaKeys
             rsa.ImportFromPem(primaryKey);
             return rsa;
         }
-        
+
         public static RSA GetPublicKey(string caminho)
         {
             var rsa = RSA.Create();

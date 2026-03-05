@@ -16,7 +16,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(ea => ea.Id).HasColumnName("id");
             builder.Property(ea => ea.UserId).HasColumnName("employee_id").IsRequired();
             builder.Property(ea => ea.PunchTime).HasColumnName("punch_time").IsRequired();
-            builder.Property(ea => ea.PunchType) .HasConversion(
+            builder.Property(ea => ea.PunchType).HasConversion(
                 v => v.ToString(), v => (PunchType)Enum.Parse(typeof(PunchType), v)
             ).HasColumnName("punch_type").IsRequired();
             builder.Property(ea => ea.ShiftType).HasColumnName("shift_type").IsRequired();

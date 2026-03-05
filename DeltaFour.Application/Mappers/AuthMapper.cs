@@ -22,7 +22,7 @@ namespace DeltaFour.Application.Mappers
                 CompanyId = user.CompanyId,
             };
         }
-        
+
         ///<summary>
         ///Map information from TreatedUserInformation to the UserContext
         ///</summary>

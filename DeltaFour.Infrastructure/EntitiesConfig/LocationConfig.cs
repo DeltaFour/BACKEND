@@ -15,9 +15,9 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasMany(l => l.RolePermissions).WithOne(rp => rp.Location)
                 .HasForeignKey(rl => rl.LocationId);
             builder.HasData(
-                new Location{Name = "company"},
-                new Location{Name = "employee"},
-                new Location{Name = "work"}
+                new Location { Name = "company" },
+                new Location { Name = "employee" },
+                new Location { Name = "work" }
             );
         }
     }

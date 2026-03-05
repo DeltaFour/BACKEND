@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace DeltaFour.Application.Dtos
 {
@@ -7,7 +6,7 @@ namespace DeltaFour.Application.Dtos
     {
         [Required]
         public string Email { get; set; }
-        
+
         [Required]
         public string Password { get; set; }
     }

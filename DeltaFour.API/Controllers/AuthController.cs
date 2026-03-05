@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DeltaFour.Application.Dtos;
-using DeltaFour.Application.Service;
-using DeltaFour.CrossCutting.Middleware;
-using DeltaFour.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
+﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Application.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers
 {
@@ -36,7 +33,7 @@ namespace DeltaFour.API.Controllers
             Response.Cookies.Append("RefreshToken", refreshToken.ToString(), options);
             return Ok(service.MapUserInfo(user));
         }
-        
+
         /// <summary>
         /// Verifica se o usuário ainda possui uma sessão autenticada.
         /// </summary>
@@ -67,7 +64,7 @@ namespace DeltaFour.API.Controllers
         {
             var cookieRefresh = Request.Cookies["RefreshToken"]!;
             String cookieToken = Request.Cookies["Jwt"]!;
-            var jwt = await service.RemakeToken(cookieRefresh,cookieToken);
+            var jwt = await service.RemakeToken(cookieRefresh, cookieToken);
             if (jwt != null)
             {
                 var refreshToken = await service.RemakeRefreshToken(jwt);
@@ -77,7 +74,7 @@ namespace DeltaFour.API.Controllers
             }
             return Forbid();
         }
-        
+
         /// <summary>
         /// Realiza o logout do usuário removendo todos os cookies de autenticação.
         /// </summary>

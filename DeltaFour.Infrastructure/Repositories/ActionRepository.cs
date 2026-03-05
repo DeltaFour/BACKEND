@@ -10,9 +10,9 @@ namespace DeltaFour.Infrastructure.Repositories
     {
         public async Task<Action?> Find(Expression<Func<Action, bool>> predicate)
         {
-            return await context.Actions.FirstOrDefaultAsync(predicate);  
+            return await context.Actions.FirstOrDefaultAsync(predicate);
         }
-        
+
         public async Task<List<Action>> FindAll(Expression<Func<Action, bool>> predicate)
         {
             return await context.Actions.ToListAsync();

@@ -7,7 +7,7 @@ namespace DeltaFour.Infrastructure.Seeders
     public class RoleSeeder(AllRepositories repository)
     {
         private static readonly Guid companyId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
-        
+
         private async Task<bool> RolesAlreadyExists()
         {
             return await repository.RoleRepository.FindAny(e => e.Name.Equals(nameof(RoleType.RH)) || e.Name.Equals(nameof(RoleType.EMPLOYEE)));
@@ -15,7 +15,7 @@ namespace DeltaFour.Infrastructure.Seeders
 
         private void SaveRoles()
         {
-            Role rh =  new Role()
+            Role rh = new Role()
             {
                 CompanyId = companyId,
                 Name = nameof(RoleType.RH),
@@ -37,7 +37,7 @@ namespace DeltaFour.Infrastructure.Seeders
             repository.RoleRepository.Create(employee);
             repository.RoleRepository.Create(admin);
         }
-        
+
         public async Task SeedAsync()
         {
             var exists = await RolesAlreadyExists();

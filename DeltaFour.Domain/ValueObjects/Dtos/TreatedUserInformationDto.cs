@@ -9,17 +9,17 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
         public String Name { get; set; }
 
         public String Email { get; set; }
-        
+
         public String? RoleName { get; set; }
 
         public Guid? RoleId { get; set; }
 
         public Boolean IsAllowedBypassCoord { get; set; }
-        
+
         public Boolean IsActive { get; set; }
-        
+
         public Boolean IsConfirmed { get; set; }
-        
+
         public String Password { get; set; }
 
         public Guid CompanyId { get; set; }
