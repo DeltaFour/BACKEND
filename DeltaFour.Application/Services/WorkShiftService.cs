@@ -1,13 +1,13 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
-using DeltaFour.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
 namespace DeltaFour.Application.Services
 {
-    public class WorkShiftService(AllRepositories allRepositories)
+    public class WorkShiftService(IUnitOfWork allRepositories)
     {
         ///<summary>
         ///Operation for get all WorkShift from company

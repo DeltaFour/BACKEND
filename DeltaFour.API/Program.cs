@@ -1,18 +1,11 @@
 using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
-using Python.Runtime;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
-
-string dll = Environment.GetEnvironmentVariable("PYTHONNET_PYDLL")!;
-
-Runtime.PythonDLL = dll;
-PythonEngine.Initialize();
-PythonEngine.BeginAllowThreads();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -71,15 +64,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors(frontendCors);
-
-AppDomain.CurrentDomain.ProcessExit += (s, e) => PythonEngine.Shutdown();
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 await app.ApplyMigrationsAndSeedAsync();
