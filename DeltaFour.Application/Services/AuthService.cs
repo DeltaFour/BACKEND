@@ -14,7 +14,7 @@ using System.Text;
 
 namespace DeltaFour.Application.Services
 {
-    public class AuthService(IUnitOfWork repositories)
+    public class AuthService(IUnitOfWork repositories) : IAuthService
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
@@ -22,7 +22,7 @@ namespace DeltaFour.Application.Services
         ///<summary>
         ///Operation for log user
         ///</summary>
-        public async Task<TreatedUserInformationDto?> Login(LoginDto dto)
+        public virtual async Task<TreatedUserInformationDto?> Login(LoginDto dto)
         {
             TreatedUserInformationDto? user =
                 await repositories.UserRepository.FindUserInformation(dto.Email);

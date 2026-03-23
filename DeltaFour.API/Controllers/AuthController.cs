@@ -6,7 +6,7 @@ namespace DeltaFour.API.Controllers
 {
     [ApiController]
     [Route("api/v1/auth")]
-    public class AuthController(AuthService service) : Controller
+    public class AuthController(IAuthService service) : Controller
     {
         /// <summary>
         /// Realiza o login do usuário usando suas credenciais e retorna os tokens de autenticação via cookies.

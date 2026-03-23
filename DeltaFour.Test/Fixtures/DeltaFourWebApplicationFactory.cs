@@ -20,10 +20,26 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
     private static readonly string TestSuperAdminId = Guid.NewGuid().ToString();
     private static readonly string TestRoleSuperAdminId = Guid.NewGuid().ToString();
 
+    private readonly List<Action<IServiceCollection>> _serviceConfigurations = [];
+
     static DeltaFourWebApplicationFactory()
     {
         SetupEnvironmentVariables();
         EnsureRsaKeysExist();
+    }
+
+    public DeltaFourWebApplicationFactory WithMockedService<TService>(TService mock) where TService : class
+    {
+        _serviceConfigurations.Add(services =>
+        {
+            var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(TService));
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+            services.AddScoped(_ => mock);
+        });
+        return this;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -43,6 +59,11 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
                     mySqlOptions => mySqlOptions.UseNetTopologySuite()));
+
+            foreach (var configuration in _serviceConfigurations)
+            {
+                configuration(services);
+            }
         });
 
         builder.UseEnvironment("Testing");

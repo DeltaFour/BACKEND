@@ -1,3 +1,4 @@
+using DeltaFour.API.Filters;
 using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
 using System.Reflection;
@@ -7,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<GlobalExceptionFilter>();
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
