@@ -37,7 +37,7 @@ public static class DependencyInjection
                     uoptions => uoptions.UseNetTopologySuite()));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserAuthRepository, UserAuthRepository>();
-            services.AddScoped<AuthService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<UserService>();
             services.AddScoped<WorkShiftService>();
             services.AddScoped<CompanyService>();
