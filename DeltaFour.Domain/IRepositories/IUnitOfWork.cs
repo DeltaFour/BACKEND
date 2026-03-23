@@ -12,6 +12,7 @@ public interface IUnitOfWork
     IWorkShiftRepository WorkShiftRepository { get; }
     IUserAttendanceRepository UserAttendanceRepository { get; }
     IUserShiftRepository UserShiftRepository { get; }
+    IUserFaceRepository UserFaceRepository { get; }
 
     Task Save();
 }

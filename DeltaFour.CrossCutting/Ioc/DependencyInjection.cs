@@ -1,5 +1,5 @@
-﻿using DeltaFour.Application.Services;
-using DeltaFour.Application.Utils;
+﻿using DeltaFour.Application.Integrations;
+using DeltaFour.Application.Services;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using DeltaFour.Infrastructure.Repositories;
@@ -52,7 +52,14 @@ public static class DependencyInjection
             services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
             services.AddScoped<IUserFaceRepository, UserFaceRepository>();
             services.AddScoped<IUnitOfWork, AllRepositories>();
-            services.AddScoped<PythonExe>();
+            //services.AddScoped<PythonExe>();
+            //services.AddScoped<IFaceRecognitionIntegration, FaceRecognitionIntegration>();
+            var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
+
+            services.AddHttpClient<IFaceRecognitionIntegration, FaceRecognitionIntegration>(client =>
+            {
+                client.BaseAddress = new Uri(faceRecocnitionBaseUrl);
+            });
             services.AddScoped<SuperAdminSeeder>();
             services.AddScoped<RoleSeeder>();
         }

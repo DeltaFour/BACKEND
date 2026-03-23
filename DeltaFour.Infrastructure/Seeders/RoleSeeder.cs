@@ -1,10 +1,10 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
-using DeltaFour.Infrastructure.Repositories;
+using DeltaFour.Domain.IRepositories;
 
 namespace DeltaFour.Infrastructure.Seeders
 {
-    public class RoleSeeder(AllRepositories repository)
+    public class RoleSeeder(IUnitOfWork repository)
     {
         private static readonly Guid companyId = Guid.Parse(Environment.GetEnvironmentVariable("SUPER_ADMIN_ID"));
 
