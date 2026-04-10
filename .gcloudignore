@@ -1,0 +1,12 @@
+# inclui tudo do gitignore
+.gitignore
+.vs/
+bin/
+obj/
+node_modules/
+.git/
+.gitignore
+
+# MAS permite esses arquivos
+!app.key
+!app.pub

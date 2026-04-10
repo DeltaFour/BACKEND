@@ -62,8 +62,19 @@ namespace DeltaFour.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
         {
-            var cookieRefresh = Request.Cookies["RefreshToken"]!;
-            String cookieToken = Request.Cookies["Jwt"]!;
+            var cookieRefresh = Request.Cookies["RefreshToken"];
+            var cookieToken = Request.Cookies["Jwt"];
+
+            if (string.IsNullOrEmpty(cookieRefresh) || string.IsNullOrEmpty(cookieToken))
+            {
+                return Forbid();
+            }
+
+            if (!Guid.TryParse(cookieRefresh, out _))
+            {
+                return Forbid();
+            }
+
             var jwt = await service.RemakeToken(cookieRefresh, cookieToken);
             if (jwt != null)
             {
@@ -85,7 +96,12 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> Logout()
         {
             var refreshToken = Request.Cookies["RefreshToken"];
-            await service.Logout(refreshToken!);
+
+            if (!string.IsNullOrEmpty(refreshToken) && Guid.TryParse(refreshToken, out _))
+            {
+                await service.Logout(refreshToken);
+            }
+
             Response.Cookies.Delete("Jwt");
             Response.Cookies.Delete("RefreshToken");
             return NoContent();
@@ -100,7 +116,9 @@ namespace DeltaFour.API.Controllers
             var cookie = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                Secure = true,  // ✅ Ativa para HTTPS
+                SameSite = SameSiteMode.None,  // ✅ Permite cross-origin
+                IsEssential = true,  // ✅ Garante que será enviado
             };
 
             return cookie;
