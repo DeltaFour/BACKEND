@@ -16,6 +16,8 @@ namespace DeltaFour.Infrastructure.Repositories
         private IUserAttendanceRepository? _employeeAttendanceRepository;
         private IUserShiftRepository? _employeeShiftRepository;
         private IUserFaceRepository? _employeeFaceRepository;
+        private ISubscriptionRepository? _subscriptionRepository;
+        private ISubscriptionEventRepository? _subscriptionEventRepository;
 
         public IUserRepository UserRepository
         {
@@ -70,6 +72,16 @@ namespace DeltaFour.Infrastructure.Repositories
         public IUserFaceRepository UserFaceRepository
         {
             get { return _employeeFaceRepository ??= new UserFaceRepository(context); }
+        }
+
+        public ISubscriptionRepository SubscriptionRepository
+        {
+            get { return _subscriptionRepository ??= new SubscriptionRepository(context); }
+        }
+
+        public ISubscriptionEventRepository SubscriptionEventRepository
+        {
+            get { return _subscriptionEventRepository ??= new SubscriptionEventRepository(context); }
         }
 
         public async Task Save()

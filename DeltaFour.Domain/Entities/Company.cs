@@ -25,5 +25,7 @@
         public CompanyGeolocation? CompanyGeolocation { get; set; }
 
         public List<WorkShift>? WorkShifts { get; set; }
+
+        public Subscription? Subscription { get; set; }
     }
 }

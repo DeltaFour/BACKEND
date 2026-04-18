@@ -71,6 +71,7 @@ app.UseCors(frontendCors);
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
+app.UseMiddleware<DeltaFour.API.Middleware.SubscriptionValidationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

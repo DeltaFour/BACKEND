@@ -21,10 +21,12 @@
     <PackageReference Include="NetTopologySuite" Version="2.6.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql.NetTopologySuite" Version="8.0.3" />
+    <PackageReference Include="Stripe.net" Version="46.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DeltaFour.Domain\DeltaFour.Domain.csproj" />
+    <ProjectReference Include="..\DeltaFour.Application\DeltaFour.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

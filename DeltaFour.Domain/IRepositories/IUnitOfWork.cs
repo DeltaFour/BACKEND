@@ -13,6 +13,8 @@ public interface IUnitOfWork
     IUserAttendanceRepository UserAttendanceRepository { get; }
     IUserShiftRepository UserShiftRepository { get; }
     IUserFaceRepository UserFaceRepository { get; }
+    ISubscriptionRepository SubscriptionRepository { get; }
+    ISubscriptionEventRepository SubscriptionEventRepository { get; }
 
     Task Save();
 }
