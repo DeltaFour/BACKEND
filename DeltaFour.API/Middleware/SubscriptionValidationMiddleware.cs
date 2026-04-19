@@ -1,9 +1,5 @@
-using DeltaFour.CrossCutting.Middleware;
-using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 namespace DeltaFour.API.Middleware;
 

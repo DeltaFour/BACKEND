@@ -31,7 +31,7 @@ public class SubscriptionController : ControllerBase
     public async Task<ActionResult<SubscriptionResult>> Register([FromBody] RegisterCompanyRequest request)
     {
         var result = await _companyRegistrationService.RegisterCompanyWithSubscription(request);
-        
+
         if (result.Success)
         {
             return Ok(result);
@@ -48,7 +48,7 @@ public class SubscriptionController : ControllerBase
     public async Task<ActionResult<SubscriptionInfo>> GetSubscription()
     {
         var user = HttpContext.GetUserAuthenticated<UserContext>();
-        
+
         var subscription = await _companyRegistrationService.GetCompanySubscription(user.CompanyId);
 
         if (subscription == null)
