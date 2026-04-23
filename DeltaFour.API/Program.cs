@@ -3,6 +3,8 @@ using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,9 @@ builder.Services.AddControllers(options =>
         options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<DeltaFour.Application.Validators.UserRequestValidator>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConfigJwt(builder.Configuration);

@@ -67,7 +67,8 @@ public class CompanyRegistrationService
         {
             CompanyId = company.Id,
             PlanName = "Basic",
-            CompanyEmail = request.User.Email
+            CompanyEmail = request.User.Email,
+            CustomerName = request.User.Name
         };
 
         var subscriptionResult = await _subscriptionService.CreateSubscriptionAsync(subscriptionRequest);
@@ -80,7 +81,9 @@ public class CompanyRegistrationService
                 PlanName = "Basic",
                 Status = SubscriptionStatus.PENDING.ToString(),
                 StartDate = DateTime.UtcNow,
-                ExternalId = subscriptionResult.ExternalId
+                ExternalId = !string.IsNullOrEmpty(subscriptionResult.ExternalId) && subscriptionResult.ExternalId.StartsWith("sub_")
+                    ? subscriptionResult.ExternalId
+                    : null
             };
 
             _unitOfWork.SubscriptionRepository.Create(subscription);

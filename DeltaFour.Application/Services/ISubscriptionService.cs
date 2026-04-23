@@ -8,4 +8,5 @@ public interface ISubscriptionService
     Task<SubscriptionResult> CreateSubscriptionAsync(CreateSubscriptionRequest request);
     Task CancelSubscriptionAsync(string externalId);
     Task<SubscriptionInfo> GetSubscriptionAsync(string externalId);
+    Task<string?> CreateBillingPortalSessionAsync(string subscriptionId, string returnUrl);
 }

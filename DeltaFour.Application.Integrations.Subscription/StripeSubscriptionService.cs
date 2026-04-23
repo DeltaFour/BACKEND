@@ -82,7 +82,6 @@ public class StripeSubscriptionService : ISubscriptionService
 
         string? subscriptionId = externalId;
 
-        // If a Checkout Session id (cs_...) was passed, resolve it to the created subscription id
         if (!string.IsNullOrEmpty(externalId) && externalId.StartsWith("cs_"))
         {
             var sessionService = new SessionService();
@@ -90,7 +89,6 @@ public class StripeSubscriptionService : ISubscriptionService
             subscriptionId = session?.SubscriptionId;
         }
 
-        // If a customer id (cus_...) was passed, try to find an active subscription for that customer
         if (!string.IsNullOrEmpty(externalId) && externalId.StartsWith("cus_") && string.IsNullOrEmpty(subscriptionId))
         {
             var listOptions = new SubscriptionListOptions
@@ -104,7 +102,7 @@ public class StripeSubscriptionService : ISubscriptionService
         }
 
         if (string.IsNullOrEmpty(subscriptionId))
-            throw new Exception("Subscription id could not be resolved for cancellation");
+            throw new Exception("Não foi possível resolver o id da assinatura para cancelamento");
 
         await subscriptionService.CancelAsync(subscriptionId);
     }
@@ -135,7 +133,7 @@ public class StripeSubscriptionService : ISubscriptionService
         }
 
         if (string.IsNullOrEmpty(subscriptionId))
-            throw new Exception("Subscription id could not be resolved");
+            throw new Exception("Não foi possível resolver o id da assinatura");
 
         var subscription = await subscriptionService.GetAsync(subscriptionId);
 
@@ -174,7 +172,7 @@ public class StripeSubscriptionService : ISubscriptionService
         }
 
         if (string.IsNullOrEmpty(customerId))
-            throw new Exception("Customer id could not be resolved for billing portal");
+            throw new Exception("Não foi possível resolver o id do cliente para o portal de cobrança");
 
         var portalService = new Stripe.BillingPortal.SessionService();
         var options = new Stripe.BillingPortal.SessionCreateOptions
