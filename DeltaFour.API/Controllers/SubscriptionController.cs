@@ -70,4 +70,71 @@ public class SubscriptionController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Reativa uma assinatura cancelada da empresa do usuário autenticado.
+    /// </summary>
+    /// <remarks>
+    /// Cria uma nova sessão de checkout para reativar a assinatura cancelada.
+    /// Retorna a URL de checkout para o usuário completar o pagamento.
+    /// </remarks>
+    [HttpPost("reactivate")]
+    [Authorize]
+    public async Task<ActionResult<SubscriptionResult>> ReactivateSubscription()
+    {
+        var user = HttpContext.GetUserAuthenticated<Domain.Entities.UserContext>();
+
+        var result = await _companyRegistrationService.ReactivateCompanySubscription(user.CompanyId);
+
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+
+        return BadRequest(result);
+    }
+
+    /// <summary>
+    /// Retorna a URL do portal de cobrança do Stripe para gerenciar a assinatura.
+    /// </summary>
+    /// <remarks>
+    /// Permite ao usuário visualizar faturas, histórico de pagamentos e gerenciar a assinatura.
+    /// </remarks>
+    [HttpGet("billing-portal")]
+    [Authorize]
+    public async Task<ActionResult<BillingPortalResponse>> GetBillingPortal([FromQuery] string? returnUrl)
+    {
+        var user = HttpContext.GetUserAuthenticated<Domain.Entities.UserContext>();
+
+        var defaultReturnUrl = returnUrl ?? Environment.GetEnvironmentVariable("STRIPE_SUCCESS_URL") ?? "/";
+
+        var url = await _companyRegistrationService.GetBillingPortalUrl(user.CompanyId, defaultReturnUrl);
+
+        if (string.IsNullOrEmpty(url))
+            return NotFound(new { message = "Could not create billing portal session" });
+
+        return Ok(new BillingPortalResponse { Url = url });
+    }
+
+    /// <summary>
+    /// Retorna a URL para atualizar a forma de pagamento no Stripe.
+    /// </summary>
+    /// <remarks>
+    /// Redireciona o usuário para o portal do Stripe onde pode atualizar cartão de crédito ou outra forma de pagamento.
+    /// </remarks>
+    [HttpGet("update-payment-method")]
+    [Authorize]
+    public async Task<ActionResult<BillingPortalResponse>> GetUpdatePaymentMethodUrl([FromQuery] string? returnUrl)
+    {
+        var user = HttpContext.GetUserAuthenticated<UserContext>();
+
+        var defaultReturnUrl = returnUrl ?? Environment.GetEnvironmentVariable("STRIPE_SUCCESS_URL") ?? "/";
+
+        var url = await _companyRegistrationService.GetPaymentMethodUpdateUrl(user.CompanyId, defaultReturnUrl);
+
+        if (string.IsNullOrEmpty(url))
+            return NotFound(new { message = "Could not create payment method update session" });
+
+        return Ok(new BillingPortalResponse { Url = url });
+    }
 }

@@ -63,7 +63,8 @@ public class StripeSubscriptionService : ISubscriptionService
             {
                 Success = true,
                 CheckoutSessionId = session.Id,
-                CheckoutUrl = session.Url
+                CheckoutUrl = session.Url,
+                CustomerId = customer.Id
             };
         }
         catch (StripeException e)
@@ -181,6 +182,75 @@ public class StripeSubscriptionService : ISubscriptionService
         {
             Customer = customerId,
             ReturnUrl = returnUrl
+        };
+
+        var portalSession = await portalService.CreateAsync(options);
+
+        return portalSession.Url;
+    }
+
+    public async Task<SubscriptionResult> ReactivateSubscriptionAsync(string customerId, Guid companyId)
+    {
+        try
+        {
+            var priceId = Environment.GetEnvironmentVariable("STRIPE_PRICE_ID")!;
+
+            var sessionOptions = new SessionCreateOptions
+            {
+                Customer = customerId,
+                PaymentMethodTypes = new List<string> { "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        Price = priceId,
+                        Quantity = 1,
+                    },
+                },
+                Mode = "subscription",
+                SuccessUrl = Environment.GetEnvironmentVariable("STRIPE_SUCCESS_URL"),
+                CancelUrl = Environment.GetEnvironmentVariable("STRIPE_CANCEL_URL"),
+                Metadata = new Dictionary<string, string>
+                {
+                    { "company_id", companyId.ToString() }
+                }
+            };
+
+            var sessionService = new SessionService();
+            var session = await sessionService.CreateAsync(sessionOptions);
+
+            return new SubscriptionResult
+            {
+                Success = true,
+                CheckoutSessionId = session.Id,
+                CheckoutUrl = session.Url,
+                CustomerId = customerId
+            };
+        }
+        catch (StripeException e)
+        {
+            return new SubscriptionResult
+            {
+                Success = false,
+                ErrorMessage = e.Message
+            };
+        }
+    }
+
+    public async Task<string?> CreatePaymentMethodUpdateSessionAsync(string customerId, string returnUrl)
+    {
+        if (string.IsNullOrEmpty(customerId))
+            return null;
+
+        var portalService = new Stripe.BillingPortal.SessionService();
+        var options = new Stripe.BillingPortal.SessionCreateOptions
+        {
+            Customer = customerId,
+            ReturnUrl = returnUrl,
+            FlowData = new Stripe.BillingPortal.SessionFlowDataOptions
+            {
+                Type = "payment_method_update"
+            }
         };
 
         var portalSession = await portalService.CreateAsync(options);

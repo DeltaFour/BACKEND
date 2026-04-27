@@ -83,7 +83,8 @@ public class CompanyRegistrationService
                 StartDate = DateTime.UtcNow,
                 ExternalId = !string.IsNullOrEmpty(subscriptionResult.ExternalId) && subscriptionResult.ExternalId.StartsWith("sub_")
                     ? subscriptionResult.ExternalId
-                    : null
+                    : null,
+                CustomerId = subscriptionResult.CustomerId
             };
 
             _unitOfWork.SubscriptionRepository.Create(subscription);
@@ -107,7 +108,8 @@ public class CompanyRegistrationService
             Status = subscription.Status,
             StartDate = subscription.StartDate,
             EndDate = subscription.EndDate,
-            ExternalId = subscription.ExternalId
+            ExternalId = subscription.ExternalId,
+            CustomerId = subscription.CustomerId
         };
     }
 
@@ -127,5 +129,56 @@ public class CompanyRegistrationService
         subscription.EndDate = DateTime.UtcNow;
 
         await _unitOfWork.Save();
+    }
+
+    public async Task<SubscriptionResult> ReactivateCompanySubscription(Guid companyId)
+    {
+        var subscription = await _unitOfWork.SubscriptionRepository.Find(s => s.CompanyId == companyId);
+
+        if (subscription == null)
+            throw new Exception("Subscription not found");
+
+        if (subscription.Status != SubscriptionStatus.CANCELED.ToString())
+            throw new Exception("Only canceled subscriptions can be reactivated");
+
+        if (string.IsNullOrEmpty(subscription.CustomerId))
+            throw new Exception("Customer ID not found. Cannot reactivate subscription.");
+
+        var result = await _subscriptionService.ReactivateSubscriptionAsync(subscription.CustomerId, companyId);
+
+        if (result.Success)
+        {
+            subscription.Status = SubscriptionStatus.PENDING.ToString();
+            subscription.EndDate = null;
+            await _unitOfWork.Save();
+        }
+
+        return result;
+    }
+
+    public async Task<string?> GetPaymentMethodUpdateUrl(Guid companyId, string returnUrl)
+    {
+        var subscription = await _unitOfWork.SubscriptionRepository.Find(s => s.CompanyId == companyId);
+
+        if (subscription == null)
+            throw new Exception("Subscription not found");
+
+        if (string.IsNullOrEmpty(subscription.CustomerId))
+            throw new Exception("Customer ID not found");
+
+        return await _subscriptionService.CreatePaymentMethodUpdateSessionAsync(subscription.CustomerId, returnUrl);
+    }
+
+    public async Task<string?> GetBillingPortalUrl(Guid companyId, string returnUrl)
+    {
+        var subscription = await _unitOfWork.SubscriptionRepository.Find(s => s.CompanyId == companyId);
+
+        if (subscription == null)
+            throw new Exception("Subscription not found");
+
+        if (string.IsNullOrEmpty(subscription.CustomerId))
+            throw new Exception("Customer ID not found");
+
+        return await _subscriptionService.CreateBillingPortalSessionAsync(subscription.CustomerId, returnUrl);
     }
 }

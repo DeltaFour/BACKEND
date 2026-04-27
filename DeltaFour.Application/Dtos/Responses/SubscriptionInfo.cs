@@ -8,4 +8,5 @@ public class SubscriptionInfo
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? ExternalId { get; set; }
+    public string? CustomerId { get; set; }
 }

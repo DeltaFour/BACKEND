@@ -39,6 +39,8 @@ public class SubscriptionWebhookService
             case "invoice.payment_succeeded":
                 await HandlePaymentSucceeded(stripeEvent, eventPayload);
                 break;
+            default:
+                break;
         }
     }
 
@@ -55,6 +57,8 @@ public class SubscriptionWebhookService
             {
                 subscription.Status = SubscriptionStatus.ACTIVE.ToString();
                 subscription.ExternalId = session.SubscriptionId;
+                subscription.CustomerId = session.CustomerId;
+                subscription.EndDate = null;
 
                 var subscriptionEvent = new Domain.Entities.SubscriptionEvent
                 {
@@ -125,11 +129,12 @@ public class SubscriptionWebhookService
     private async Task HandlePaymentFailed(Event stripeEvent, string payload)
     {
         var invoice = stripeEvent.Data.Object as Invoice;
+        var invoiceSubscriptionId = GetSubscriptionIdFromInvoice(invoice);
 
-        if (invoice?.SubscriptionId != null)
+        if (invoice?.Id != null && invoiceSubscriptionId != null)
         {
             var subscription = await _unitOfWork.SubscriptionRepository.Find(
-                s => s.ExternalId == invoice.SubscriptionId);
+                s => s.ExternalId == invoiceSubscriptionId);
 
             if (subscription != null)
             {
@@ -151,11 +156,12 @@ public class SubscriptionWebhookService
     private async Task HandlePaymentSucceeded(Event stripeEvent, string payload)
     {
         var invoice = stripeEvent.Data.Object as Invoice;
+        var invoiceSubscriptionId = GetSubscriptionIdFromInvoice(invoice);
 
-        if (invoice?.SubscriptionId != null)
+        if (invoiceSubscriptionId != null)
         {
             var subscription = await _unitOfWork.SubscriptionRepository.Find(
-                s => s.ExternalId == invoice.SubscriptionId);
+                s => s.ExternalId == invoiceSubscriptionId);
 
             if (subscription != null)
             {
@@ -175,6 +181,17 @@ public class SubscriptionWebhookService
                 await _unitOfWork.Save();
             }
         }
+    }
+
+    private static string? GetSubscriptionIdFromInvoice(Invoice? invoice)
+    {
+        if (invoice?.Parent == null)
+            return null;
+
+        if (invoice.Parent.Type == "subscription" && invoice.Parent.SubscriptionDetails?.Subscription != null)
+            return invoice.Parent.SubscriptionDetails.Subscription.Id;
+
+        return null;
     }
 
     private string MapStripeStatus(string stripeStatus)

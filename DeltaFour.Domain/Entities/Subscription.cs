@@ -14,6 +14,8 @@ public class Subscription : BaseEntity
 
     public string? ExternalId { get; set; }
 
+    public string? CustomerId { get; set; }
+
     public Company Company { get; set; }
 
     public List<SubscriptionEvent>? SubscriptionEvents { get; set; }
