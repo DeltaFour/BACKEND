@@ -23,6 +23,8 @@ public class SubscriptionValidationMiddleware
 
     public async Task InvokeAsync(HttpContext context, IUnitOfWork unitOfWork)
     {
+        var logger = context.RequestServices.GetService<ILogger<SubscriptionValidationMiddleware>>();
+
         var path = context.Request.Path.Value ?? string.Empty;
 
         if (ExemptPaths.Any(exemptPath => path.StartsWith(exemptPath, StringComparison.OrdinalIgnoreCase)))
@@ -43,6 +45,7 @@ public class SubscriptionValidationMiddleware
                 {
                     if (subscription.Status == SubscriptionStatus.CANCELED.ToString())
                     {
+                        logger?.LogWarning("Access blocked for company {CompanyId} - subscription canceled", companyId);
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         await context.Response.WriteAsJsonAsync(new
                         {
@@ -53,6 +56,7 @@ public class SubscriptionValidationMiddleware
 
                     if (subscription.Status == SubscriptionStatus.PAST_DUE.ToString())
                     {
+                        logger?.LogWarning("Access blocked for company {CompanyId} - payment past due", companyId);
                         context.Response.StatusCode = StatusCodes.Status402PaymentRequired;
                         await context.Response.WriteAsJsonAsync(new
                         {
@@ -63,6 +67,8 @@ public class SubscriptionValidationMiddleware
                 }
             }
         }
+
+        logger?.LogInformation("Request {Method} {Path} authorized or not protected by subscription validation", context.Request.Method, path);
 
         await _next(context);
     }

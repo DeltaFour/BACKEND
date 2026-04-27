@@ -1,18 +1,31 @@
 using DeltaFour.API.Filters;
 using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
-using System.Reflection;
-using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-
-var builder = WebApplication.CreateBuilder(args);
+using Serilog;
+using Serilog.Events;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 Env.Load();
+var builder = WebApplication.CreateBuilder(args);
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Host.UseSerilog();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File(new Serilog.Formatting.Compact.CompactJsonFormatter(), "logs/log-.json", rollingInterval: Serilog.RollingInterval.Day)
+    .WriteTo.MySQL(connectionString ?? string.Empty, tableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information)
+    .CreateLogger();
 
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<GlobalExceptionFilter>();
+        options.Filters.Add<RequestLoggingFilter>();
     })
     .AddJsonOptions(options =>
     {
