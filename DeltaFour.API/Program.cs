@@ -1,16 +1,31 @@
 using DeltaFour.API.Filters;
 using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
-
 Env.Load();
+var builder = WebApplication.CreateBuilder(args);
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Host.UseSerilog();
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File(new Serilog.Formatting.Compact.CompactJsonFormatter(), "logs/log-.json", rollingInterval: Serilog.RollingInterval.Day)
+    .WriteTo.MySQL(connectionString ?? string.Empty, tableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information)
+    .CreateLogger();
 
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<GlobalExceptionFilter>();
+        options.Filters.Add<RequestLoggingFilter>();
     })
     .AddJsonOptions(options =>
     {
@@ -18,6 +33,9 @@ builder.Services.AddControllers(options =>
         options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<DeltaFour.Application.Validators.UserRequestValidator>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConfigJwt(builder.Configuration);
@@ -71,6 +89,7 @@ app.UseCors(frontendCors);
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseAuthentication();
+app.UseMiddleware<DeltaFour.API.Middleware.SubscriptionValidationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 

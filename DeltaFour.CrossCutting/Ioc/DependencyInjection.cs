@@ -41,6 +41,11 @@ public static class DependencyInjection
             services.AddScoped<UserService>();
             services.AddScoped<WorkShiftService>();
             services.AddScoped<CompanyService>();
+            services.AddScoped<CompanyRegistrationService>();
+            services.AddScoped<SubscriptionWebhookService>();
+            services.AddScoped<ISubscriptionService, Application.Integrations.Subscription.StripeSubscriptionService>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionEventRepository, SubscriptionEventRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();

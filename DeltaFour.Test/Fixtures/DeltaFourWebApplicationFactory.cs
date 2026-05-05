@@ -74,6 +74,8 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+        await dbContext.SubscriptionEvents.ExecuteDeleteAsync();
+        await dbContext.Subscriptions.ExecuteDeleteAsync();
         await dbContext.Auth.ExecuteDeleteAsync();
         await dbContext.EmployeeAttendances.ExecuteDeleteAsync();
         await dbContext.EmployeeFaces.ExecuteDeleteAsync();
@@ -106,6 +108,11 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         Environment.SetEnvironmentVariable("VALIDATE_ISSUER", "false");
         Environment.SetEnvironmentVariable("VALIDATE_AUDIENCE", "false");
         Environment.SetEnvironmentVariable("FACE_RECOGNITION_BASE_URL", "http://localhost:5000");
+        Environment.SetEnvironmentVariable("STRIPE_SECRET_KEY", "sk_test_mock");
+        Environment.SetEnvironmentVariable("STRIPE_WEBHOOK_SECRET", "whsec_test_mock");
+        Environment.SetEnvironmentVariable("STRIPE_PRICE_ID", "price_test_mock");
+        Environment.SetEnvironmentVariable("STRIPE_SUCCESS_URL", "http://localhost:3000/success");
+        Environment.SetEnvironmentVariable("STRIPE_CANCEL_URL", "http://localhost:3000/cancel");
     }
 
     private static void EnsureRsaKeysExist()

@@ -32,6 +32,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<WorkShift> WorkShifts { get; set; }
 
+    public DbSet<Subscription> Subscriptions { get; set; }
+
+    public DbSet<SubscriptionEvent> SubscriptionEvents { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
