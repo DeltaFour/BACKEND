@@ -21,6 +21,11 @@ public class GlobalExceptionFilter : IExceptionFilter
 
         var response = CreateErrorResponse(context.Exception);
 
+        if (response.StatusCode == StatusCodes.Status500InternalServerError)
+        {
+            response.Message = context.Exception.Message;
+        }
+
         context.Result = new ObjectResult(response)
         {
             StatusCode = response.StatusCode
