@@ -21,6 +21,7 @@ namespace DeltaFour.Domain.IRepositories
         Task<TreatedUserInformationDto?> FindUserInformation(String email);
 
         void Update(User user);
-
+        
+        Task<User?> FindByEmailForPunch(String email);
     }
 }

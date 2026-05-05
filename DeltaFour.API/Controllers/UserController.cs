@@ -134,5 +134,13 @@ namespace DeltaFour.API.Controllers
             await service.PunchForUser(dto, user);
             return Ok();
         }
+
+        [HttpPost("punch-by-email")]
+        public async Task<IActionResult> PunchByEmail([FromBody] PunchByEmailDto dto)
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            await service.PunchByEmail(dto, user);
+            return NoContent();
+        }
     }
 }

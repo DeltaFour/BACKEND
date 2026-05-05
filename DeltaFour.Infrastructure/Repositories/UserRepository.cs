@@ -59,6 +59,12 @@ namespace DeltaFour.Infrastructure.Repositories
                 .Include(e => e.UserShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
         }
 
+        public async Task<User?> FindByEmailForPunch(String email)
+        {
+            return await context.Employees.Where(e => e.Email == email).Include(e => e.UserShifts)!
+                .ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
+        }
+
         public void Create(User user)
         {
             context.Employees.Add(user);

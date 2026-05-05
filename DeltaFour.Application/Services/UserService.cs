@@ -221,7 +221,7 @@ namespace DeltaFour.Application.Services
 
                 if (workShifts != null)
                 {
-                    if (user.UserFaces != null)
+                    if (user is { IsAllowedBypassFacial: false, UserFaces: not null })
                     {
                         var faceMatchs = await faceRecognitionIntegration.ChecksIfFaceMatchs(
                             dto.ImageBase64,
@@ -232,23 +232,23 @@ namespace DeltaFour.Application.Services
                         {
                             return PunchInResponse.FNC;
                         }
-
-                        Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
-
-                        var userAttendance =
-                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
-                                timeCheked, timeCheked
-                                    ? null
-                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
-                                                            TimeOnly.FromDateTime(DateTime.UtcNow)));
-
-                        unitOfWork.UserAttendanceRepository.Create(userAttendance);
-
-                        await unitOfWork.Save();
-
-                        return PunchInResponse.SCC;
                     }
+
+                    Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                    var userAttendance =
+                        UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                            timeCheked, timeCheked
+                                ? null
+                                : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                        TimeOnly.FromDateTime(DateTime.UtcNow)));
+
+                    unitOfWork.UserAttendanceRepository.Create(userAttendance);
+
+                    await unitOfWork.Save();
+
+                    return PunchInResponse.SCC;
                 }
             }
 
@@ -295,6 +295,53 @@ namespace DeltaFour.Application.Services
 
             return true;
         }
+        public async Task PunchByEmail(PunchByEmailDto dto, UserContext userContext)
+        {
+            User? user = await unitOfWork.UserRepository.FindByEmailForPunch(dto.Email);
+            if (user != null && userContext.Email == user.Email)
+            {
+                if (user is { IsAllowedBypassFacial: true, IsAllowedBypassCoord: true })
+                {
+                    using var hash = SHA256.Create();
+                    byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                    var hashPassowrd = new StringBuilder();
+                    foreach (byte b in bytes)
+                    {
+                        hashPassowrd.Append(b.ToString("x2"));
+                    }
+
+                    if (user.Password.Equals(hashPassowrd.ToString()))
+                    {
+                        var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
+
+                        if (workShifts != null)
+                        {
+                            Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                                TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                            var userAttendance =
+                                UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                                    timeCheked, timeCheked
+                                        ? null
+                                        : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                                TimeOnly.FromDateTime(DateTime.UtcNow)));
+
+                            unitOfWork.UserAttendanceRepository.Create(userAttendance);
+
+                            await unitOfWork.Save();
+                        }
+                    }
+                    else
+                    {
+                        throw new BadHttpRequestException("Senha esta incorreta!");
+                    }
+                }
+                else
+                {
+                    throw new BadHttpRequestException("Você não tem autorização para bater ponto só com email e senha");
+                }
+            }
+        }
 
         ///<summary>
         ///Operation for check if user can punch out in correctly time
@@ -303,5 +350,6 @@ namespace DeltaFour.Application.Services
         {
             return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time;
         }
+
     }
 }

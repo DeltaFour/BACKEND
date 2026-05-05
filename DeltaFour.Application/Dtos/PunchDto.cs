@@ -20,7 +20,5 @@ namespace DeltaFour.Application.Dtos
         public Double Latitude { get; set; }
 
         public Double Longitude { get; set; }
-
-
     }
 }

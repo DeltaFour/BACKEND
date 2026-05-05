@@ -22,6 +22,21 @@ namespace DeltaFour.Application.Mappers
                 TimeLate = timeLated,
             };
         }
+        
+        public static UserAttendance UserAttendanceFromDto(PunchByEmailDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
+        {
+            return new UserAttendance()
+            {
+                UserId = userId,
+                PunchTime = dto.TimePunched,
+                PunchType = dto.Type,
+                ShiftType = dto.ShiftType,
+                Coord = new Coordinates(0, 0),
+                CreatedBy = userId,
+                IsLate = isLate,
+                TimeLate = timeLated,
+            };
+        }
 
         ///<summary>
         ///Overload from previous method 
