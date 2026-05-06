@@ -6,9 +6,13 @@ using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using GeoAPI.CoordinateSystems;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Http;
+using MimeKit;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
+using Serilog;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,6 +20,13 @@ namespace DeltaFour.Application.Services
 {
     public class UserService(IUnitOfWork unitOfWork, IFaceRecognitionIntegration faceRecognitionIntegration)
     {
+        private String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
+        private int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
+        private String username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+        private String password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+        private String fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
+        private String fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+        
         ///<summary>
         ///Operation for get all users from company
         ///</summary>
@@ -316,12 +327,28 @@ namespace DeltaFour.Application.Services
 
                         if (workShifts != null)
                         {
-                            Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                            Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
                                 TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                            if (!timeChecked)
+                            {
+                                List<User> rhUsers = await unitOfWork.UserRepository.GetRhUsers(user.CompanyId);
+                                _ = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await sendEmailRH(rhUsers, user.Name, user.Email);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Error(ex, "Erro ao enviar email para RH");
+                                    }
+                                });
+                            }
 
                             var userAttendance =
                                 UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
-                                    timeCheked, timeCheked
+                                    timeChecked, timeChecked
                                         ? null
                                         : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                                 TimeOnly.FromDateTime(DateTime.UtcNow)));
@@ -341,6 +368,39 @@ namespace DeltaFour.Application.Services
                     throw new BadHttpRequestException("Você não tem autorização para bater ponto só com email e senha");
                 }
             }
+        }
+
+        private async Task sendEmailRH(List<User> rhUsers, String latestUserName, String latestUserEmail)
+        {
+            var message = new MimeMessage();
+            
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            foreach (var rhUser in rhUsers)
+            {
+                message.To.Add(MailboxAddress.Parse(rhUser.Email));
+            }
+            message.Subject = "Funcionário Atrasado";
+            
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $"""
+                                <h2>Funcionário atrasado</h2>
+
+                                <p>O funcionário abaixo está atrasado:</p>
+
+                                <ul>
+                                    <li><strong>Nome:</strong> {latestUserName}</li>
+                                    <li><strong>Email:</strong> {latestUserEmail}</li>
+                                </ul>
+                            """
+            }.ToMessageBody();
+            
+            using var client = new SmtpClient();
+            
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
 
         ///<summary>

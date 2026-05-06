@@ -112,6 +112,12 @@ namespace DeltaFour.Infrastructure.Repositories
             context.Employees.Update(user);
         }
 
+        public async Task<List<User>> GetRhUsers(Guid companyId)
+        {
+            return await context.Employees.Where(e => e.CompanyId == companyId && e.Role.Name.Equals("RH"))
+                .ToListAsync();
+        }
+
         public async Task<User?> Find(Expression<Func<User, bool>> predicate)
         {
             return await context

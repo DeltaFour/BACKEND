@@ -23,5 +23,7 @@ namespace DeltaFour.Domain.IRepositories
         void Update(User user);
         
         Task<User?> FindByEmailForPunch(String email);
+
+        Task<List<User>> GetRhUsers(Guid companyId);
     }
 }
