@@ -8,7 +8,8 @@ namespace DeltaFour.Application.Mappers
         ///<summary>
         ///Map information from UserAttendance to UserAttendance
         ///</summary>
-        public static UserAttendance UserAttendanceFromDto(PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
+        public static UserAttendance UserAttendanceFromDto
+            (PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
         {
             return new UserAttendance()
             {
@@ -22,8 +23,9 @@ namespace DeltaFour.Application.Mappers
                 TimeLate = timeLated,
             };
         }
-        
-        public static UserAttendance UserAttendanceFromDto(PunchByEmailDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
+
+        public static UserAttendance UserAttendanceFromDto
+            (PunchByEmailDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated, String filePath)
         {
             return new UserAttendance()
             {
@@ -35,6 +37,9 @@ namespace DeltaFour.Application.Mappers
                 CreatedBy = userId,
                 IsLate = isLate,
                 TimeLate = timeLated,
+                Justification = dto.Justification,
+                FilePath = filePath,
+                Observation = dto.Observation,
             };
         }
 

@@ -1,4 +1,5 @@
-﻿using DeltaFour.Domain.Entities;
+﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using System.Linq.Expressions;
 
@@ -25,5 +26,7 @@ namespace DeltaFour.Domain.IRepositories
         Task<User?> FindByEmailForPunch(String email);
 
         Task<List<User>> GetRhUsers(Guid companyId);
+
+        Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId);
     }
 }

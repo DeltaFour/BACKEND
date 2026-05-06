@@ -14,9 +14,17 @@ namespace DeltaFour.Domain.Entities
 
         public Coordinates Coord { get; set; }
 
-        public Boolean? IsLate { get; set; }
+        public Boolean IsLate { get; set; }
 
         public TimeOnly? TimeLate { get; set; }
+
+        public String? Justification { get; set; }
+        
+        public String? FilePath { get; set; }
+
+        public String? Observation { get; set; }
+        
+        public String? Status { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
 

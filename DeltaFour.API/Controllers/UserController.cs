@@ -97,13 +97,13 @@ namespace DeltaFour.API.Controllers
         public async Task<IActionResult> PunchIn([FromBody] PunchDto punchDto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
-            PunchInResponse response = await service.PunchIn(punchDto, user);
-            if (response == PunchInResponse.SCC)
+            String response = await service.PunchIn(punchDto, user);
+            if (response.Equals(PunchInResponse.SCC.Message()))
             {
-                return Ok(response.Message());
+                return Ok(response);
             }
 
-            return BadRequest(response.Message());
+            return BadRequest(response);
         }
 
         /// <summary>
@@ -141,6 +141,14 @@ namespace DeltaFour.API.Controllers
             var user = HttpContext.GetUserAuthenticated<UserContext>();
             await service.PunchByEmail(dto, user);
             return NoContent();
+        }
+
+        [HttpGet("get-all-attendances")]
+        [Authorize(Policy = "RH_OR_ADMIN")]
+        public async Task<ActionResult<List<AllAttendanceByCompanyResponse>>> GetAllAttendancesByCompany()
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(await service.GetAllAttendanceByCompany(user.CompanyId));
         }
     }
 }
