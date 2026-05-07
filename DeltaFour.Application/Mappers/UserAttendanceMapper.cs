@@ -36,12 +36,12 @@ namespace DeltaFour.Application.Mappers
                 ShiftType = dto.ShiftType,
                 Coord = new Coordinates(0, 0),
                 CreatedBy = userId,
-                IsLate = isLate,
+                IsLate = !isLate,
                 TimeLate = timeLated,
                 Justification = dto.Justification,
                 FilePath = filePath,
                 Observation = dto.Observation,
-                Status = isLate ? Enum.GetName(StatusAttendance.pendente) :  null
+                Status = !isLate ? Enum.GetName(StatusAttendance.pendente) :  null
             };
         }
 

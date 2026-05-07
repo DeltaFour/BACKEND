@@ -182,6 +182,23 @@ namespace DeltaFour.Application.Services
             return false;
         }
 
+        // public async Task<Boolean> CanPunchWeb(CanPunchDto dto, UserContext user)
+        // {
+        //     var workShift = await unitOfWork.WorkShiftRepository.GetByUserIdAndIsActive(user.Id, user.CompanyId);
+        //     int amountAttendance = await unitOfWork.UserAttendanceRepository.AmountAttendanceIn(user.Id);
+        //     int amountAttendanceYesterday = await unitOfWork.UserAttendanceRepository.AmountAttendanceInYesterday(user.Id);
+        //
+        //     if (workShift != null && amountAttendance == 0 && dto.TimePunched >=+
+        //         workShift.StartTime.AddMinutes(15).Add(TimeSpan.FromSeconds(1)))
+        //     {
+        //         return false;
+        //     }
+        //     if(workShift != null && amountAttendance == 0)
+        //     {
+        //         return CheckTime(workShift, dto.TimePunched, dto.PunchType);
+        //     }
+        // }
+
         ///<summary>
         ///Operation for punch for user
         ///</summary>
@@ -286,7 +303,7 @@ namespace DeltaFour.Application.Services
                                 }
                             });
                         }
-                        
+
                         String? filePath = null;
 
                         if (!string.IsNullOrWhiteSpace(dto.FileBase64))
@@ -298,7 +315,7 @@ namespace DeltaFour.Application.Services
                             {
                                 var parts = base64.Split(',', 2);
 
-                                var metadata = parts[0]; 
+                                var metadata = parts[0];
                                 base64 = parts[1];
 
                                 mimeType = metadata
@@ -311,7 +328,7 @@ namespace DeltaFour.Application.Services
                             fileBytes = Convert.FromBase64String(base64);
 
                             string extension = mimeType.Split('/')[1];
-                            
+
 
                             string folderName = mimeType == "application/pdf"
                                 ? "pdf"
@@ -343,7 +360,7 @@ namespace DeltaFour.Application.Services
                                     : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                             TimeOnly.FromDateTime(DateTime.UtcNow)),
                                 filePath);
-                        
+
                         unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                         await unitOfWork.Save();
@@ -439,7 +456,7 @@ namespace DeltaFour.Application.Services
 
             return true;
         }
-        
+
         private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)
         {
             var message = new MimeMessage();

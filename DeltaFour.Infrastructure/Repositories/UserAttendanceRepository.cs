@@ -34,5 +34,32 @@ namespace DeltaFour.Infrastructure.Repositories
 
             await context.SaveChangesAsync();
         }
+
+        public async Task<int> AmountAttendanceIn(Guid userId)
+        {
+            var startOfDay = DateTime.Today;
+            var endOfDay = startOfDay.AddHours(23).AddMinutes(59).AddSeconds(59);
+
+            return await context.EmployeeAttendances
+                .CountAsync(at =>
+                    at.UserId == userId &&
+                    at.PunchType == PunchType.IN &&
+                    at.PunchTime >= startOfDay &&
+                    at.PunchTime < endOfDay
+                );
+        }
+        public async Task<int> AmountAttendanceInYesterday(Guid userId)
+        {
+            var startOfDay = DateTime.Today.AddSeconds(-1);
+            var endOfDay = startOfDay.AddHours(-23).AddMinutes(-59).AddSeconds(-59);
+
+            return await context.EmployeeAttendances
+                .CountAsync(at =>
+                    at.UserId == userId &&
+                    at.PunchType == PunchType.IN &&
+                    at.PunchTime >= startOfDay &&
+                    at.PunchTime < endOfDay
+                );
+        }
     }
 }

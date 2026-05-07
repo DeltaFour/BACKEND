@@ -11,5 +11,10 @@ namespace DeltaFour.Domain.IRepositories
         void Delete(UserAttendance userAttendance);
 
         Task UpdateStatusAttendance(Guid attendanceId);
+
+        Task<int> AmountAttendanceIn(Guid userId);
+
+        Task<int> AmountAttendanceInYesterday(Guid userId);
+
     }
 }
