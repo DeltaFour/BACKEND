@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,15 @@ namespace DeltaFour.Infrastructure.Repositories
         public void Delete(UserAttendance userAttendance)
         {
             context.EmployeeAttendances.Remove(userAttendance);
+        }
+        public async Task UpdateStatusAttendance(Guid attendanceId)
+        {
+            var attendance = await context.EmployeeAttendances
+                .FirstOrDefaultAsync(at => at.Id == attendanceId);
+
+            attendance!.Status = Enum.GetName(StatusAttendance.aprovado);
+
+            await context.SaveChangesAsync();
         }
     }
 }

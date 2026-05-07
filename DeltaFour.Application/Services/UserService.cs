@@ -243,31 +243,11 @@ namespace DeltaFour.Application.Services
             await unitOfWork.Save();
         }
 
-        ///<summary>
-        ///Operation for check the time that user is punching, and return true or false, depends on time of WorkShift
-        ///</summary>
-        private Boolean CheckTime(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
-        {
-            if (type.Equals(PunchType.IN))
-            {
-                return ws.StartTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
-                       time <= ws.StartTime.AddMinutes(ws.ToleranceMinutes);
-            }
-
-            if (type.Equals(PunchType.OUT))
-            {
-                return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
-                       time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
-            }
-
-            return true;
-        }
         public async Task PunchByEmail(PunchByEmailDto dto, UserContext userContext)
         {
             User? user = await unitOfWork.UserRepository.FindByEmailForPunch(dto.Email);
             if (user != null && userContext.Email == user.Email)
             {
-                
                 String? validation = await ValidationsPunchIn(dto, user);
                 if (validation != null)
                 {
@@ -306,6 +286,55 @@ namespace DeltaFour.Application.Services
                                 }
                             });
                         }
+                        
+                        String? filePath = null;
+
+                        if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                        {
+                            string base64 = dto.FileBase64;
+                            string? mimeType = null;
+
+                            if (base64.Contains(","))
+                            {
+                                var parts = base64.Split(',', 2);
+
+                                var metadata = parts[0]; 
+                                base64 = parts[1];
+
+                                mimeType = metadata
+                                    .Replace("data:", "")
+                                    .Replace(";base64", "");
+                            }
+
+                            byte[] fileBytes;
+
+                            fileBytes = Convert.FromBase64String(base64);
+
+                            string extension = mimeType.Split('/')[1];
+                            
+
+                            string folderName = mimeType == "application/pdf"
+                                ? "pdf"
+                                : "Image";
+
+                            string fileName = $"{Guid.NewGuid()}.{extension}";
+
+                            string folderPath = Path.Combine(
+                                "..",
+                                folderName
+                            );
+
+                            if (!Directory.Exists(folderPath))
+                            {
+                                Directory.CreateDirectory(folderPath);
+                            }
+
+                            string fullPath = Path.Combine(folderPath, fileName);
+
+                            await File.WriteAllBytesAsync(fullPath, fileBytes);
+
+                            filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                        }
 
                         var userAttendance =
                             UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
@@ -313,8 +342,8 @@ namespace DeltaFour.Application.Services
                                     ? null
                                     : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                             TimeOnly.FromDateTime(DateTime.UtcNow)),
-                                "");
-
+                                filePath);
+                        
                         unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                         await unitOfWork.Save();
@@ -386,6 +415,31 @@ namespace DeltaFour.Application.Services
             return null;
         }
 
+        public async Task UpdateStatusAttendance(Guid attendanceId)
+        {
+            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId);
+        }
+
+        ///<summary>
+        ///Operation for check the time that user is punching, and return true or false, depends on time of WorkShift
+        ///</summary>
+        private Boolean CheckTime(WorkShiftPunchDto ws, TimeOnly time, PunchType type)
+        {
+            if (type.Equals(PunchType.IN))
+            {
+                return ws.StartTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
+                       time <= ws.StartTime.AddMinutes(ws.ToleranceMinutes);
+            }
+
+            if (type.Equals(PunchType.OUT))
+            {
+                return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time &&
+                       time <= ws.EndTime.AddMinutes(ws.ToleranceMinutes);
+            }
+
+            return true;
+        }
+        
         private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)
         {
             var message = new MimeMessage();

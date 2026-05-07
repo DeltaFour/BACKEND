@@ -2,7 +2,7 @@
 {
     public enum StatusAttendance
     {
-        pending,
-        approved
+        pendente,
+        aprovado
     }
 }

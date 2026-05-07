@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Enum;
 
 namespace DeltaFour.Application.Mappers
 {
@@ -25,7 +26,7 @@ namespace DeltaFour.Application.Mappers
         }
 
         public static UserAttendance UserAttendanceFromDto
-            (PunchByEmailDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated, String filePath)
+            (PunchByEmailDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated, String? filePath)
         {
             return new UserAttendance()
             {
@@ -40,6 +41,7 @@ namespace DeltaFour.Application.Mappers
                 Justification = dto.Justification,
                 FilePath = filePath,
                 Observation = dto.Observation,
+                Status = isLate ? Enum.GetName(StatusAttendance.pendente) :  null
             };
         }
 

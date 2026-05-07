@@ -150,5 +150,13 @@ namespace DeltaFour.API.Controllers
             var user = HttpContext.GetUserAuthenticated<UserContext>();
             return Ok(await service.GetAllAttendanceByCompany(user.CompanyId));
         }
+
+        [HttpPatch("update-status-attendance/{attendanceId}")]
+        [Authorize(Policy = "RH_OR_ADMIN")]
+        public async Task<IActionResult> UpdateStatusAttendance(Guid attendanceId)
+        {
+            await service.UpdateStatusAttendance(attendanceId);
+            return NoContent();
+        }
     }
 }

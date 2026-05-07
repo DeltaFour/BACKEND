@@ -16,6 +16,7 @@ DeltaFour.API/appsettings.Development.json
 app.key
 app.pub
 Image
+pdf
 
 # ASP.NET
 project.lock.json

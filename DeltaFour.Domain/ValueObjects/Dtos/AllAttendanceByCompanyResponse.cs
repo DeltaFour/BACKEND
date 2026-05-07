@@ -4,6 +4,7 @@ namespace DeltaFour.Application.Dtos
 {
     public class AllAttendanceByCompanyResponse
     {
+        public Guid AttendanceId { get; set; }
         public String Name { get; set; }
 
         public DateTime TimePunched { get; set; }

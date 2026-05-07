@@ -135,6 +135,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 where e.IsActive == true && e.CompanyId == companyId
                 select new AllAttendanceByCompanyResponse()
                 {
+                    AttendanceId = at.Id,
                     Name = e.Name,
                     TimePunched = at.PunchTime,
                     IsLate = at.IsLate,
