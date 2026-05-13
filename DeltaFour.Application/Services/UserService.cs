@@ -18,14 +18,18 @@ using System.Text;
 
 namespace DeltaFour.Application.Services
 {
-    public class UserService(IUnitOfWork unitOfWork, IFaceRecognitionIntegration faceRecognitionIntegration)
+    public class UserService(
+        IUnitOfWork unitOfWork,
+        IFaceRecognitionIntegration faceRecognitionIntegration,
+        IPasswordService passwordService
+        )
     {
-        private String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
-        private int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
-        private String username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-        private String password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-        private String fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
-        private String fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+        private readonly String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
+        private readonly int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
+        private readonly String username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+        private readonly String password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+        private readonly String fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
+        private readonly String fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
 
         ///<summary>
         ///Operation for get all users from company
@@ -53,15 +57,7 @@ namespace DeltaFour.Application.Services
                 Role? role = await unitOfWork.RoleRepository.Find(r => r.Name == dto.RoleName);
                 if (role != null)
                 {
-                    using var hash = SHA256.Create();
-                    byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password!));
-                    var hashPassowrd = new StringBuilder();
-                    foreach (byte b in bytes)
-                    {
-                        hashPassowrd.Append(b.ToString("x2"));
-                    }
-
-                    dto.Password = hashPassowrd.ToString();
+                    dto.Password = passwordService.Hash(dto.Password!);
 
                     var user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
 

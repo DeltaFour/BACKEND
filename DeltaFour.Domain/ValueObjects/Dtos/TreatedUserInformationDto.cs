@@ -6,28 +6,26 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
     {
         public Guid Id { get; set; }
 
-        public String Name { get; set; }
+        public string? Name { get; set; }
 
-        public String Email { get; set; }
+        public string? Email { get; set; }
 
-        public String? RoleName { get; set; }
+        public string? RoleName { get; set; }
 
         public Guid? RoleId { get; set; }
 
-        public Boolean IsAllowedBypassCoord { get; set; }
-        
-        public Boolean IsAllowedBypassFace { get; set; }
+        public bool IsAllowedBypassCoord { get; set; }
 
-        public Boolean IsActive { get; set; }
+        public bool IsAllowedBypassFace { get; set; }
 
-        public Boolean IsConfirmed { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsConfirmed { get; set; }
 
-        public String Password { get; set; }
+        public string? Password { get; set; }
 
         public Guid CompanyId { get; set; }
 
-        public String? CompanyName { get; set; }
-
+        public string? CompanyName { get; set; }
         public UserShiftInformationDto? UserShift { get; set; }
 
         public PunchType? LastPunchType { get; set; }

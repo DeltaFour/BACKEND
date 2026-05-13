@@ -67,6 +67,7 @@ public static class DependencyInjection
             });
             services.AddScoped<SuperAdminSeeder>();
             services.AddScoped<RoleSeeder>();
+            services.AddScoped<IPasswordService, PasswordService>();
         }
         return services;
     }

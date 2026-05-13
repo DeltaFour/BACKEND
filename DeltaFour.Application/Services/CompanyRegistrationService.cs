@@ -3,8 +3,6 @@ using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DeltaFour.Application.Services;
 
@@ -12,11 +10,17 @@ public class CompanyRegistrationService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISubscriptionService _subscriptionService;
+    private readonly IPasswordService _passwordService;
 
-    public CompanyRegistrationService(IUnitOfWork unitOfWork, ISubscriptionService subscriptionService)
+    public CompanyRegistrationService(
+        IUnitOfWork unitOfWork,
+        ISubscriptionService subscriptionService,
+        IPasswordService passwordService
+        )
     {
         _unitOfWork = unitOfWork;
         _subscriptionService = subscriptionService;
+        _passwordService = passwordService;
     }
 
     public async Task<SubscriptionResult> RegisterCompanyWithSubscription(RegisterCompanyRequest request)
@@ -37,19 +41,11 @@ public class CompanyRegistrationService
             CreatedBy = company.Id,
         };
 
-        using var hash = SHA256.Create();
-        byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(request.User!.Password));
-        var hashPassword = new StringBuilder();
-        foreach (byte b in bytes)
-        {
-            hashPassword.Append(b.ToString("x2"));
-        }
-
         var user = new User()
         {
             Name = request.User.Name,
             Email = request.User.Email,
-            Password = hashPassword.ToString(),
+            Password = _passwordService.Hash(request.User.Password!),
             CreatedBy = company.Id,
             CompanyId = company.Id,
             RoleId = role.Id,
