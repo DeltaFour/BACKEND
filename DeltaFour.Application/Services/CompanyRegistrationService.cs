@@ -3,6 +3,7 @@ using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
+using System;
 
 namespace DeltaFour.Application.Services;
 
@@ -56,6 +57,39 @@ public class CompanyRegistrationService
         _unitOfWork.CompanyRepository.Create(company);
         _unitOfWork.RoleRepository.Create(role);
         _unitOfWork.UserRepository.Create(user);
+
+        // Default work shifts for newly registered company (8 hours each)
+        var matutino = new WorkShift
+        {
+            ShiftType = ShiftType.Matutino,
+            StartTime = new TimeOnly(6, 0),
+            EndTime = new TimeOnly(14, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = company.Id
+        };
+
+        var diurno = new WorkShift
+        {
+            ShiftType = ShiftType.Diurno,
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(22, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = company.Id
+        };
+
+        var noturno = new WorkShift
+        {
+            ShiftType = ShiftType.Noturno,
+            StartTime = new TimeOnly(22, 0),
+            EndTime = new TimeOnly(6, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = company.Id
+        };
+
+        _unitOfWork.WorkShiftRepository.CreateRange(new[] { matutino, diurno, noturno });
 
         await _unitOfWork.Save();
 

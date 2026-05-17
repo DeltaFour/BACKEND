@@ -1,12 +1,14 @@
 ﻿using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace DeltaFour.Domain.IRepositories
 {
     public interface IWorkShiftRepository : IBaseRepository<WorkShift>
     {
         void Create(WorkShift workShift);
+        void CreateRange(IEnumerable<WorkShift> workShifts);
 
         void Update(WorkShift workShift);
 

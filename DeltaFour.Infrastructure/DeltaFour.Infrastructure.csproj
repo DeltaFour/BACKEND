@@ -30,7 +30,6 @@
   <ItemGroup>
     <Folder Include="Integrations\" />
     <Folder Include="Mappers\" />
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

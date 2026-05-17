@@ -1,5 +1,4 @@
 ﻿using DeltaFour.Infrastructure.Context;
-using DeltaFour.Infrastructure.Seeders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,10 +18,6 @@ public static class MigrationAndSeedersRunner
 
         await db.Database.MigrateAsync();
 
-        var seeder = scope.ServiceProvider.GetRequiredService<SuperAdminSeeder>();
-        var seederRole = scope.ServiceProvider.GetRequiredService<RoleSeeder>();
 
-        await seeder.SeedAsync();
-        await seederRole.SeedAsync();
     }
 }

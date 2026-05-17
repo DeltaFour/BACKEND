@@ -1,19 +1,20 @@
 ﻿using DeltaFour.Application.Dtos.Requests;
 using DeltaFour.Application.Dtos.Responses.Company;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DeltaFour.Application.Services;
 
 public class CompanyService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordService _passwordService;
 
-    public CompanyService(IUnitOfWork unitOfWork)
+    public CompanyService(IUnitOfWork unitOfWork, IPasswordService passwordService)
     {
         _unitOfWork = unitOfWork;
+        _passwordService = passwordService;
     }
 
     public async Task Create(CreateCompanyRequest request, Guid userId)
@@ -35,19 +36,11 @@ public class CompanyService
             CreatedBy = userId,
         };
 
-
-        using var hash = SHA256.Create();
-        byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(request.User!.Password));
-        var hashPassowrd = new StringBuilder();
-        foreach (byte b in bytes)
-        {
-            hashPassowrd.Append(b.ToString("x2"));
-        }
         var user = new User()
         {
             Name = request.Name,
             Email = request.User.Email,
-            Password = hashPassowrd.ToString(),
+            Password = _passwordService.Hash(request.User.Password!),
             CreatedBy = userId,
             CompanyId = company.Id,
             RoleId = role.Id,
@@ -58,6 +51,38 @@ public class CompanyService
         _unitOfWork.CompanyRepository.Create(company);
         _unitOfWork.RoleRepository.Create(role);
         _unitOfWork.UserRepository.Create(user);
+
+        var matutino = new WorkShift
+        {
+            ShiftType = ShiftType.Matutino,
+            StartTime = new TimeOnly(6, 0),
+            EndTime = new TimeOnly(14, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = userId
+        };
+
+        var diurno = new WorkShift
+        {
+            ShiftType = ShiftType.Diurno,
+            StartTime = new TimeOnly(14, 0),
+            EndTime = new TimeOnly(22, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = userId
+        };
+
+        var noturno = new WorkShift
+        {
+            ShiftType = ShiftType.Noturno,
+            StartTime = new TimeOnly(22, 0),
+            EndTime = new TimeOnly(6, 0),
+            ToleranceMinutes = 0,
+            CompanyId = company.Id,
+            CreatedBy = userId
+        };
+
+        _unitOfWork.WorkShiftRepository.CreateRange(new[] { matutino, diurno, noturno });
 
         await _unitOfWork.Save();
     }

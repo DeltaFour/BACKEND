@@ -3,7 +3,6 @@ using DeltaFour.Application.Services;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
 using DeltaFour.Infrastructure.Repositories;
-using DeltaFour.Infrastructure.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -65,8 +64,7 @@ public static class DependencyInjection
             {
                 client.BaseAddress = new Uri(faceRecocnitionBaseUrl);
             });
-            services.AddScoped<SuperAdminSeeder>();
-            services.AddScoped<RoleSeeder>();
+
             services.AddScoped<IPasswordService, PasswordService>();
         }
         return services;
