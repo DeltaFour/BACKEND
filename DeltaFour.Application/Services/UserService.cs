@@ -182,22 +182,35 @@ namespace DeltaFour.Application.Services
             return false;
         }
 
-        // public async Task<Boolean> CanPunchWeb(CanPunchDto dto, UserContext user)
-        // {
-        //     var workShift = await unitOfWork.WorkShiftRepository.GetByUserIdAndIsActive(user.Id, user.CompanyId);
-        //     int amountAttendance = await unitOfWork.UserAttendanceRepository.AmountAttendanceIn(user.Id);
-        //     int amountAttendanceYesterday = await unitOfWork.UserAttendanceRepository.AmountAttendanceInYesterday(user.Id);
-        //
-        //     if (workShift != null && amountAttendance == 0 && dto.TimePunched >=+
-        //         workShift.StartTime.AddMinutes(15).Add(TimeSpan.FromSeconds(1)))
-        //     {
-        //         return false;
-        //     }
-        //     if(workShift != null && amountAttendance == 0)
-        //     {
-        //         return CheckTime(workShift, dto.TimePunched, dto.PunchType);
-        //     }
-        // }
+        ///<summary>
+        ///Operation for check if user can punch in web
+        ///</summary>
+        public async Task<Boolean> CanPunchWeb(CanPunchDto dto, UserContext user)
+        {
+            var workShift = await unitOfWork.WorkShiftRepository.GetByUserIdAndIsActive(user.Id, user.CompanyId);
+            int amountAttendance = await unitOfWork.UserAttendanceRepository.AmountAttendanceIn(user.Id);
+
+            if (workShift != null && amountAttendance == 0 && dto.TimePunched >=
+                workShift.StartTime.AddMinutes(workShift.ToleranceMinutes).Add(TimeSpan.FromSeconds(1)))
+            {
+                return false;
+            }
+
+            if (workShift != null && amountAttendance == 0)
+            {
+                return CheckTime(workShift, dto.TimePunched, dto.PunchType);
+            }
+
+            if (workShift != null && amountAttendance > 0 &&
+                workShift.EndTime.AddMinutes(-workShift.ToleranceMinutes).Add(TimeSpan.FromSeconds(-1)) <=
+                dto.TimePunched && dto.TimePunched <= workShift.EndTime.AddMinutes(workShift.ToleranceMinutes)
+                    .Add(TimeSpan.FromSeconds(1)))
+            {
+                return CheckTime(workShift, dto.TimePunched, dto.PunchType);
+            }
+
+            return true;
+        }
 
         ///<summary>
         ///Operation for punch for user
@@ -259,7 +272,10 @@ namespace DeltaFour.Application.Services
             unitOfWork.UserAttendanceRepository.Create(userAttendance);
             await unitOfWork.Save();
         }
-
+        
+        ///<summary>
+        ///Operation for punch for user in web by email (can be used for punch late, normal, etc).
+        ///</summary>
         public async Task PunchByEmail(PunchByEmailDto dto, UserContext userContext)
         {
             User? user = await unitOfWork.UserRepository.FindByEmailForPunch(dto.Email);
@@ -373,11 +389,17 @@ namespace DeltaFour.Application.Services
             }
         }
 
+        ///<summary>
+        ///Operation for get all attendance of all employees from company
+        ///</summary>
         public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
         {
             return await unitOfWork.UserRepository.GetAllAttendanceByCompany(companyId);
         }
 
+        ///<summary>
+        ///General validation for punch in (verify bypass)
+        ///</summary>
         private async Task<String?> ValidationsPunchIn(PunchDto dto, User user)
         {
             if (!user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
@@ -432,9 +454,9 @@ namespace DeltaFour.Application.Services
             return null;
         }
 
-        public async Task UpdateStatusAttendance(Guid attendanceId)
+        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto ,Guid attendanceId)
         {
-            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId);
+            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId, dto);
         }
 
         ///<summary>

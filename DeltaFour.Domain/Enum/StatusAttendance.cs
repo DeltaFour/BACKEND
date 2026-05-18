@@ -3,6 +3,7 @@
     public enum StatusAttendance
     {
         pendente,
-        aprovado
+        aprovado,
+        negado
     }
 }
