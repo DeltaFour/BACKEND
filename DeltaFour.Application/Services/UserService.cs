@@ -6,9 +6,13 @@ using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using GeoAPI.CoordinateSystems;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Http;
+using MimeKit;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
+using Serilog;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,6 +20,13 @@ namespace DeltaFour.Application.Services
 {
     public class UserService(IUnitOfWork unitOfWork, IFaceRecognitionIntegration faceRecognitionIntegration)
     {
+        private String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
+        private int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
+        private String username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+        private String password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+        private String fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
+        private String fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+
         ///<summary>
         ///Operation for get all users from company
         ///</summary>
@@ -172,83 +183,69 @@ namespace DeltaFour.Application.Services
         }
 
         ///<summary>
+        ///Operation for check if user can punch in web
+        ///</summary>
+        public async Task<Boolean> CanPunchWeb(CanPunchDto dto, UserContext user)
+        {
+            var workShift = await unitOfWork.WorkShiftRepository.GetByUserIdAndIsActive(user.Id, user.CompanyId);
+            int amountAttendance = await unitOfWork.UserAttendanceRepository.AmountAttendanceIn(user.Id);
+
+            if (workShift != null && amountAttendance == 0 && dto.TimePunched >=
+                workShift.StartTime.AddMinutes(workShift.ToleranceMinutes).Add(TimeSpan.FromSeconds(1)))
+            {
+                return false;
+            }
+
+            if (workShift != null && amountAttendance == 0)
+            {
+                return CheckTime(workShift, dto.TimePunched, dto.PunchType);
+            }
+
+            if (workShift != null && amountAttendance > 0 &&
+                workShift.EndTime.AddMinutes(-workShift.ToleranceMinutes).Add(TimeSpan.FromSeconds(-1)) <=
+                dto.TimePunched && dto.TimePunched <= workShift.EndTime.AddMinutes(workShift.ToleranceMinutes)
+                    .Add(TimeSpan.FromSeconds(1)))
+            {
+                return CheckTime(workShift, dto.TimePunched, dto.PunchType);
+            }
+
+            return true;
+        }
+
+        ///<summary>
         ///Operation for punch for user
         ///</summary>
-        public async Task<PunchInResponse> PunchIn(PunchDto dto, UserContext userContext)
+        public async Task<String> PunchIn(PunchDto dto, UserContext userContext)
         {
             var user = await unitOfWork.UserRepository.FindForPunchIn(userContext.Id);
 
             if (user != null)
             {
-                if (!userContext.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
+                String? validation = await ValidationsPunchIn(dto, user);
+                if (validation != null)
                 {
-                    var csFactory = new CoordinateSystemFactory();
-                    var ctFactory = new CoordinateTransformationFactory();
-
-                    var wgs84 = csFactory.CreateGeographicCoordinateSystem(
-                        "WGS 84",
-                        AngularUnit.Degrees,
-                        HorizontalDatum.WGS84,
-                        PrimeMeridian.Greenwich,
-                        new AxisInfo("longitude", AxisOrientationEnum.East),
-                        new AxisInfo("latitude", AxisOrientationEnum.North)
-                    );
-
-                    var webMercator = ProjectedCoordinateSystem.WebMercator;
-                    var transformTo3857 = ctFactory.CreateFromCoordinateSystems(wgs84, webMercator);
-
-                    var mt = transformTo3857.MathTransform;
-
-                    var userCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(dto.Longitude, dto.Latitude));
-                    var companyCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(
-                        user!.Company.CompanyGeolocation!.Coord.Longitude,
-                        user.Company.CompanyGeolocation.Coord.Latitude));
-
-                    var distance = userCoord.Distance(companyCoord);
-
-                    if (distance > user.Company.CompanyGeolocation.RadiusMeters)
-                    {
-                        return PunchInResponse.OFR;
-                    }
+                    return validation;
                 }
-                else if (!userContext.IsAllowedBypassCoord && dto is { Latitude: 0, Longitude: 0 })
-                {
-                    throw new BadHttpRequestException("Ocorreu um erro");
-                }
-
 
                 var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
 
                 if (workShifts != null)
                 {
-                    if (user.UserFaces != null)
-                    {
-                        var faceMatchs = await faceRecognitionIntegration.ChecksIfFaceMatchs(
-                            dto.ImageBase64,
-                            user.UserFaces.First().FaceTemplate
-                        );
+                    Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
 
-                        if (!faceMatchs)
-                        {
-                            return PunchInResponse.FNC;
-                        }
+                    var userAttendance =
+                        UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                            timeCheked, timeCheked
+                                ? null
+                                : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                        TimeOnly.FromDateTime(DateTime.UtcNow)));
 
-                        Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                    unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
-                        var userAttendance =
-                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
-                                timeCheked, timeCheked
-                                    ? null
-                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
-                                                            TimeOnly.FromDateTime(DateTime.UtcNow)));
+                    await unitOfWork.Save();
 
-                        unitOfWork.UserAttendanceRepository.Create(userAttendance);
-
-                        await unitOfWork.Save();
-
-                        return PunchInResponse.SCC;
-                    }
+                    return PunchInResponse.SCC.Message();
                 }
             }
 
@@ -275,6 +272,192 @@ namespace DeltaFour.Application.Services
             unitOfWork.UserAttendanceRepository.Create(userAttendance);
             await unitOfWork.Save();
         }
+        
+        ///<summary>
+        ///Operation for punch for user in web by email (can be used for punch late, normal, etc).
+        ///</summary>
+        public async Task PunchByEmail(PunchByEmailDto dto, UserContext userContext)
+        {
+            User? user = await unitOfWork.UserRepository.FindByEmailForPunch(dto.Email);
+            if (user != null && userContext.Email == user.Email)
+            {
+                String? validation = await ValidationsPunchIn(dto, user);
+                if (validation != null)
+                {
+                    throw new BadHttpRequestException(validation);
+                }
+
+                using var hash = SHA256.Create();
+                byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                var hashPassowrd = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    hashPassowrd.Append(b.ToString("x2"));
+                }
+
+                if (user.Password.Equals(hashPassowrd.ToString()))
+                {
+                    var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
+
+                    if (workShifts != null)
+                    {
+                        Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                        if (!timeChecked)
+                        {
+                            List<User> rhUsers = await unitOfWork.UserRepository.GetRhUsers(user.CompanyId);
+                            _ = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    await SendEmailRh(rhUsers, user.Name, user.Email);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex, "Erro ao enviar email para RH");
+                                }
+                            });
+                        }
+
+                        String? filePath = null;
+
+                        if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                        {
+                            string base64 = dto.FileBase64;
+                            string? mimeType = null;
+
+                            if (base64.Contains(","))
+                            {
+                                var parts = base64.Split(',', 2);
+
+                                var metadata = parts[0];
+                                base64 = parts[1];
+
+                                mimeType = metadata
+                                    .Replace("data:", "")
+                                    .Replace(";base64", "");
+                            }
+
+                            byte[] fileBytes;
+
+                            fileBytes = Convert.FromBase64String(base64);
+
+                            string extension = mimeType.Split('/')[1];
+
+
+                            string folderName = mimeType == "application/pdf"
+                                ? "pdf"
+                                : "Image";
+
+                            string fileName = $"{Guid.NewGuid()}.{extension}";
+
+                            string folderPath = Path.Combine(
+                                "..",
+                                folderName
+                            );
+
+                            if (!Directory.Exists(folderPath))
+                            {
+                                Directory.CreateDirectory(folderPath);
+                            }
+
+                            string fullPath = Path.Combine(folderPath, fileName);
+
+                            await File.WriteAllBytesAsync(fullPath, fileBytes);
+
+                            filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                        }
+
+                        var userAttendance =
+                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                                timeChecked, timeChecked
+                                    ? null
+                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                            TimeOnly.FromDateTime(DateTime.UtcNow)),
+                                filePath);
+
+                        unitOfWork.UserAttendanceRepository.Create(userAttendance);
+
+                        await unitOfWork.Save();
+                    }
+                }
+                else
+                {
+                    throw new BadHttpRequestException("Senha esta incorreta!");
+                }
+            }
+        }
+
+        ///<summary>
+        ///Operation for get all attendance of all employees from company
+        ///</summary>
+        public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
+        {
+            return await unitOfWork.UserRepository.GetAllAttendanceByCompany(companyId);
+        }
+
+        ///<summary>
+        ///General validation for punch in (verify bypass)
+        ///</summary>
+        private async Task<String?> ValidationsPunchIn(PunchDto dto, User user)
+        {
+            if (!user.IsAllowedBypassCoord && dto.Latitude != 0 && dto.Longitude != 0)
+            {
+                var csFactory = new CoordinateSystemFactory();
+                var ctFactory = new CoordinateTransformationFactory();
+
+                var wgs84 = csFactory.CreateGeographicCoordinateSystem(
+                    "WGS 84",
+                    AngularUnit.Degrees,
+                    HorizontalDatum.WGS84,
+                    PrimeMeridian.Greenwich,
+                    new AxisInfo("longitude", AxisOrientationEnum.East),
+                    new AxisInfo("latitude", AxisOrientationEnum.North)
+                );
+
+                var webMercator = ProjectedCoordinateSystem.WebMercator;
+                var transformTo3857 = ctFactory.CreateFromCoordinateSystems(wgs84, webMercator);
+
+                var mt = transformTo3857.MathTransform;
+
+                var userCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(dto.Longitude, dto.Latitude));
+                var companyCoord = mt.Transform(new GeoAPI.Geometries.Coordinate(
+                    user!.Company.CompanyGeolocation!.Coord.Longitude,
+                    user.Company.CompanyGeolocation.Coord.Latitude));
+
+                var distance = userCoord.Distance(companyCoord);
+
+                if (distance > user.Company.CompanyGeolocation.RadiusMeters)
+                {
+                    return PunchInResponse.OFR.Message();
+                }
+            }
+            else if (!user.IsAllowedBypassCoord && dto is { Latitude: 0, Longitude: 0 })
+            {
+                throw new BadHttpRequestException("Ocorreu um erro");
+            }
+
+            if (user is { IsAllowedBypassFacial: false, UserFaces: not null })
+            {
+                var faceMatchs = await faceRecognitionIntegration.ChecksIfFaceMatchs(
+                    dto.ImageBase64,
+                    user.UserFaces.First().FaceTemplate
+                );
+
+                if (!faceMatchs)
+                {
+                    return PunchInResponse.FNC.Message();
+                }
+            }
+
+            return null;
+        }
+
+        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto ,Guid attendanceId)
+        {
+            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId, dto);
+        }
 
         ///<summary>
         ///Operation for check the time that user is punching, and return true or false, depends on time of WorkShift
@@ -296,6 +479,40 @@ namespace DeltaFour.Application.Services
             return true;
         }
 
+        private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)
+        {
+            var message = new MimeMessage();
+
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            foreach (var rhUser in rhUsers)
+            {
+                message.To.Add(MailboxAddress.Parse(rhUser.Email));
+            }
+
+            message.Subject = "Funcionário Atrasado";
+
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $"""
+                                <h2>Funcionário atrasado</h2>
+
+                                <p>O funcionário abaixo está atrasado:</p>
+
+                                <ul>
+                                    <li><strong>Nome:</strong> {latestUserName}</li>
+                                    <li><strong>Email:</strong> {latestUserEmail}</li>
+                                </ul>
+                            """
+            }.ToMessageBody();
+
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+        }
+
         ///<summary>
         ///Operation for check if user can punch out in correctly time
         ///</summary>
@@ -303,5 +520,6 @@ namespace DeltaFour.Application.Services
         {
             return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time;
         }
+
     }
 }
