@@ -42,6 +42,7 @@ public static class DependencyInjection
             services.AddScoped<CompanyService>();
             services.AddScoped<CompanyRegistrationService>();
             services.AddScoped<SubscriptionWebhookService>();
+            services.AddScoped<ITimeSheetPdfService, TimeSheetPdfService>();
             services.AddScoped<ISubscriptionService, Application.Integrations.Subscription.StripeSubscriptionService>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionEventRepository, SubscriptionEventRepository>();
