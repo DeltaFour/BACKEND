@@ -135,6 +135,14 @@ namespace DeltaFour.API.Controllers
             return Ok();
         }
 
+        [HttpPost("allowed-punch-web")]
+        public async Task<ActionResult<Boolean>> IsAllowedPunchWeb([FromBody] CanPunchDto dto)
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            var result = await service.CanPunchWeb(dto, user);
+            return Ok(result);
+        }
+
         [HttpPost("punch-by-email")]
         public async Task<IActionResult> PunchByEmail([FromBody] PunchByEmailDto dto)
         {
@@ -153,9 +161,9 @@ namespace DeltaFour.API.Controllers
 
         [HttpPatch("update-status-attendance/{attendanceId}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> UpdateStatusAttendance(Guid attendanceId)
+        public async Task<IActionResult> UpdateStatusAttendance([FromBody] UpdateStatusAttendanceDto dto, Guid attendanceId)
         {
-            await service.UpdateStatusAttendance(attendanceId);
+            await service.UpdateStatusAttendance(dto, attendanceId);
             return NoContent();
         }
     }

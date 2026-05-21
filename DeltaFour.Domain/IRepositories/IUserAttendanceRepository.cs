@@ -1,4 +1,5 @@
-﻿using DeltaFour.Domain.Entities;
+﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Domain.Entities;
 
 namespace DeltaFour.Domain.IRepositories
 {
@@ -10,11 +11,8 @@ namespace DeltaFour.Domain.IRepositories
 
         void Delete(UserAttendance userAttendance);
 
-        Task UpdateStatusAttendance(Guid attendanceId);
+        Task UpdateStatusAttendance(Guid attendanceId, UpdateStatusAttendanceDto dto);
 
         Task<int> AmountAttendanceIn(Guid userId);
-
-        Task<int> AmountAttendanceInYesterday(Guid userId);
-
     }
 }
