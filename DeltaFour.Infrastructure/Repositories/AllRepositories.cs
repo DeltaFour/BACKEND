@@ -18,6 +18,7 @@ namespace DeltaFour.Infrastructure.Repositories
         private IUserFaceRepository? _employeeFaceRepository;
         private ISubscriptionRepository? _subscriptionRepository;
         private ISubscriptionEventRepository? _subscriptionEventRepository;
+        private ITimeSheetRepository? _timeSheetRepository;
 
         public IUserRepository UserRepository
         {
@@ -82,6 +83,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public ISubscriptionEventRepository SubscriptionEventRepository
         {
             get { return _subscriptionEventRepository ??= new SubscriptionEventRepository(context); }
+        }
+
+        public ITimeSheetRepository TimeSheetRepository
+        {
+            get { return _timeSheetRepository ??= new TimeSheetRepository(context); }
         }
 
         public async Task Save()

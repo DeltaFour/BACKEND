@@ -295,11 +295,26 @@ public class TimeSheetDocument : IDocument
             // Área de assinaturas
             column.Item().Row(row =>
             {
-                // Assinatura da empresa
+                // Assinatura da empresa/RH
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().PaddingTop(40).BorderTop(1).BorderColor(Colors.Black).PaddingTop(5);
-                    col.Item().AlignCenter().Text("Assinatura da Empresa").FontSize(9);
+                    // Área para assinatura manuscrita ou nome em cursivo se assinado
+                    if (_data.Signature.SignedByHR)
+                    {
+                        col.Item().Height(30).AlignCenter().AlignBottom()
+                            .Text(_data.Signature.HRSignerName)
+                            .FontSize(14)
+                            .Italic()
+                            .FontColor(SecondaryColor);
+                        col.Item().AlignCenter().Text($"Assinado em: {_data.Signature.HRSignedAt:dd/MM/yyyy HH:mm}")
+                            .FontSize(7).FontColor(Colors.Grey.Darken1);
+                    }
+                    else
+                    {
+                        col.Item().Height(30);
+                    }
+                    col.Item().BorderTop(1).BorderColor(Colors.Black).PaddingTop(5);
+                    col.Item().AlignCenter().Text("Assinatura da Empresa/RH").FontSize(9);
                     col.Item().AlignCenter().Text(_data.Company.Name).FontSize(8).FontColor(Colors.Grey.Darken1);
                 });
 
@@ -308,7 +323,22 @@ public class TimeSheetDocument : IDocument
                 // Assinatura do funcionário
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().PaddingTop(40).BorderTop(1).BorderColor(Colors.Black).PaddingTop(5);
+                    // Área para assinatura manuscrita ou nome em cursivo se assinado
+                    if (_data.Signature.SignedByEmployee)
+                    {
+                        col.Item().Height(30).AlignCenter().AlignBottom()
+                            .Text(_data.Signature.EmployeeName)
+                            .FontSize(14)
+                            .Italic()
+                            .FontColor(SecondaryColor);
+                        col.Item().AlignCenter().Text($"Assinado em: {_data.Signature.EmployeeSignedAt:dd/MM/yyyy HH:mm}")
+                            .FontSize(7).FontColor(Colors.Grey.Darken1);
+                    }
+                    else
+                    {
+                        col.Item().Height(30);
+                    }
+                    col.Item().BorderTop(1).BorderColor(Colors.Black).PaddingTop(5);
                     col.Item().AlignCenter().Text("Assinatura do Funcionário").FontSize(9);
                     col.Item().AlignCenter().Text(_data.Employee.Name).FontSize(8).FontColor(Colors.Grey.Darken1);
                 });

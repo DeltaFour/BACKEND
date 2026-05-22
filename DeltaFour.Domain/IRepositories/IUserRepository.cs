@@ -22,11 +22,12 @@ namespace DeltaFour.Domain.IRepositories
         Task<TreatedUserInformationDto?> FindUserInformation(String email);
 
         void Update(User user);
-        
+
         Task<User?> FindByEmailForPunch(String email);
 
         Task<List<User>> GetRhUsers(Guid companyId);
 
         Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId);
+        Task<List<User>> GetAllSelect(Guid companyId);
     }
 }

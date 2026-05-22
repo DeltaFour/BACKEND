@@ -54,6 +54,7 @@ public static class DependencyInjection
             services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
             services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
             services.AddScoped<IUserShiftRepository, UserShiftRepository>();
+            services.AddScoped<ITimeSheetRepository, TimeSheetRepository>();
             services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
             services.AddScoped<IUserFaceRepository, UserFaceRepository>();
             services.AddScoped<IUnitOfWork, AllRepositories>();

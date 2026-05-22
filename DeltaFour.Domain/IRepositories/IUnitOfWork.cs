@@ -15,6 +15,7 @@ public interface IUnitOfWork
     IUserFaceRepository UserFaceRepository { get; }
     ISubscriptionRepository SubscriptionRepository { get; }
     ISubscriptionEventRepository SubscriptionEventRepository { get; }
+    ITimeSheetRepository TimeSheetRepository { get; }
 
     Task Save();
 }

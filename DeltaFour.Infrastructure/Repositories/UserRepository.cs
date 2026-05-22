@@ -131,22 +131,32 @@ namespace DeltaFour.Infrastructure.Repositories
         public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
         {
             var query = from e in context.Employees
-                join at in context.EmployeeAttendances on e.Id equals at.UserId
-                where e.IsActive == true && e.CompanyId == companyId
-                select new AllAttendanceByCompanyResponse()
-                {
-                    AttendanceId = at.Id,
-                    Name = e.Name,
-                    TimePunched = at.PunchTime,
-                    IsLate = at.IsLate,
-                    Type = at.PunchType,
-                    ShiftType = at.ShiftType,
-                    Status = at.Status,
-                    Justification = at.Justification,
-                    Observation = at.Observation,
-                    FilePath = at.FilePath,
-                };
+                        join at in context.EmployeeAttendances on e.Id equals at.UserId
+                        where e.IsActive == true && e.CompanyId == companyId
+                        select new AllAttendanceByCompanyResponse()
+                        {
+                            AttendanceId = at.Id,
+                            Name = e.Name,
+                            TimePunched = at.PunchTime,
+                            IsLate = at.IsLate,
+                            Type = at.PunchType,
+                            ShiftType = at.ShiftType,
+                            Status = at.Status,
+                            Justification = at.Justification,
+                            Observation = at.Observation,
+                            FilePath = at.FilePath,
+                        };
             return await query.ToListAsync();
+        }
+
+        public Task<List<User>> GetAllSelect(Guid companyId)
+        {
+            return context.Employees.Where(e => e.IsActive == true && e.CompanyId == companyId)
+                .Select(e => new User()
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                }).ToListAsync();
         }
     }
 }

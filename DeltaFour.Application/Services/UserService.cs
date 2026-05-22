@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Application.Integrations;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
@@ -268,7 +269,7 @@ namespace DeltaFour.Application.Services
             unitOfWork.UserAttendanceRepository.Create(userAttendance);
             await unitOfWork.Save();
         }
-        
+
         ///<summary>
         ///Operation for punch for user in web by email (can be used for punch late, normal, etc).
         ///</summary>
@@ -450,7 +451,7 @@ namespace DeltaFour.Application.Services
             return null;
         }
 
-        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto ,Guid attendanceId)
+        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto, Guid attendanceId)
         {
             await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId, dto);
         }
@@ -517,5 +518,14 @@ namespace DeltaFour.Application.Services
             return ws.EndTime.AddMinutes(-ws.ToleranceMinutes) <= time;
         }
 
+        public async Task<List<UserSelectResponse>> GetAllSelect(Guid companyId)
+        {
+            var users = await unitOfWork.UserRepository.GetAllSelect(companyId);
+            return users.Select(u => new UserSelectResponse
+            {
+                Id = u.Id.ToString(),
+                Name = u.Name
+            }).ToList();
+        }
     }
 }

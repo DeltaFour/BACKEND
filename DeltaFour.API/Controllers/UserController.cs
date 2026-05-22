@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Application.Services;
 using DeltaFour.CrossCutting.Middleware;
 using DeltaFour.Domain.Entities;
@@ -165,6 +166,13 @@ namespace DeltaFour.API.Controllers
         {
             await service.UpdateStatusAttendance(dto, attendanceId);
             return NoContent();
+        }
+
+        [HttpGet("get-all-select")]
+        public async Task<ActionResult<List<UserSelectResponse>>> GetAllSelect()
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(await service.GetAllSelect(user.CompanyId));
         }
     }
 }

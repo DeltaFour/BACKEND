@@ -6,6 +6,11 @@ namespace DeltaFour.Application.Dtos.TimeSheet;
 public class TimeSheetDataDto
 {
     /// <summary>
+    /// ID da folha de ponto
+    /// </summary>
+    public Guid TimeSheetId { get; set; }
+
+    /// <summary>
     /// Informações da empresa
     /// </summary>
     public TimeSheetCompanyDto Company { get; set; } = new();
@@ -39,6 +44,11 @@ public class TimeSheetDataDto
     /// Totalizadores da folha de ponto
     /// </summary>
     public TimeSheetSummaryDto Summary { get; set; } = new();
+
+    /// <summary>
+    /// Informações de assinatura
+    /// </summary>
+    public TimeSheetSignatureDto Signature { get; set; } = new();
 
     /// <summary>
     /// Data de emissão do relatório
