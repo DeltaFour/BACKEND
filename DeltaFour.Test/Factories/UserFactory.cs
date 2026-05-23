@@ -1,8 +1,7 @@
 using Bogus;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Infrastructure.Context;
-using System.Security.Cryptography;
-using System.Text;
+using BCrypt.Net;
 
 namespace DeltaFour.Test.Factories;
 
@@ -79,13 +78,6 @@ public class UserFactory(AppDbContext dbContext)
 
     private static string HashPassword(string password)
     {
-        using var hash = SHA256.Create();
-        byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-        var hashPassword = new StringBuilder();
-        foreach (byte b in bytes)
-        {
-            hashPassword.Append(b.ToString("x2"));
-        }
-        return hashPassword.ToString();
+        return BCrypt.Net.BCrypt.HashPassword(password, 12);
     }
 }

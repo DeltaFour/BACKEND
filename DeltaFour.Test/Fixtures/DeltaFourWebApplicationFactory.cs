@@ -69,6 +69,13 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         builder.UseEnvironment("Testing");
     }
 
+    public async Task EnsureDatabaseCreatedAsync()
+    {
+        using var scope = Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await dbContext.Database.EnsureCreatedAsync();
+    }
+
     public async Task ResetDatabaseAsync()
     {
         using var scope = Services.CreateScope();
@@ -93,7 +100,10 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
 
     private static void SetupEnvironmentVariables()
     {
-        Environment.SetEnvironmentVariable("IS_TESTING", "false");
+        // CONNECTION_STRING temporária para evitar erro no Serilog MySQL sink
+        // O DbContext usa a connection string do Testcontainer que é configurada em ConfigureWebHost
+        Environment.SetEnvironmentVariable("CONNECTION_STRING", "Server=localhost;Database=test;Uid=root;Pwd=root");
+        Environment.SetEnvironmentVariable("IS_TESTING", "true");
         Environment.SetEnvironmentVariable("ALLOWED_HOST", "http://localhost:3000");
         Environment.SetEnvironmentVariable("SUPER_ADMIN_ID", TestSuperAdminId);
         Environment.SetEnvironmentVariable("ROLE_SUPER_ADMIN_ID", TestRoleSuperAdminId);
@@ -113,6 +123,14 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         Environment.SetEnvironmentVariable("STRIPE_PRICE_ID", "price_test_mock");
         Environment.SetEnvironmentVariable("STRIPE_SUCCESS_URL", "http://localhost:3000/success");
         Environment.SetEnvironmentVariable("STRIPE_CANCEL_URL", "http://localhost:3000/cancel");
+
+        // Email configuration for UserService
+        Environment.SetEnvironmentVariable("EMAIL_HOST", "smtp.test.com");
+        Environment.SetEnvironmentVariable("EMAIL_PORT", "587");
+        Environment.SetEnvironmentVariable("EMAIL_USERNAME", "test@test.com");
+        Environment.SetEnvironmentVariable("EMAIL_PASSWORD", "testpassword");
+        Environment.SetEnvironmentVariable("EMAIL_FROM_EMAIL", "noreply@test.com");
+        Environment.SetEnvironmentVariable("EMAIL_FROM_NAME", "DeltaFour Test");
     }
 
     private static void EnsureRsaKeysExist()
@@ -135,6 +153,7 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
     public async Task InitializeAsync()
     {
         await _mySqlContainer.StartAsync();
+        await EnsureDatabaseCreatedAsync();
     }
 
     public new async Task DisposeAsync()

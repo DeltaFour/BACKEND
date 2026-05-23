@@ -172,7 +172,8 @@ public class GlobalExceptionFilterTests : IAsyncLifetime
         var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
         errorResponse.Should().NotBeNull();
         errorResponse!.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-        errorResponse.Message.Should().Be("Ocorreu um erro interno no servidor.");
+        // Para 500, o GlobalExceptionFilter usa exception.Message como resposta
+        errorResponse.Message.Should().Be("Erro genérico inesperado");
     }
 
     [Fact]

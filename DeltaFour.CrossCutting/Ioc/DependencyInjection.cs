@@ -34,41 +34,42 @@ public static class DependencyInjection
             services.AddDbContext<AppDbContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString),
                     uoptions => uoptions.UseNetTopologySuite()));
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserAuthRepository, UserAuthRepository>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<UserService>();
-            services.AddScoped<WorkShiftService>();
-            services.AddScoped<CompanyService>();
-            services.AddScoped<CompanyRegistrationService>();
-            services.AddScoped<SubscriptionWebhookService>();
-            services.AddScoped<ITimeSheetPdfService, TimeSheetPdfService>();
-            services.AddScoped<ISubscriptionService, Application.Integrations.Subscription.StripeSubscriptionService>();
-            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
-            services.AddScoped<ISubscriptionEventRepository, SubscriptionEventRepository>();
-            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
-            services.AddScoped<ICompanyRepository, CompanyRepository>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IActionRepository, ActionRepository>();
-            services.AddScoped<ILocationRepository, LocationRepository>();
-            services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
-            services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
-            services.AddScoped<IUserShiftRepository, UserShiftRepository>();
-            services.AddScoped<ITimeSheetRepository, TimeSheetRepository>();
-            services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
-            services.AddScoped<IUserFaceRepository, UserFaceRepository>();
-            services.AddScoped<IUnitOfWork, AllRepositories>();
-            //services.AddScoped<PythonExe>();
-            //services.AddScoped<IFaceRecognitionIntegration, FaceRecognitionIntegration>();
-            var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
-
-            services.AddHttpClient<IFaceRecognitionIntegration, FaceRecognitionIntegration>(client =>
-            {
-                client.BaseAddress = new Uri(faceRecocnitionBaseUrl);
-            });
-
-            services.AddScoped<IPasswordService, PasswordService>();
         }
+
+        // Registrar repositórios e serviços independente do ambiente
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserAuthRepository, UserAuthRepository>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<WorkShiftService>();
+        services.AddScoped<CompanyService>();
+        services.AddScoped<CompanyRegistrationService>();
+        services.AddScoped<SubscriptionWebhookService>();
+        services.AddScoped<ITimeSheetPdfService, TimeSheetPdfService>();
+        services.AddScoped<ISubscriptionService, Application.Integrations.Subscription.StripeSubscriptionService>();
+        services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        services.AddScoped<ISubscriptionEventRepository, SubscriptionEventRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IActionRepository, ActionRepository>();
+        services.AddScoped<ILocationRepository, LocationRepository>();
+        services.AddScoped<IWorkShiftRepository, WorkShiftRepository>();
+        services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
+        services.AddScoped<IUserShiftRepository, UserShiftRepository>();
+        services.AddScoped<ITimeSheetRepository, TimeSheetRepository>();
+        services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
+        services.AddScoped<IUserFaceRepository, UserFaceRepository>();
+        services.AddScoped<IUnitOfWork, AllRepositories>();
+        services.AddScoped<IPasswordService, PasswordService>();
+
+        var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
+
+        services.AddHttpClient<IFaceRecognitionIntegration, FaceRecognitionIntegration>(client =>
+        {
+            client.BaseAddress = new Uri(faceRecocnitionBaseUrl);
+        });
+
         return services;
     }
 }

@@ -11,16 +11,23 @@ using System.Text.Json.Serialization;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var isTesting = Environment.GetEnvironmentVariable("IS_TESTING") == "true";
 
 builder.Host.UseSerilog();
 
-Log.Logger = new LoggerConfiguration()
+var loggerConfig = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-    .WriteTo.File(new Serilog.Formatting.Compact.CompactJsonFormatter(), "logs/log-.json", rollingInterval: Serilog.RollingInterval.Day)
-    .WriteTo.MySQL(connectionString ?? string.Empty, tableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information)
-    .CreateLogger();
+    .WriteTo.File(new Serilog.Formatting.Compact.CompactJsonFormatter(), "logs/log-.json", rollingInterval: Serilog.RollingInterval.Day);
+
+// Só adiciona o sink do MySQL se não estiver em ambiente de teste
+if (!isTesting && !string.IsNullOrEmpty(connectionString))
+{
+    loggerConfig.WriteTo.MySQL(connectionString, tableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information);
+}
+
+Log.Logger = loggerConfig.CreateLogger();
 
 builder.Services.AddControllers(options =>
     {
