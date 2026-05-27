@@ -113,7 +113,6 @@ namespace DeltaFour.API.Controllers
         /// Utilizado geralmente após login ou quando é necessário atualizar dados locais.
         /// </remarks>
         [HttpGet("refresh-information")]
-        [Authorize(Policy = "RH_OR_EMPLOYEE")]
         public async Task<UserInfoLoginDto> RefreshInformation()
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();

@@ -304,22 +304,6 @@ namespace DeltaFour.Application.Services
                         Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
                             TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
 
-                        if (!timeChecked)
-                        {
-                            List<User> rhUsers = await unitOfWork.UserRepository.GetRhUsers(user.CompanyId);
-                            _ = Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    await SendEmailRh(rhUsers, user.Name, user.Email);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Error(ex, "Erro ao enviar email para RH");
-                                }
-                            });
-                        }
-
                         String? filePath = null;
 
                         if (!string.IsNullOrWhiteSpace(dto.FileBase64))
