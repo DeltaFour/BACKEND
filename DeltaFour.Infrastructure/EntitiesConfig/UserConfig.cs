@@ -18,6 +18,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
         builder.Property(e => e.IsActive).IsRequired().HasColumnName("is_active");
         builder.Property(e => e.IsConfirmed).IsRequired().HasColumnName("is_confirmed");
         builder.Property(e => e.IsAllowedBypassCoord).IsRequired().HasColumnName("is_allowed_by_pass_coord");
+        builder.Property(e => e.IsAllowedBypassFacial).HasColumnName("is_allowed_bypass_facial");
         builder.Property(e => e.LastLogin).HasColumnName("last_login");
         builder.Property(e => e.UpdatedAt).HasColumnName("updated_at");
         builder.Property(e => e.UpdatedBy).HasColumnName("updated_by");

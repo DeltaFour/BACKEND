@@ -1,4 +1,5 @@
-﻿using DeltaFour.Domain.Entities;
+﻿using DeltaFour.Application.Dtos;
+using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Context;
@@ -59,6 +60,13 @@ namespace DeltaFour.Infrastructure.Repositories
                 .Include(e => e.UserShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
         }
 
+        public async Task<User?> FindByEmailForPunch(String email)
+        {
+            return await context.Employees.Where(e => e.Email == email).Include(e => e.UserFaces)
+                .Include(e => e.Company).ThenInclude(c => c.CompanyGeolocation)
+                .Include(e => e.UserShifts)!.ThenInclude(es => es.WorkShift).FirstOrDefaultAsync();
+        }
+
         public void Create(User user)
         {
             context.Employees.Add(user);
@@ -73,6 +81,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 RoleName = e.Role != null ? e.Role.Name : null,
                 RoleId = e.RoleId,
                 IsAllowedBypassCoord = e.IsAllowedBypassCoord,
+                IsAllowedBypassFace = e.IsAllowedBypassFacial,
                 IsActive = e.IsActive,
                 IsConfirmed = e.IsConfirmed,
                 Password = e.Password!,
@@ -106,11 +115,38 @@ namespace DeltaFour.Infrastructure.Repositories
             context.Employees.Update(user);
         }
 
+        public async Task<List<User>> GetRhUsers(Guid companyId)
+        {
+            return await context.Employees.Where(e => e.CompanyId == companyId && e.Role.Name.Equals("RH"))
+                .ToListAsync();
+        }
+
         public async Task<User?> Find(Expression<Func<User, bool>> predicate)
         {
             return await context
                 .Employees
                 .FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
+        {
+            var query = from e in context.Employees
+                join at in context.EmployeeAttendances on e.Id equals at.UserId
+                where e.IsActive == true && e.CompanyId == companyId
+                select new AllAttendanceByCompanyResponse()
+                {
+                    AttendanceId = at.Id,
+                    Name = e.Name,
+                    TimePunched = at.PunchTime,
+                    IsLate = at.IsLate,
+                    Type = at.PunchType,
+                    ShiftType = at.ShiftType,
+                    Status = at.Status,
+                    Justification = at.Justification,
+                    Observation = at.Observation,
+                    FilePath = at.FilePath,
+                };
+            return await query.ToListAsync();
         }
     }
 }

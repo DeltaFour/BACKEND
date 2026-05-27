@@ -47,6 +47,7 @@ namespace DeltaFour.Application.Mappers
             UserInfoLoginDto teste = new UserInfoLoginDto()
             {
                 Name = dto.Name,
+                Email = dto.Email,
                 CompanyName = dto.CompanyName,
                 Role = dto.RoleName,
                 StartDate = dto.UserShift?.StartDate!,
@@ -54,7 +55,9 @@ namespace DeltaFour.Application.Mappers
                 StartTime = dto.UserShift?.StartTime!,
                 EndTime = dto.UserShift?.EndTime!,
                 LastPunchType = dto.LastPunchType!,
-                LastUserAttendances = dto.LastsUserAttendances!
+                LastUserAttendances = dto.LastsUserAttendances!,
+                IsAllowedBypassCoord = dto.IsAllowedBypassCoord,
+                IsAllowedBypassFace = dto.IsAllowedBypassFace
             };
             return teste;
         }

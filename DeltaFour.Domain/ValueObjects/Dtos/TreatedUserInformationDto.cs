@@ -15,6 +15,8 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
         public Guid? RoleId { get; set; }
 
         public Boolean IsAllowedBypassCoord { get; set; }
+        
+        public Boolean IsAllowedBypassFace { get; set; }
 
         public Boolean IsActive { get; set; }
 

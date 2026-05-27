@@ -6,6 +6,8 @@ namespace DeltaFour.Application.Dtos
     public class UserInfoLoginDto
     {
         public String Name { get; set; }
+        
+        public String Email { get; set; }
 
         public String? CompanyName { get; set; }
 
@@ -18,6 +20,10 @@ namespace DeltaFour.Application.Dtos
         public TimeOnly? StartTime { get; set; }
 
         public TimeOnly? EndTime { get; set; }
+
+        public Boolean IsAllowedBypassCoord { get; set; }
+
+        public Boolean IsAllowedBypassFace { get; set; }
 
         public PunchType? LastPunchType { get; set; }
 

@@ -15,10 +15,6 @@ public class PunchDtoValidator : AbstractValidator<PunchDto>
             .NotEmpty()
             .WithMessage("Horário do ponto é obrigatório");
 
-        RuleFor(x => x.ImageBase64)
-            .NotEmpty()
-            .WithMessage("Imagem é obrigatória");
-
         RuleFor(x => x.ShiftType)
             .IsInEnum()
             .WithMessage("Tipo de turno inválido");

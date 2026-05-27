@@ -22,6 +22,7 @@ namespace DeltaFour.Application.Mappers
                 IsConfirmed = true,
                 IsAllowedBypassCoord = dto.IsAllowedBypassCoord,
                 CreatedBy = createdBy.Id,
+                IsAllowedBypassFacial = dto.IsAllowedBypassFacial,
             };
         }
 

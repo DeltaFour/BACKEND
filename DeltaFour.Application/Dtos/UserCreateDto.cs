@@ -17,5 +17,7 @@
         public String ImageBase64 { get; set; }
 
         public Boolean IsAllowedBypassCoord { get; set; }
+        
+        public Boolean IsAllowedBypassFacial {get; set;}
     }
 }

@@ -26,6 +26,10 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
                 .HasColumnName("coord");
             builder.Property(ea => ea.IsLate).HasColumnName("is_late");
             builder.Property(ea => ea.TimeLate).HasColumnName("time_late");
+            builder.Property(ea => ea.Justification).HasColumnName("justification");
+            builder.Property(ea => ea.FilePath).HasColumnName("file_path");
+            builder.Property(ea => ea.Observation).HasColumnName("observation");
+            builder.Property(ea => ea.Status).HasColumnName("status").HasColumnType("varchar(20)");
             builder.Property(ea => ea.UpdatedAt).HasColumnName("updated_at");
             builder.Property(ea => ea.UpdatedBy).HasColumnName("updated_by");
             builder.Property(ea => ea.CreatedBy).HasColumnName("created_by").IsRequired();

@@ -8,7 +8,7 @@ public class User : BaseEntity
 
     public Guid? RoleId { get; set; }
 
-    public string? Password { get; set; }
+    public String Password { get; set; }
 
     public string? Cellphone { get; set; }
 
@@ -19,6 +19,8 @@ public class User : BaseEntity
     public bool IsConfirmed { get; set; }
 
     public bool IsAllowedBypassCoord { get; set; }
+    
+    public bool IsAllowedBypassFacial { get; set; }
 
     public DateTime? LastLogin { get; set; }
 
