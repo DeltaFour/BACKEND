@@ -12,6 +12,8 @@
 
         public String? CellPhone { get; set; }
 
+        public Guid? DepartmentId { get; set; }
+
         public List<UserShiftDto> UserShift { get; set; }
 
         public String ImageBase64 { get; set; }

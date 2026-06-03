@@ -14,15 +14,14 @@ using MimeKit;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using Serilog;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DeltaFour.Application.Services
 {
     public class UserService(
         IUnitOfWork unitOfWork,
         IFaceRecognitionIntegration faceRecognitionIntegration,
-        IPasswordService passwordService
+        IPasswordService passwordService,
+        PunctualityMetricsService punctualityMetricsService
         )
     {
         private readonly String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
@@ -242,6 +241,19 @@ namespace DeltaFour.Application.Services
 
                     await unitOfWork.Save();
 
+                    // Recalcula métricas de pontualidade automaticamente
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
+                        }
+                    });
+
                     return PunchInResponse.SCC.Message();
                 }
             }
@@ -268,6 +280,19 @@ namespace DeltaFour.Application.Services
             UserAttendance userAttendance = UserAttendanceMapper.UserAttendanceFromDto(dto, user.Id);
             unitOfWork.UserAttendanceRepository.Create(userAttendance);
             await unitOfWork.Save();
+
+            // Recalcula métricas de pontualidade automaticamente
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await punctualityMetricsService.RecalculateMetricsForUser(dto.UserId);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", dto.UserId);
+                }
+            });
         }
 
         ///<summary>
@@ -284,15 +309,7 @@ namespace DeltaFour.Application.Services
                     throw new BadHttpRequestException(validation);
                 }
 
-                using var hash = SHA256.Create();
-                byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
-                var hashPassowrd = new StringBuilder();
-                foreach (byte b in bytes)
-                {
-                    hashPassowrd.Append(b.ToString("x2"));
-                }
-
-                if (user.Password.Equals(hashPassowrd.ToString()))
+                if (passwordService.Verify(dto.Password, user.Password))
                 {
                     var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
 
@@ -377,6 +394,19 @@ namespace DeltaFour.Application.Services
                         unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                         await unitOfWork.Save();
+
+                        // Recalcula métricas de pontualidade automaticamente
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
+                            }
+                        });
                     }
                 }
                 else

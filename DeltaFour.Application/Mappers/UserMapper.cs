@@ -14,6 +14,7 @@ namespace DeltaFour.Application.Mappers
             {
                 CompanyId = createdBy.CompanyId,
                 RoleId = roleId,
+                DepartmentId = dto.DepartmentId,
                 Name = dto.Name,
                 Password = dto.Password,
                 Cellphone = dto.CellPhone!,
@@ -33,6 +34,7 @@ namespace DeltaFour.Application.Mappers
         {
             e.Name = dto.Name;
             e.Cellphone = dto.CellPhone;
+            e.DepartmentId = dto.DepartmentId;
             e.IsAllowedBypassCoord = dto.IsAllowedBypassCoord;
             e.UpdatedBy = userAuthenticatedId;
             e.UpdatedAt = DateTime.UtcNow;

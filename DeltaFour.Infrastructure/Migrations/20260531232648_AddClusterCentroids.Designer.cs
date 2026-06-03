@@ -4,6 +4,7 @@ using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 
@@ -12,9 +13,11 @@ using NetTopologySuite.Geometries;
 namespace DeltaFour.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531232648_AddClusterCentroids")]
+    partial class AddClusterCentroids
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,22 +47,22 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bcd16334-c144-4388-8e24-44e4af9b17ed"),
+                            Id = new Guid("1fee153c-4be3-4442-82a0-c92b8b5d9812"),
                             Name = "list"
                         },
                         new
                         {
-                            Id = new Guid("1d365ec2-f93e-4877-943d-665a8d4064de"),
+                            Id = new Guid("df10675d-1c11-47dd-b03b-84dd28a2b40d"),
                             Name = "create"
                         },
                         new
                         {
-                            Id = new Guid("1aeb408c-2b7e-49df-9f01-b8d7ae4d502e"),
+                            Id = new Guid("216a8a62-1b84-474b-9edf-a4e88a2b2836"),
                             Name = "update"
                         },
                         new
                         {
-                            Id = new Guid("b14342fb-e615-4a34-8ba4-fee65152434e"),
+                            Id = new Guid("38e7ec04-61b1-44e9-bff4-8d51b90fb1de"),
                             Name = "delete"
                         });
                 });
@@ -188,7 +191,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 931, DateTimeKind.Utc).AddTicks(2589))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 868, DateTimeKind.Utc).AddTicks(42))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -270,49 +273,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.ToTable("company_geolocation", (string)null);
                 });
 
-            modelBuilder.Entity("DeltaFour.Domain.Entities.Department", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)")
-                        .HasColumnName("id");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("company_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 932, DateTimeKind.Utc).AddTicks(4584))
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("CreatedBy")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("created_by");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.ToTable("department", (string)null);
-                });
-
             modelBuilder.Entity("DeltaFour.Domain.Entities.Location", b =>
                 {
                     b.Property<Guid>("Id")
@@ -334,17 +294,17 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4f40a0e0-434e-449d-9866-0efaf1204aba"),
+                            Id = new Guid("1c89625d-6c94-41bd-ae16-e9593cbb1c84"),
                             Name = "company"
                         },
                         new
                         {
-                            Id = new Guid("e4a727bf-5556-432a-92f5-fead5e0b119b"),
+                            Id = new Guid("da6a01a8-93bb-4785-9655-a471f2fa717f"),
                             Name = "employee"
                         },
                         new
                         {
-                            Id = new Guid("8d34b18a-a559-4721-9d3c-6fcd55a18cdf"),
+                            Id = new Guid("e71dfebf-e7dd-4bfd-9d30-9244c22839ec"),
                             Name = "work"
                         });
                 });
@@ -362,7 +322,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 933, DateTimeKind.Utc).AddTicks(1792))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 869, DateTimeKind.Utc).AddTicks(6011))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -439,7 +399,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 933, DateTimeKind.Utc).AddTicks(9908))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 870, DateTimeKind.Utc).AddTicks(4603))
                         .HasColumnName("created_at");
 
                     b.Property<string>("CustomerId")
@@ -488,7 +448,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 934, DateTimeKind.Utc).AddTicks(4062))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 870, DateTimeKind.Utc).AddTicks(8980))
                         .HasColumnName("created_at");
 
                     b.Property<string>("EventType")
@@ -523,7 +483,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 934, DateTimeKind.Utc).AddTicks(7835))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 871, DateTimeKind.Utc).AddTicks(3059))
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("EmployeeSignedAt")
@@ -595,15 +555,12 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 2, 23, 55, 33, 936, DateTimeKind.Utc).AddTicks(1369))
+                        .HasDefaultValue(new DateTime(2026, 5, 31, 23, 26, 47, 872, DateTimeKind.Utc).AddTicks(7286))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("char(36)")
                         .HasColumnName("created_by");
-
-                    b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("char(36)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -661,8 +618,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("RoleId");
 
@@ -1010,17 +965,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("DeltaFour.Domain.Entities.Department", b =>
-                {
-                    b.HasOne("DeltaFour.Domain.Entities.Company", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("DeltaFour.Domain.Entities.Role", b =>
                 {
                     b.HasOne("DeltaFour.Domain.Entities.Company", "Company")
@@ -1100,18 +1044,11 @@ namespace DeltaFour.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DeltaFour.Domain.Entities.Department", "Department")
-                        .WithMany("Users")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("DeltaFour.Domain.Entities.Role", "Role")
                         .WithMany("User")
                         .HasForeignKey("RoleId");
 
                     b.Navigation("Company");
-
-                    b.Navigation("Department");
 
                     b.Navigation("Role");
                 });
@@ -1211,11 +1148,6 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Navigation("User");
 
                     b.Navigation("WorkShifts");
-                });
-
-            modelBuilder.Entity("DeltaFour.Domain.Entities.Department", b =>
-                {
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.Location", b =>

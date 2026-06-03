@@ -14,6 +14,12 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.EmployeeAttendances.FirstOrDefaultAsync(predicate);
         }
+
+        public async Task<List<UserAttendance>> FindAll(Expression<Func<UserAttendance, bool>> predicate)
+        {
+            return await context.EmployeeAttendances.Where(predicate).ToListAsync();
+        }
+
         public void Create(UserAttendance userAttendance)
         {
             context.EmployeeAttendances.Add(userAttendance);

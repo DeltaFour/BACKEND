@@ -14,6 +14,8 @@ public class User : BaseEntity
 
     public Guid CompanyId { get; set; }
 
+    public Guid? DepartmentId { get; set; }
+
     public bool IsActive { get; set; }
 
     public bool IsConfirmed { get; set; }
@@ -35,6 +37,8 @@ public class User : BaseEntity
     public UserAuth? UserAuth { get; set; }
 
     public Company Company { get; set; }
+
+    public Department? Department { get; set; }
 
     public List<UserShift>? UserShifts { get; set; }
 

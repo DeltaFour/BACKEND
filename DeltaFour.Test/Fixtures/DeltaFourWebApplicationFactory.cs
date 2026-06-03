@@ -81,6 +81,8 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+        await dbContext.ClusterCentroids.ExecuteDeleteAsync();
+        await dbContext.UserPunctualityMetrics.ExecuteDeleteAsync();
         await dbContext.SubscriptionEvents.ExecuteDeleteAsync();
         await dbContext.Subscriptions.ExecuteDeleteAsync();
         await dbContext.Auth.ExecuteDeleteAsync();

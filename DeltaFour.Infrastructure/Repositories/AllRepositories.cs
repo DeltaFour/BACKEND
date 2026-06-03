@@ -8,6 +8,7 @@ namespace DeltaFour.Infrastructure.Repositories
         private IUserRepository? _userRepository;
         private IUserAuthRepository? _userAuthRepository;
         private ICompanyRepository? _companyRepository;
+        private IDepartmentRepository? _departmentRepository;
         private IRoleRepository? _roleRepository;
         private IRolePermissionRepository? _rolePermissionRepository;
         private IActionRepository? _actionRepository;
@@ -19,6 +20,8 @@ namespace DeltaFour.Infrastructure.Repositories
         private ISubscriptionRepository? _subscriptionRepository;
         private ISubscriptionEventRepository? _subscriptionEventRepository;
         private ITimeSheetRepository? _timeSheetRepository;
+        private IUserPunctualityMetricRepository? _userPunctualityMetricRepository;
+        private IClusterCentroidRepository? _clusterCentroidRepository;
 
         public IUserRepository UserRepository
         {
@@ -33,6 +36,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public ICompanyRepository CompanyRepository
         {
             get { return _companyRepository ??= new CompanyRepository(context); }
+        }
+
+        public IDepartmentRepository DepartmentRepository
+        {
+            get { return _departmentRepository ??= new DepartmentRepository(context); }
         }
 
         public IRoleRepository RoleRepository
@@ -88,6 +96,16 @@ namespace DeltaFour.Infrastructure.Repositories
         public ITimeSheetRepository TimeSheetRepository
         {
             get { return _timeSheetRepository ??= new TimeSheetRepository(context); }
+        }
+
+        public IUserPunctualityMetricRepository UserPunctualityMetricRepository
+        {
+            get { return _userPunctualityMetricRepository ??= new UserPunctualityMetricRepository(context); }
+        }
+
+        public IClusterCentroidRepository ClusterCentroidRepository
+        {
+            get { return _clusterCentroidRepository ??= new ClusterCentroidRepository(context); }
         }
 
         public async Task Save()

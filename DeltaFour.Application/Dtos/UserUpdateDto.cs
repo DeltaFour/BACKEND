@@ -8,6 +8,8 @@
 
         public String? CellPhone { get; set; }
 
+        public Guid? DepartmentId { get; set; }
+
         public Boolean IsAllowedBypassCoord { get; set; }
 
         public List<UserShiftDto> UserShift { get; set; }

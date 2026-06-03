@@ -5,6 +5,7 @@ public interface IUnitOfWork
     IUserRepository UserRepository { get; }
     IUserAuthRepository UserAuthRepository { get; }
     ICompanyRepository CompanyRepository { get; }
+    IDepartmentRepository DepartmentRepository { get; }
     IRoleRepository RoleRepository { get; }
     IRolePermissionRepository RolePermissionRepository { get; }
     IActionRepository ActionRepository { get; }
@@ -16,6 +17,8 @@ public interface IUnitOfWork
     ISubscriptionRepository SubscriptionRepository { get; }
     ISubscriptionEventRepository SubscriptionEventRepository { get; }
     ITimeSheetRepository TimeSheetRepository { get; }
+    IUserPunctualityMetricRepository UserPunctualityMetricRepository { get; }
+    IClusterCentroidRepository ClusterCentroidRepository { get; }
 
     Task Save();
 }

@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<UserService>();
         services.AddScoped<WorkShiftService>();
         services.AddScoped<CompanyService>();
+        services.AddScoped<DepartmentService>();
         services.AddScoped<CompanyRegistrationService>();
         services.AddScoped<SubscriptionWebhookService>();
         services.AddScoped<ITimeSheetPdfService, TimeSheetPdfService>();
@@ -60,8 +61,11 @@ public static class DependencyInjection
         services.AddScoped<ITimeSheetRepository, TimeSheetRepository>();
         services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
         services.AddScoped<IUserFaceRepository, UserFaceRepository>();
+        services.AddScoped<IUserPunctualityMetricRepository, UserPunctualityMetricRepository>();
+        services.AddScoped<IClusterCentroidRepository, ClusterCentroidRepository>();
         services.AddScoped<IUnitOfWork, AllRepositories>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<PunctualityMetricsService>();
 
         var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
 
