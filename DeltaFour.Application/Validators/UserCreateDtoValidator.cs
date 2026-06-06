@@ -33,6 +33,10 @@ public class UserCreateDtoValidator : AbstractValidator<UserCreateDto>
             .NotEmpty()
             .WithMessage("Celular é obrigatório");
 
+        RuleFor(x => x.Cpf)
+            .NotEmpty()
+            .WithMessage("CPF é obrigatório");
+
         RuleFor(x => x.UserShift)
             .NotEmpty()
             .WithMessage("Turnos do usuário são obrigatórios");

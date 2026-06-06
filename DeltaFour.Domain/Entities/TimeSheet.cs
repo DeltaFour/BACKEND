@@ -12,4 +12,7 @@ public class TimeSheet : BaseEntity
     public Guid? SignedByHRUserId { get; set; }
     public string? SignedByHRUserName { get; set; }
     public User? User { get; set; }
+    public List<TimeSheetSignature>? Signatures { get; set; }
+    public List<TimeSheetSignatureToken>? SignatureTokens { get; set; }
+    public List<TimeSheetAudit>? Audits { get; set; }
 }

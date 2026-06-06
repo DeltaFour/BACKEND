@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<WorkShiftService>();
         services.AddScoped<CompanyService>();
         services.AddScoped<DepartmentService>();
+        services.AddScoped<RoleService>();
         services.AddScoped<CompanyRegistrationService>();
         services.AddScoped<SubscriptionWebhookService>();
         services.AddScoped<ITimeSheetPdfService, TimeSheetPdfService>();
@@ -60,6 +61,9 @@ public static class DependencyInjection
         services.AddScoped<IUserAttendanceRepository, UserAttendanceRepository>();
         services.AddScoped<IUserShiftRepository, UserShiftRepository>();
         services.AddScoped<ITimeSheetRepository, TimeSheetRepository>();
+        services.AddScoped<ITimeSheetSignatureRepository, TimeSheetSignatureRepository>();
+        services.AddScoped<ITimeSheetSignatureTokenRepository, TimeSheetSignatureTokenRepository>();
+        services.AddScoped<ITimeSheetAuditRepository, TimeSheetAuditRepository>();
         services.AddScoped<ICompanyGeolocationRepository, CompanyGeolocationRepository>();
         services.AddScoped<IUserFaceRepository, UserFaceRepository>();
         services.AddScoped<IUserPunctualityMetricRepository, UserPunctualityMetricRepository>();

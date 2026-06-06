@@ -12,6 +12,8 @@ namespace DeltaFour.Application.Dtos
 
         public string? CellPhone { get; set; }
 
+        public string? Cpf { get; set; }
+
         public Guid? DepartmentId { get; set; }
 
         public List<UserShiftDto> UserShift { get; set; }

@@ -515,9 +515,44 @@ namespace DeltaFour.Application.Services
             return null;
         }
 
-        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto, Guid attendanceId)
+        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto, Guid attendanceId, UserContext userAuthenticated)
         {
-            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId, dto);
+            var attendance = await unitOfWork.UserAttendanceRepository.Find(a => a.Id == attendanceId);
+            if (attendance == null)
+            {
+                throw new InvalidOperationException("Registro de ponto não encontrado.");
+            }
+
+            var timeSheet = await unitOfWork.TimeSheetRepository.FindByUserMonthYear(
+                attendance.UserId, attendance.PunchTime.Month, attendance.PunchTime.Year);
+
+            if (timeSheet is { SignedByEmployee: true, SignedByHR: true })
+            {
+                throw new InvalidOperationException("A folha de ponto já foi finalizada e não pode ser alterada.");
+            }
+
+            var oldStatus = attendance.Status ?? string.Empty;
+            var newStatus = Enum.GetName(dto.Status) ?? string.Empty;
+
+            attendance.Status = newStatus;
+            attendance.UpdatedAt = DateTime.UtcNow;
+            attendance.UpdatedBy = userAuthenticated.Id;
+            unitOfWork.UserAttendanceRepository.Update(attendance);
+
+            if (timeSheet != null)
+            {
+                unitOfWork.TimeSheetAuditRepository.Create(new TimeSheetAudit
+                {
+                    TimeSheetId = timeSheet.Id,
+                    UserId = userAuthenticated.Id,
+                    UserName = userAuthenticated.Name ?? string.Empty,
+                    Operation = "UpdateAttendanceStatus",
+                    OldValues = oldStatus,
+                    NewValues = newStatus
+                });
+            }
+
+            await unitOfWork.Save();
         }
 
         ///<summary>

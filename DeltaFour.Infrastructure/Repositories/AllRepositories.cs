@@ -22,6 +22,9 @@ namespace DeltaFour.Infrastructure.Repositories
         private ISubscriptionRepository? _subscriptionRepository;
         private ISubscriptionEventRepository? _subscriptionEventRepository;
         private ITimeSheetRepository? _timeSheetRepository;
+        private ITimeSheetSignatureRepository? _timeSheetSignatureRepository;
+        private ITimeSheetSignatureTokenRepository? _timeSheetSignatureTokenRepository;
+        private ITimeSheetAuditRepository? _timeSheetAuditRepository;
         private IUserPunctualityMetricRepository? _userPunctualityMetricRepository;
         private IClusterCentroidRepository? _clusterCentroidRepository;
 
@@ -108,6 +111,21 @@ namespace DeltaFour.Infrastructure.Repositories
         public ITimeSheetRepository TimeSheetRepository
         {
             get { return _timeSheetRepository ??= new TimeSheetRepository(context); }
+        }
+
+        public ITimeSheetSignatureRepository TimeSheetSignatureRepository
+        {
+            get { return _timeSheetSignatureRepository ??= new TimeSheetSignatureRepository(context); }
+        }
+
+        public ITimeSheetSignatureTokenRepository TimeSheetSignatureTokenRepository
+        {
+            get { return _timeSheetSignatureTokenRepository ??= new TimeSheetSignatureTokenRepository(context); }
+        }
+
+        public ITimeSheetAuditRepository TimeSheetAuditRepository
+        {
+            get { return _timeSheetAuditRepository ??= new TimeSheetAuditRepository(context); }
         }
 
         public IUserPunctualityMetricRepository UserPunctualityMetricRepository

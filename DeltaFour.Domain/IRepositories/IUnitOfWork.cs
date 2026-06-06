@@ -19,6 +19,9 @@ public interface IUnitOfWork
     ISubscriptionRepository SubscriptionRepository { get; }
     ISubscriptionEventRepository SubscriptionEventRepository { get; }
     ITimeSheetRepository TimeSheetRepository { get; }
+    ITimeSheetSignatureRepository TimeSheetSignatureRepository { get; }
+    ITimeSheetSignatureTokenRepository TimeSheetSignatureTokenRepository { get; }
+    ITimeSheetAuditRepository TimeSheetAuditRepository { get; }
     IUserPunctualityMetricRepository UserPunctualityMetricRepository { get; }
     IClusterCentroidRepository ClusterCentroidRepository { get; }
 

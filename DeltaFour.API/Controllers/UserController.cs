@@ -172,7 +172,8 @@ namespace DeltaFour.API.Controllers
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> UpdateStatusAttendance([FromBody] UpdateStatusAttendanceDto dto, Guid attendanceId)
         {
-            await service.UpdateStatusAttendance(dto, attendanceId);
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            await service.UpdateStatusAttendance(dto, attendanceId, user);
             return NoContent();
         }
 

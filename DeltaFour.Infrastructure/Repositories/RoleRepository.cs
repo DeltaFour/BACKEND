@@ -32,5 +32,13 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.Roles.Remove(role);
         }
+
+        public async Task<List<Role>> GetAllByCompany(Guid companyId)
+        {
+            return await context.Roles
+                .Where(r => r.CompanyId == companyId && r.IsActive)
+                .OrderBy(r => r.Name)
+                .ToListAsync();
+        }
     }
 }

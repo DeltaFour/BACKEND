@@ -18,6 +18,7 @@ namespace DeltaFour.Application.Mappers
                 Name = dto.Name,
                 Password = dto.Password,
                 Cellphone = dto.CellPhone!,
+                Cpf = dto.Cpf,
                 Email = dto.Email,
                 IsActive = true,
                 IsConfirmed = true,

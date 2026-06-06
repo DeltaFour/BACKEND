@@ -12,6 +12,8 @@ public class User : BaseEntity
 
     public string? Cellphone { get; set; }
 
+    public string? Cpf { get; set; }
+
     public Guid CompanyId { get; set; }
 
     public Guid? DepartmentId { get; set; }
