@@ -59,14 +59,14 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
                 "Ana RH",
                 "rh@deltafourdemo.com",
                 RoleRhId,
-                "senha123");
+                "#Admin@123");
 
             var userEmployee = CreateUser(
                 UserEmployeeId,
                 "Carlos Funcionário",
                 "funcionario@deltafourdemo.com",
                 RoleEmployeeId,
-                "senha123");
+                "#Admin@123");
 
             db.Employees.AddRange(userRh, userEmployee);
             await SaveOrFail("Usuários");
