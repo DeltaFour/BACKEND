@@ -554,7 +554,8 @@ namespace DeltaFour.Application.Services
             return users.Select(u => new UserSelectResponse
             {
                 Id = u.Id.ToString(),
-                Name = u.Name
+                Name = u.Name,
+                DepartmentName = u.Department?.Name,
             }).ToList();
         }
     }

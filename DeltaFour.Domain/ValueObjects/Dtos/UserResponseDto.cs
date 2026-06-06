@@ -11,6 +11,7 @@
         public String Email { get; set; }
 
         public String? RoleName { get; set; }
+        public string? DepartmentName { get; set; }
 
         public Boolean IsActive { get; set; }
 

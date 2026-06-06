@@ -2,7 +2,7 @@ namespace DeltaFour.Domain.Entities;
 
 public class Department : BaseEntity
 {
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     public Guid CompanyId { get; set; }
 

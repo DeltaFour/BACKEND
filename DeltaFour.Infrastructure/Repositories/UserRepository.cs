@@ -23,6 +23,7 @@ namespace DeltaFour.Infrastructure.Repositories
                     IsActive = e.IsActive,
                     IsAllowedBypassCoord = e.IsAllowedBypassCoord,
                     LastLogin = e.LastLogin,
+                    DepartmentName = e.Department != null ? e.Department.Name : null,
                     ShiftDto = e.UserShifts!.Select(s => new UserResponseShiftsDto()
                     {
                         Id = s.Id,
@@ -156,6 +157,10 @@ namespace DeltaFour.Infrastructure.Repositories
                 {
                     Id = e.Id,
                     Name = e.Name,
+                    Department = new Department
+                    {
+                        Name = e.Department != null ? e.Department.Name : null
+                    }
                 }).ToListAsync();
         }
     }
