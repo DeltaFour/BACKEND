@@ -7,4 +7,10 @@ public class CreateCompanyRequest
     public string Cnpj { get; set; } = string.Empty;
 
     public UserRequest? User { get; set; }
+    
+    public Double Latitude { get; set; }
+
+    public Double Longitude { get; set; }
+
+    public int RadiusMeters { get; set; } = 100;
 }

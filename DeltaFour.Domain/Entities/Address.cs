@@ -13,6 +13,8 @@
         public string? ZipCode { get; set; }
 
         public int? Number { get; set; }
+        
+        public String? Complement { get; set; }
 
         public Company? Company { get; set; }
     }

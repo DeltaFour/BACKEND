@@ -16,5 +16,9 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.CompanyGeolocations.Add(companyGeolocation);
         }
+        public void Update(CompanyGeolocation companyGeolocation)
+        {
+            context.CompanyGeolocations.Update(companyGeolocation);
+        }
     }
 }

@@ -163,5 +163,31 @@ namespace DeltaFour.Infrastructure.Repositories
                     }
                 }).ToListAsync();
         }
+
+        public async Task<List<User>> GetDashboardUsers(Guid companyId)
+        {
+            return await context.Employees
+                .Where(e => e.CompanyId == companyId)
+                .AsNoTracking()
+                .Include(e => e.UserShifts)!
+                .ThenInclude(s => s.WorkShift)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserAttendance>> GetDashboardAttendances(
+            Guid companyId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            return await context.EmployeeAttendances
+                .Where(a => a.User != null &&
+                            a.User.CompanyId == companyId &&
+                            a.User.IsActive &&
+                            a.PunchTime >= startDate &&
+                            a.PunchTime < endDate)
+                .AsNoTracking()
+                .Include(a => a.User)
+                .ToListAsync();
+        }
     }
 }

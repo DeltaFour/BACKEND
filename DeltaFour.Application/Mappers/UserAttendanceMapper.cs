@@ -10,7 +10,7 @@ namespace DeltaFour.Application.Mappers
         ///Map information from UserAttendance to UserAttendance
         ///</summary>
         public static UserAttendance UserAttendanceFromDto
-            (PunchDto dto, Guid userId, Boolean isLate, TimeOnly? timeLated)
+            (PunchDto dto, Guid userId, Boolean isOnTime, TimeOnly? timeLated)
         {
             return new UserAttendance()
             {
@@ -20,7 +20,7 @@ namespace DeltaFour.Application.Mappers
                 ShiftType = dto.ShiftType,
                 Coord = new Coordinates(dto.Longitude, dto.Latitude),
                 CreatedBy = userId,
-                IsLate = isLate,
+                IsLate = !isOnTime,
                 TimeLate = timeLated,
             };
         }

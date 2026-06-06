@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Application.Dtos.Requests;
 using DeltaFour.Application.Dtos.Responses.Company;
+using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
@@ -85,6 +86,32 @@ public class CompanyService
         _unitOfWork.WorkShiftRepository.CreateRange(new[] { matutino, diurno, noturno });
 
         await _unitOfWork.Save();
+    }
+
+    public async Task<CompanyGetSettingsDto?> Get(UserContext user)
+    {
+        var dto = await _unitOfWork.CompanyRepository.GetSettings(user.CompanyId);
+        if (dto != null)
+        {
+            dto.Email = user.Email!;
+        }
+
+        return dto;
+    }
+
+    public async Task UpdateSettings(CompanyGetSettingsDto dto, UserContext user)
+    {
+        var company = await _unitOfWork.CompanyRepository.FindWithCoordinates(user.CompanyId);
+        Address address = AddressMapper.MapToAddress(dto);
+        CompanyGeolocation geolocation = GeolocationMapper.MapToGeolocation(dto, user.CompanyId, user.Id);
+        if (company != null)
+        {
+            CompanyMapper.UpdateCompany(company, dto);
+            company.AddressId = address.Id;
+            _unitOfWork.CompanyRepository.Update(company);
+        }
+        _unitOfWork.AddressRepository.Create(address);
+        _unitOfWork.CompanyGeolocationRepository.Update(geolocation);
     }
 
     public async Task<ListCompaniesResponse> List()

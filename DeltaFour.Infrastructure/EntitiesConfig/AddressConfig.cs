@@ -17,6 +17,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.Property(a => a.State).IsRequired().HasMaxLength(2).HasColumnName("state");
             builder.Property(a => a.ZipCode).IsRequired().HasMaxLength(9).HasColumnName("zip_code");
             builder.Property(a => a.Number).IsRequired().HasColumnName("number");
+            builder.Property(a => a.Complement).HasMaxLength(255).HasColumnName("complement");
             builder.Property(a => a.CreatedAt).IsRequired().HasColumnName("created_at");
             builder.HasOne(a => a.Company).WithOne(c => c.Address).HasForeignKey<Company>(c => c.AddressId);
         }

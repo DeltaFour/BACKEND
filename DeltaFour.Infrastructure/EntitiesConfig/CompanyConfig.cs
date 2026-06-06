@@ -12,6 +12,7 @@ namespace DeltaFour.Infrastructure.EntitiesConfig
             builder.HasKey(c => c.Id);
             builder.Property(c => c.Id).HasColumnName("id");
             builder.Property(c => c.Name).IsRequired().IsUnicode(false).HasMaxLength(255).HasColumnName("name");
+            builder.Property(c => c.LegalName).IsUnicode(false).HasMaxLength(255).HasColumnName("legal_name");
             builder.Property(c => c.Cnpj).IsRequired().HasMaxLength(18).HasColumnName("cnpj");
             builder.Property(c => c.IsActive).IsRequired().HasColumnName("is_active");
             builder

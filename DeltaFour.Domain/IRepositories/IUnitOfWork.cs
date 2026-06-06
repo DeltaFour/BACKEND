@@ -3,6 +3,8 @@
 public interface IUnitOfWork
 {
     IUserRepository UserRepository { get; }
+    IAddressRepository AddressRepository { get; }
+    ICompanyGeolocationRepository CompanyGeolocationRepository { get; }
     IUserAuthRepository UserAuthRepository { get; }
     ICompanyRepository CompanyRepository { get; }
     IDepartmentRepository DepartmentRepository { get; }

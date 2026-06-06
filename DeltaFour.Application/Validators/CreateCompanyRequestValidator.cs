@@ -19,5 +19,15 @@ public class CreateCompanyRequestValidator : AbstractValidator<CreateCompanyRequ
             .NotNull()
             .WithMessage("Dados do usuário são obrigatórios")
             .SetValidator(new UserRequestValidator());
+
+        RuleFor(x => x.Latitude)
+            .NotNull();
+        
+        RuleFor(x => x.Longitude)
+            .NotNull();
+
+        RuleFor(x => x.RadiusMeters)
+            .GreaterThanOrEqualTo(30)
+            .LessThanOrEqualTo(1000);
     }
 }

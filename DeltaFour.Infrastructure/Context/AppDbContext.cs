@@ -10,9 +10,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Company> Companies { get; set; }
 
+    public DbSet<Address> Address { get; set; }
+    
     public DbSet<Department> Departments { get; set; }
-
-    public DbSet<Address> Addresses { get; set; }
 
     public DbSet<Role> Roles { get; set; }
 
@@ -39,10 +39,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SubscriptionEvent> SubscriptionEvents { get; set; }
 
     public DbSet<TimeSheet> TimeSheets { get; set; }
-
-    public DbSet<UserPunctualityMetric> UserPunctualityMetrics { get; set; }
-
-    public DbSet<ClusterCentroid> ClusterCentroids { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

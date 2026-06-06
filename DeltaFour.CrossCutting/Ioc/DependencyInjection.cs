@@ -38,6 +38,7 @@ public static class DependencyInjection
 
         // Registrar repositórios e serviços independente do ambiente
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAddressRepository, AddressRepository>();
         services.AddScoped<IUserAuthRepository, UserAuthRepository>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<UserService>();

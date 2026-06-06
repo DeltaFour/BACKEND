@@ -14,6 +14,9 @@ using MimeKit;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using Serilog;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DeltaFour.Application.Services
 {
@@ -63,10 +66,13 @@ namespace DeltaFour.Application.Services
 
                     unitOfWork.UserRepository.Create(user);
 
-                    var embedding = await faceRecognitionIntegration.GetFaceEmbeddings(dto.ImageBase64);
-                    var userFace = new UserFace(user.Id, embedding, userAuthenticated.Id);
+                    if (!dto.IsAllowedBypassFacial)
+                    {
+                        var embedding = await faceRecognitionIntegration.GetFaceEmbeddings(dto.ImageBase64);
+                        var userFace = new UserFace(user.Id, embedding, userAuthenticated.Id);
 
-                    unitOfWork.UserFaceRepository.Create(userFace);
+                        unitOfWork.UserFaceRepository.Create(userFace);
+                    }
 
                     var userShifts = new List<UserShift>();
 
@@ -240,7 +246,6 @@ namespace DeltaFour.Application.Services
                     unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                     await unitOfWork.Save();
-
                     // Recalcula métricas de pontualidade automaticamente
                     _ = Task.Run(async () =>
                     {
@@ -280,7 +285,6 @@ namespace DeltaFour.Application.Services
             UserAttendance userAttendance = UserAttendanceMapper.UserAttendanceFromDto(dto, user.Id);
             unitOfWork.UserAttendanceRepository.Create(userAttendance);
             await unitOfWork.Save();
-
             // Recalcula métricas de pontualidade automaticamente
             _ = Task.Run(async () =>
             {
@@ -300,8 +304,8 @@ namespace DeltaFour.Application.Services
         ///</summary>
         public async Task PunchByEmail(PunchByEmailDto dto, UserContext userContext)
         {
-            User? user = await unitOfWork.UserRepository.FindByEmailForPunch(dto.Email);
-            if (user != null && userContext.Email == user.Email)
+            User? user = await unitOfWork.UserRepository.FindByEmailForPunch(userContext.Email!);
+            if (user != null)
             {
                 String? validation = await ValidationsPunchIn(dto, user);
                 if (validation != null)
@@ -309,30 +313,22 @@ namespace DeltaFour.Application.Services
                     throw new BadHttpRequestException(validation);
                 }
 
-                if (passwordService.Verify(dto.Password, user.Password))
-                {
+                // using var hash = SHA256.Create();
+                // byte[] bytes = hash.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
+                // var hashPassowrd = new StringBuilder();
+                // foreach (byte b in bytes)
+                // {
+                //     hashPassowrd.Append(b.ToString("x2"));
+                // }
+
+                // if (user.Password.Equals(hashPassowrd.ToString()))
+                // {
                     var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
 
                     if (workShifts != null)
                     {
                         Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
                             TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
-
-                        if (!timeChecked)
-                        {
-                            List<User> rhUsers = await unitOfWork.UserRepository.GetRhUsers(user.CompanyId);
-                            _ = Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    await SendEmailRh(rhUsers, user.Name, user.Email);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Error(ex, "Erro ao enviar email para RH");
-                                }
-                            });
-                        }
 
                         String? filePath = null;
 
@@ -408,11 +404,11 @@ namespace DeltaFour.Application.Services
                             }
                         });
                     }
-                }
-                else
-                {
-                    throw new BadHttpRequestException("Senha esta incorreta!");
-                }
+                // }
+                // else
+                // {
+                //     throw new BadHttpRequestException("Senha esta incorreta!");
+                // }
             }
         }
 
@@ -422,6 +418,44 @@ namespace DeltaFour.Application.Services
         public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
         {
             return await unitOfWork.UserRepository.GetAllAttendanceByCompany(companyId);
+        }
+
+        ///<summary>
+        ///Operation for get attendance dashboard data from company
+        ///</summary>
+        public async Task<AttendanceDashboardResponse> GetAttendanceDashboard(Guid companyId)
+        {
+            var today = DateTime.Today;
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var trendStart = new DateTime(today.Year, today.Month, 1).AddMonths(-7);
+
+            var users = await unitOfWork.UserRepository.GetDashboardUsers(companyId);
+            var activeUsers = users.Where(u => u.IsActive).ToList();
+            var attendances = await unitOfWork.UserRepository.GetDashboardAttendances(
+                companyId,
+                trendStart,
+                today.AddDays(1));
+
+            var todayAttendances = attendances
+                .Where(a => a.PunchTime >= today && a.PunchTime < today.AddDays(1))
+                .ToList();
+            var monthlyAttendances = attendances
+                .Where(a => a.PunchTime >= monthStart && a.PunchTime < monthStart.AddMonths(1))
+                .ToList();
+
+            return new AttendanceDashboardResponse
+            {
+                Summary = new AttendanceDashboardSummaryDto
+                {
+                    ActiveEmployees = activeUsers.Count,
+                    PunctualityRate = CalculatePunctualityRate(todayAttendances),
+                    NoClockToday = activeUsers.Count(u => todayAttendances.All(a => a.UserId != u.Id)),
+                    MonthlyOvertimeHours = CalculateMonthlyOvertimeMinutes(activeUsers, monthlyAttendances, today)
+                },
+                WeeklyPresence = BuildWeeklyPresence(attendances, today.AddDays(-27), today),
+                TopLateEmployees = BuildTopLateEmployees(monthlyAttendances),
+                PunctualityTrend = BuildPunctualityTrend(attendances, trendStart, monthStart)
+            };
         }
 
         ///<summary>
@@ -557,6 +591,161 @@ namespace DeltaFour.Application.Services
                 Name = u.Name,
                 DepartmentName = u.Department?.Name,
             }).ToList();
+        }
+
+        private static int CalculatePunctualityRate(List<UserAttendance> attendances)
+        {
+            if (attendances.Count == 0)
+            {
+                return 0;
+            }
+
+            var punctualCount = attendances.Count(a => !a.IsLate);
+            return CalculatePercentage(punctualCount, attendances.Count);
+        }
+
+        private static List<AttendanceWeeklyPresenceDto> BuildWeeklyPresence(
+            List<UserAttendance> attendances,
+            DateTime weeklyStart,
+            DateTime today)
+        {
+            var weeklyPresence = new List<AttendanceWeeklyPresenceDto>();
+
+            for (var week = 0; week < 4; week++)
+            {
+                var start = weeklyStart.Date.AddDays(week * 7);
+                var end = week == 3 ? today.Date.AddDays(1) : start.AddDays(7);
+                var weekAttendances = attendances
+                    .Where(a => a.PunchTime >= start && a.PunchTime < end)
+                    .ToList();
+
+                if (weekAttendances.Count == 0)
+                {
+                    continue;
+                }
+
+                var punctual = CalculatePercentage(weekAttendances.Count(a => !a.IsLate), weekAttendances.Count);
+
+                weeklyPresence.Add(new AttendanceWeeklyPresenceDto
+                {
+                    WeekLabel = $"Sem {weeklyPresence.Count + 1}",
+                    Punctual = punctual,
+                    Late = 100 - punctual
+                });
+            }
+
+            return weeklyPresence;
+        }
+
+        private static List<AttendanceTopLateEmployeeDto> BuildTopLateEmployees(List<UserAttendance> monthlyAttendances)
+        {
+            return monthlyAttendances
+                .Where(a => a.IsLate && a.User != null)
+                .GroupBy(a => new { a.UserId, a.User!.Name })
+                .Select(g => new AttendanceTopLateEmployeeDto
+                {
+                    Name = g.Key.Name,
+                    LateCount = g.Count()
+                })
+                .OrderByDescending(e => e.LateCount)
+                .ThenBy(e => e.Name)
+                .Take(5)
+                .ToList();
+        }
+
+        private static List<AttendancePunctualityTrendDto> BuildPunctualityTrend(
+            List<UserAttendance> attendances,
+            DateTime trendStart,
+            DateTime currentMonthStart)
+        {
+            var trend = new List<AttendancePunctualityTrendDto>();
+
+            for (var monthStart = trendStart; monthStart <= currentMonthStart; monthStart = monthStart.AddMonths(1))
+            {
+                var nextMonth = monthStart.AddMonths(1);
+                var monthAttendances = attendances
+                    .Where(a => a.PunchTime >= monthStart && a.PunchTime < nextMonth)
+                    .ToList();
+
+                trend.Add(new AttendancePunctualityTrendDto
+                {
+                    Month = GetShortMonthName(monthStart.Month),
+                    Rate = CalculatePunctualityRate(monthAttendances)
+                });
+            }
+
+            return trend;
+        }
+
+        private static int CalculateMonthlyOvertimeMinutes(
+            List<User> activeUsers,
+            List<UserAttendance> monthlyAttendances,
+            DateTime today)
+        {
+            var totalMinutes = 0;
+
+            foreach (var user in activeUsers)
+            {
+                var workShift = user.UserShifts?
+                    .FirstOrDefault(s => s.IsActive)
+                    ?.WorkShift;
+
+                if (workShift == null)
+                {
+                    continue;
+                }
+
+                var expectedHours = TimeSheetCalculator.CalculateShiftDuration(
+                    workShift.StartTime,
+                    workShift.EndTime);
+
+                var attendancesByDay = monthlyAttendances
+                    .Where(a => a.UserId == user.Id)
+                    .GroupBy(a => DateOnly.FromDateTime(a.PunchTime));
+
+                foreach (var dayAttendancesGroup in attendancesByDay)
+                {
+                    var date = dayAttendancesGroup.Key;
+                    if (date.ToDateTime(TimeOnly.MinValue) > today)
+                    {
+                        continue;
+                    }
+
+                    var dayAttendances = dayAttendancesGroup
+                        .OrderBy(a => a.PunchTime)
+                        .ToList();
+                    var firstEntry = TimeSheetCalculator.GetFirstEntry(dayAttendances);
+                    var lastExit = TimeSheetCalculator.GetLastExit(dayAttendances);
+                    var workedHours = TimeSheetCalculator.CalculateWorkedHours(firstEntry, lastExit);
+                    var expectedDayHours = TimeSheetCalculator.IsWorkday(date.DayOfWeek)
+                        ? expectedHours
+                        : TimeSpan.Zero;
+                    var extraHours = workedHours - expectedDayHours;
+
+                    if (extraHours > TimeSpan.Zero)
+                    {
+                        totalMinutes += (int)Math.Round(extraHours.TotalMinutes);
+                    }
+                }
+            }
+
+            return totalMinutes;
+        }
+
+        private static int CalculatePercentage(int value, int total)
+        {
+            if (total == 0)
+            {
+                return 0;
+            }
+
+            return (int)Math.Round(value * 100.0 / total, MidpointRounding.AwayFromZero);
+        }
+
+        private static string GetShortMonthName(int month)
+        {
+            var name = new CultureInfo("pt-BR").DateTimeFormat.GetAbbreviatedMonthName(month);
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name.Replace(".", ""));
         }
     }
 }

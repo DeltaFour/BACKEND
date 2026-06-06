@@ -96,7 +96,7 @@ public class DeltaFourWebApplicationFactory : WebApplicationFactory<Program>, IA
         await dbContext.Roles.ExecuteDeleteAsync();
         await dbContext.CompanyGeolocations.ExecuteDeleteAsync();
         await dbContext.Locations.ExecuteDeleteAsync();
-        await dbContext.Addresses.ExecuteDeleteAsync();
+        await dbContext.Address.ExecuteDeleteAsync();
         await dbContext.Companies.ExecuteDeleteAsync();
     }
 

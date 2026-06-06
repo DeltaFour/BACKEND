@@ -6,12 +6,12 @@ using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeltaFour.API.Controllers;
 
-[Route("api/v1/admin-control/company")]
+[Route("api/v1/company")]
 [ApiController]
-[Authorize(Policy = nameof(RoleType.SUPER_ADMIN))]
 public class CompanyController : ControllerBase
 {
     private readonly CompanyService _companyService;
@@ -36,6 +36,23 @@ public class CompanyController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("settings")]
+    [Authorize(Policy = "RH_OR_ADMIN")]
+    public async Task<ActionResult<CompanyGetSettingsDto>> Get()
+    {
+        var user = HttpContext.GetUserAuthenticated<UserContext>();
+        return Ok(await _companyService.Get(user));
+    }
+
+    [HttpPatch("settings")]
+    [Authorize(Policy = "RH_OR_ADMIN")]
+    public async Task<IActionResult> Update([FromBody] CompanyGetSettingsDto dto)
+    {
+        var user = HttpContext.GetUserAuthenticated<UserContext>();
+        await _companyService.UpdateSettings(dto, user);
+        return NoContent();
+    }
+        
     /// <summary>
     /// Altera o status (ativo/inativo) de uma empresa.
     /// </summary>

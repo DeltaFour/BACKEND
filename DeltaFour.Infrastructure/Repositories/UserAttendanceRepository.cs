@@ -24,6 +24,12 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             context.EmployeeAttendances.Add(userAttendance);
         }
+
+        public void CreateRange(IEnumerable<UserAttendance> userAttendances)
+        {
+            context.EmployeeAttendances.AddRange(userAttendances);
+        }
+
         public void Update(UserAttendance userAttendance)
         {
             context.EmployeeAttendances.Update(userAttendance);

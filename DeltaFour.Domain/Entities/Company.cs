@@ -5,6 +5,8 @@
         public Guid? AddressId { get; set; }
 
         public string Name { get; set; }
+        
+        public String LegalName { get; set; }
 
         public string? Cnpj { get; set; }
 

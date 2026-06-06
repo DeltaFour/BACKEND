@@ -28,6 +28,11 @@ namespace DeltaFour.Domain.IRepositories
         Task<List<User>> GetRhUsers(Guid companyId);
 
         Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId);
+        
         Task<List<User>> GetAllSelect(Guid companyId);
+        
+        Task<List<User>> GetDashboardUsers(Guid companyId);
+        
+        Task<List<UserAttendance>> GetDashboardAttendances(Guid companyId, DateTime startDate, DateTime endDate);
     }
 }

@@ -160,6 +160,14 @@ namespace DeltaFour.API.Controllers
             return Ok(await service.GetAllAttendanceByCompany(user.CompanyId));
         }
 
+        [HttpGet("attendance-dashboard")]
+        [Authorize(Policy = "RH_OR_ADMIN")]
+        public async Task<ActionResult<AttendanceDashboardResponse>> GetAttendanceDashboard()
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            return Ok(await service.GetAttendanceDashboard(user.CompanyId));
+        }
+
         [HttpPatch("update-status-attendance/{attendanceId}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
         public async Task<IActionResult> UpdateStatusAttendance([FromBody] UpdateStatusAttendanceDto dto, Guid attendanceId)

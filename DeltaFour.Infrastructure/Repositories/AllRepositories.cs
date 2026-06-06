@@ -6,6 +6,8 @@ namespace DeltaFour.Infrastructure.Repositories
     public class AllRepositories(AppDbContext context) : IUnitOfWork
     {
         private IUserRepository? _userRepository;
+        private IAddressRepository? _addressRepository;
+        private ICompanyGeolocationRepository? _companyGeolocationRepository;
         private IUserAuthRepository? _userAuthRepository;
         private ICompanyRepository? _companyRepository;
         private IDepartmentRepository? _departmentRepository;
@@ -26,6 +28,16 @@ namespace DeltaFour.Infrastructure.Repositories
         public IUserRepository UserRepository
         {
             get { return _userRepository ??= new UserRepository(context); }
+        }
+
+        public IAddressRepository AddressRepository
+        {
+            get { return _addressRepository ??= new AddressRepository(context); }
+        }
+
+        public ICompanyGeolocationRepository CompanyGeolocationRepository
+        {
+            get { return _companyGeolocationRepository ??= new CompanyGeolocationRepository(context); }
         }
 
         public IUserAuthRepository UserAuthRepository
