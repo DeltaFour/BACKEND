@@ -1,4 +1,4 @@
-﻿using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

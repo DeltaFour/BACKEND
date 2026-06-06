@@ -15,8 +15,6 @@ using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using Serilog;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DeltaFour.Application.Services
 {
@@ -243,6 +241,8 @@ namespace DeltaFour.Application.Services
                                 : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                         TimeOnly.FromDateTime(DateTime.UtcNow)));
 
+                    userAttendance.Status = StatusAttendance.aprovado.ToString();
+
                     unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                     await unitOfWork.Save();
@@ -323,87 +323,87 @@ namespace DeltaFour.Application.Services
 
                 // if (user.Password.Equals(hashPassowrd.ToString()))
                 // {
-                    var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
+                var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
 
-                    if (workShifts != null)
+                if (workShifts != null)
+                {
+                    Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                    String? filePath = null;
+
+                    if (!string.IsNullOrWhiteSpace(dto.FileBase64))
                     {
-                        Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                        string base64 = dto.FileBase64;
+                        string? mimeType = null;
 
-                        String? filePath = null;
-
-                        if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                        if (base64.Contains(","))
                         {
-                            string base64 = dto.FileBase64;
-                            string? mimeType = null;
+                            var parts = base64.Split(',', 2);
 
-                            if (base64.Contains(","))
-                            {
-                                var parts = base64.Split(',', 2);
+                            var metadata = parts[0];
+                            base64 = parts[1];
 
-                                var metadata = parts[0];
-                                base64 = parts[1];
-
-                                mimeType = metadata
-                                    .Replace("data:", "")
-                                    .Replace(";base64", "");
-                            }
-
-                            byte[] fileBytes;
-
-                            fileBytes = Convert.FromBase64String(base64);
-
-                            string extension = mimeType.Split('/')[1];
-
-
-                            string folderName = mimeType == "application/pdf"
-                                ? "pdf"
-                                : "Image";
-
-                            string fileName = $"{Guid.NewGuid()}.{extension}";
-
-                            string folderPath = Path.Combine(
-                                "..",
-                                folderName
-                            );
-
-                            if (!Directory.Exists(folderPath))
-                            {
-                                Directory.CreateDirectory(folderPath);
-                            }
-
-                            string fullPath = Path.Combine(folderPath, fileName);
-
-                            await File.WriteAllBytesAsync(fullPath, fileBytes);
-
-                            filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                            mimeType = metadata
+                                .Replace("data:", "")
+                                .Replace(";base64", "");
                         }
 
-                        var userAttendance =
-                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
-                                timeChecked, timeChecked
-                                    ? null
-                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
-                                                            TimeOnly.FromDateTime(DateTime.UtcNow)),
-                                filePath);
+                        byte[] fileBytes;
 
-                        unitOfWork.UserAttendanceRepository.Create(userAttendance);
+                        fileBytes = Convert.FromBase64String(base64);
 
-                        await unitOfWork.Save();
+                        string extension = mimeType.Split('/')[1];
 
-                        // Recalcula métricas de pontualidade automaticamente
-                        _ = Task.Run(async () =>
+
+                        string folderName = mimeType == "application/pdf"
+                            ? "pdf"
+                            : "Image";
+
+                        string fileName = $"{Guid.NewGuid()}.{extension}";
+
+                        string folderPath = Path.Combine(
+                            "..",
+                            folderName
+                        );
+
+                        if (!Directory.Exists(folderPath))
                         {
-                            try
-                            {
-                                await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
-                            }
-                        });
+                            Directory.CreateDirectory(folderPath);
+                        }
+
+                        string fullPath = Path.Combine(folderPath, fileName);
+
+                        await File.WriteAllBytesAsync(fullPath, fileBytes);
+
+                        filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
                     }
+
+                    var userAttendance =
+                        UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                            timeChecked, timeChecked
+                                ? null
+                                : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                        TimeOnly.FromDateTime(DateTime.UtcNow)),
+                            filePath);
+
+                    unitOfWork.UserAttendanceRepository.Create(userAttendance);
+
+                    await unitOfWork.Save();
+
+                    // Recalcula métricas de pontualidade automaticamente
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
+                        }
+                    });
+                }
                 // }
                 // else
                 // {

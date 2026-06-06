@@ -1,4 +1,4 @@
-﻿namespace DeltaFour.Domain.Entities
+namespace DeltaFour.Domain.Entities
 {
     public class Company : BaseEntity
     {
