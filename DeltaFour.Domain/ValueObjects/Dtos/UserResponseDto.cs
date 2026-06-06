@@ -1,21 +1,22 @@
-﻿namespace DeltaFour.Domain.ValueObjects.Dtos
+namespace DeltaFour.Domain.ValueObjects.Dtos
 {
     public class UserResponseDto
     {
         public Guid Id { get; set; }
 
-        public String Name { get; set; }
+        public string Name { get; set; }
 
-        public String? Cellphone { get; set; }
+        public string? Cellphone { get; set; }
 
-        public String Email { get; set; }
+        public string Email { get; set; }
 
-        public String? RoleName { get; set; }
+        public string? RoleName { get; set; }
+
         public string? DepartmentName { get; set; }
 
-        public Boolean IsActive { get; set; }
+        public bool IsActive { get; set; }
 
-        public Boolean IsAllowedBypassCoord { get; set; }
+        public bool IsAllowedBypassCoord { get; set; }
 
         public DateTime? LastLogin { get; set; }
 

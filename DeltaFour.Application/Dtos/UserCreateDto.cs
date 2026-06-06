@@ -1,25 +1,25 @@
-﻿namespace DeltaFour.Application.Dtos
+namespace DeltaFour.Application.Dtos
 {
     public class UserCreateDto
     {
-        public String? Name { get; set; }
+        public string? Name { get; set; }
 
-        public String? RoleName { get; set; }
+        public string? RoleName { get; set; }
 
-        public String? Email { get; set; }
+        public string? Email { get; set; }
 
-        public String? Password { get; set; }
+        public string? Password { get; set; }
 
-        public String? CellPhone { get; set; }
+        public string? CellPhone { get; set; }
 
         public Guid? DepartmentId { get; set; }
 
         public List<UserShiftDto> UserShift { get; set; }
 
-        public String ImageBase64 { get; set; }
+        public string ImageBase64 { get; set; }
 
-        public Boolean IsAllowedBypassCoord { get; set; }
-        
-        public Boolean IsAllowedBypassFacial {get; set;}
+        public bool IsAllowedBypassCoord { get; set; }
+
+        public bool IsAllowedBypassFacial { get; set; }
     }
 }

@@ -10,6 +10,6 @@
 
         public DateTime? EndDate { get; set; }
 
-        public Boolean IsActive { get; set; }
+        public bool IsActive { get; set; }
     }
 }

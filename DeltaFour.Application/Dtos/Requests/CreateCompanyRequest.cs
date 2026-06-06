@@ -1,4 +1,4 @@
-﻿namespace DeltaFour.Application.Dtos.Requests;
+namespace DeltaFour.Application.Dtos.Requests;
 
 public class CreateCompanyRequest
 {
@@ -7,10 +7,10 @@ public class CreateCompanyRequest
     public string Cnpj { get; set; } = string.Empty;
 
     public UserRequest? User { get; set; }
-    
-    public Double Latitude { get; set; }
 
-    public Double Longitude { get; set; }
+    public double Latitude { get; set; }
+
+    public double Longitude { get; set; }
 
     public int RadiusMeters { get; set; } = 100;
 }

@@ -1,4 +1,4 @@
-﻿using DeltaFour.Domain.Enum;
+using DeltaFour.Domain.Enum;
 
 namespace DeltaFour.Application.Dtos
 {
@@ -8,12 +8,12 @@ namespace DeltaFour.Application.Dtos
 
         public DateTime TimePunched { get; set; }
 
-        public String? ImageBase64 { get; set; }
+        public string? ImageBase64 { get; set; }
 
         public ShiftType ShiftType { get; set; }
 
-        public Double Latitude { get; set; }
+        public double Latitude { get; set; }
 
-        public Double Longitude { get; set; }
+        public double Longitude { get; set; }
     }
 }

@@ -6,7 +6,7 @@
 
         public Guid UserId { get; set; }
 
-        public Boolean IsActive { get; set; }
+        public bool IsActive { get; set; }
 
         public DateTime StartDate { get; set; }
 

@@ -1,4 +1,4 @@
-﻿using DeltaFour.Domain.Enum;
+using DeltaFour.Domain.Enum;
 
 namespace DeltaFour.Domain.Entities
 {
@@ -14,17 +14,17 @@ namespace DeltaFour.Domain.Entities
 
         public Coordinates Coord { get; set; }
 
-        public Boolean IsLate { get; set; }
+        public bool IsLate { get; set; }
 
         public TimeOnly? TimeLate { get; set; }
 
-        public String? Justification { get; set; }
-        
-        public String? FilePath { get; set; }
+        public string? Justification { get; set; }
 
-        public String? Observation { get; set; }
-        
-        public String? Status { get; set; }
+        public string? FilePath { get; set; }
+
+        public string? Observation { get; set; }
+
+        public string? Status { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
 
