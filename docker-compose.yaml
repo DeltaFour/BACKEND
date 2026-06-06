@@ -6,12 +6,16 @@ services:
       context: .
       dockerfile: Dockerfile
     image: ponto-eletronico-api:latest
+    container_name: ponto-eletronico-api
     ports:
       - "8080:8080"
     env_file:
       - ./DeltaFour.API/.env
     depends_on:
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - delta-net
 
   mysql-db:
     image: mysql:8.0
@@ -26,6 +30,18 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p12345678"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - delta-net
 
 volumes:
   mysql-data:
+
+networks:
+  delta-net:
+    external: true

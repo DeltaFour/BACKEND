@@ -41,6 +41,7 @@ namespace DeltaFour.API.Controllers
         /// </summary>
         [HttpGet("pdf/{userId:guid}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> GeneratePdf(
             [FromRoute] Guid userId,
             [FromQuery] int month,
@@ -63,6 +64,7 @@ namespace DeltaFour.API.Controllers
         /// Gera a folha de ponto em PDF para o usuário autenticado
         /// </summary>
         [HttpGet("pdf/me")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> GenerateMyPdf(
             [FromQuery] int month,
             [FromQuery] int year)

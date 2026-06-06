@@ -1,3 +1,4 @@
+using DeltaFour.API.Filters;
 using DeltaFour.Application.Dtos.PunctualityMetrics;
 using DeltaFour.Application.Services;
 using DeltaFour.CrossCutting.Middleware;
@@ -71,18 +72,19 @@ namespace DeltaFour.API.Controllers
         }
 
         /// <summary>
-        /// Exporta métricas para classificação K-Means pela API Python.
+        /// Exporta métricas de todas as empresas para classificação K-Means pela API Python.
         /// </summary>
         /// <remarks>
-        /// Retorna apenas os atributos numéricos necessários para o algoritmo.
-        /// Disponível apenas para usuários com papel ADMIN ou RH.
+        /// Retorna apenas os atributos numéricos necessários para o algoritmo, com o CompanyId
+        /// de cada registro para que a classificação seja feita por empresa.
+        /// Autenticação exclusiva por API-key (header X-API-Key) — comunicação máquina-a-máquina.
         /// </remarks>
         [HttpGet("export")]
-        [Authorize(Policy = "RH_OR_ADMIN")]
+        [AllowAnonymous]
+        [ApiKeyAuthorize]
         public async Task<ActionResult<List<PunctualityMetricExportDto>>> ExportForKMeans()
         {
-            var user = HttpContext.GetUserAuthenticated<UserContext>();
-            var metrics = await _service.ExportMetricsForCompany(user.CompanyId);
+            var metrics = await _service.ExportAllMetrics();
             return Ok(metrics);
         }
 
@@ -117,19 +119,19 @@ namespace DeltaFour.API.Controllers
         }
 
         /// <summary>
-        /// Atualiza clusters e centróides de forma atômica após execução do K-Means.
+        /// Atualiza clusters e centróides de todas as empresas após execução do K-Means.
         /// </summary>
         /// <remarks>
         /// Este endpoint é utilizado pela API Python para persistir os resultados da classificação
-        /// e os centróides calculados de forma consistente (mesma execução do modelo).
-        /// Disponível apenas para usuários com papel ADMIN ou RH.
+        /// e os centróides calculados por empresa, de forma consistente (mesma execução do modelo).
+        /// Autenticação exclusiva por API-key (header X-API-Key) — comunicação máquina-a-máquina.
         /// </remarks>
         [HttpPut("classification")]
-        [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<IActionResult> UpdateClassification([FromBody] UpdateClusterWithCentroidsDto dto)
+        [AllowAnonymous]
+        [ApiKeyAuthorize]
+        public async Task<IActionResult> UpdateClassification([FromBody] UpdateClassificationAllCompaniesDto dto)
         {
-            var user = HttpContext.GetUserAuthenticated<UserContext>();
-            await _service.UpdateClustersWithCentroids(user.CompanyId, dto);
+            await _service.UpdateClassificationForAllCompanies(dto);
             return Ok("Classificação atualizada com sucesso.");
         }
 

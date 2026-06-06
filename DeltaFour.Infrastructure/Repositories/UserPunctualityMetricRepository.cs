@@ -37,6 +37,14 @@ namespace DeltaFour.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<UserPunctualityMetric>> GetAll()
+        {
+            return await context.UserPunctualityMetrics
+                .Include(m => m.User)
+                .Where(m => m.User != null)
+                .ToListAsync();
+        }
+
         public async Task UpdateCluster(Guid userId, int cluster)
         {
             var metric = await context.UserPunctualityMetrics

@@ -51,6 +51,8 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
         if (alreadySeeded)
             return Ok(new { message = "Seed já foi executado anteriormente. Nenhuma alteração feita." });
 
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
         try
         {
             db.Address.Add(new Address
@@ -119,9 +121,9 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
             );
             await SaveOrFail("Turnos");
 
-            var admin  = CreateUser(UserAdminId,  "Admin DeltaFour",    "admin@deltafourdemo.com",       RoleAdminId,    DeptRhId, "(11) 99000-0001");
-            var anaRh  = CreateUser(UserAnaId,    "Ana Oliveira",       "rh@deltafourdemo.com",          RoleRhId,       DeptRhId, "(11) 99801-2233");
-            var carlos = CreateUser(UserCarlosId, "Carlos Funcionário", "funcionario@deltafourdemo.com", RoleEmployeeId, DeptTiId, "(11) 97654-3210");
+            var admin  = CreateUser(UserAdminId,  "Admin DeltaFour",    "admin@deltafourdemo.com",       RoleAdminId,    DeptRhId, "(11) 99000-0001", "111.444.777-35");
+            var anaRh  = CreateUser(UserAnaId,    "Ana Oliveira",       "rh@deltafourdemo.com",          RoleRhId,       DeptRhId, "(11) 99801-2233", "529.982.247-25");
+            var carlos = CreateUser(UserCarlosId, "Carlos Funcionário", "funcionario@deltafourdemo.com", RoleEmployeeId, DeptTiId, "(11) 97654-3210", "123.456.789-09");
 
             var bogusUsers = GenerateBogusUsers();
 
@@ -148,8 +150,8 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
                     UserId           = emp.Id,
                     Month            = 5,
                     Year             = 2026,
-                    SignedByEmployee = emp.Id == UserCarlosId,
-                    EmployeeSignedAt = emp.Id == UserCarlosId ? DateTime.UtcNow.AddDays(-2) : null,
+                    SignedByEmployee = false,
+                    EmployeeSignedAt = null,
                     SignedByHR       = false
                 });
 
@@ -160,6 +162,12 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
 
             db.EmployeeAttendances.AddRange(attendances);
             await SaveOrFail("Registros de presença");
+
+            db.UserPunctualityMetrics.AddRange(
+                employees.Select(emp => BuildMetric(emp.Id, attendances)));
+            await SaveOrFail("Métricas de pontualidade");
+
+            await transaction.CommitAsync();
 
             return Ok(new
             {
@@ -174,15 +182,18 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
                 usuarios_gerados = bogusUsers.Select(u => new { u.Name, u.Email }).ToArray(),
                 senha_todos      = Password,
                 total_pontos     = attendances.Count,
+                total_metricas   = employees.Count,
                 mes              = "Maio/2026"
             });
         }
         catch (SeedStepException ex)
         {
+            await transaction.RollbackAsync();
+
             return StatusCode(500, new
             {
                 step  = ex.Step,
-                error = ex.InnerException?.Message ?? ex.Message
+                error = Innermost(ex).Message
             });
         }
     }
@@ -197,7 +208,7 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
 
     private User CreateUser(
         Guid id, string name, string email,
-        Guid roleId, Guid deptId, string cellphone) => new()
+        Guid roleId, Guid deptId, string cellphone, string cpf) => new()
         {
             Id                    = id,
             CompanyId             = CompanyId,
@@ -206,6 +217,7 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
             Name                  = name,
             Email                 = email,
             Password              = passwordService.Hash(Password),
+            Cpf                   = cpf,
             Cellphone             = cellphone,
             IsActive              = true,
             IsConfirmed           = true,
@@ -236,6 +248,7 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
                 Name                  = $"{firstName} {lastName}",
                 Email                 = email,
                 Password              = passwordService.Hash(Password),
+                Cpf                   = BuildCpf(faker.Random),
                 Cellphone             = faker.Phone.PhoneNumber("(##) 9####-####"),
                 IsActive              = true,
                 IsConfirmed           = true,
@@ -300,6 +313,55 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
         return punches;
     }
 
+    /// <summary>
+    /// Calcula as métricas de pontualidade a partir dos pontos gerados no seed,
+    /// espelhando a lógica de <c>PunctualityMetricsService.RecalculateMetricsForUser</c>.
+    /// O cluster é fixado em 0 para que a evolução fique visível ao rodar o K-Means.
+    /// </summary>
+    private static UserPunctualityMetric BuildMetric(Guid userId, List<UserAttendance> attendances)
+    {
+        var inPunches = attendances
+            .Where(a => a.UserId == userId && a.PunchType == PunchType.IN)
+            .ToList();
+
+        int totalAttendances     = inPunches.Count;
+        int totalLateAttendances = inPunches.Count(a => a.IsLate);
+
+        double latePercentage = totalAttendances > 0
+            ? Math.Round((double)totalLateAttendances / totalAttendances * 100, 2)
+            : 0;
+
+        var lateMinutes = inPunches
+            .Where(a => a.IsLate && a.TimeLate.HasValue)
+            .Select(a => a.TimeLate!.Value.Hour * 60 + a.TimeLate.Value.Minute)
+            .ToList();
+
+        double averageLateMinutes = lateMinutes.Count > 0 ? Math.Round(lateMinutes.Average(), 2) : 0;
+        int    maxLateMinutes     = lateMinutes.Count > 0 ? lateMinutes.Max() : 0;
+
+        var workedDates = inPunches.Select(a => a.PunchTime.Date).Distinct().ToHashSet();
+
+        int totalAbsences = Enumerable.Range(1, 31)
+            .Select(d => new DateTime(2026, 5, d))
+            .Count(d => d.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday
+                        && !workedDates.Contains(d.Date));
+
+        return new UserPunctualityMetric
+        {
+            UserId               = userId,
+            TotalAttendances     = totalAttendances,
+            TotalLateAttendances = totalLateAttendances,
+            LatePercentage       = latePercentage,
+            AverageLateMinutes   = averageLateMinutes,
+            MaxLateMinutes       = maxLateMinutes,
+            TotalAbsences        = totalAbsences,
+            TotalWorkedDays      = workedDates.Count,
+            Cluster              = 0,
+            LastCalculatedAt     = DateTime.UtcNow,
+            UpdatedAt            = DateTime.UtcNow
+        };
+    }
+
     private static UserAttendance Punch(
         Guid userId, DateTime punchTime, PunchType type,
         bool isLate, TimeOnly? timeLate) => new()
@@ -319,6 +381,38 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
     {
         try   { await db.SaveChangesAsync(); }
         catch (Exception ex) { throw new SeedStepException(step, ex); }
+    }
+
+    /// <summary>
+    /// Gera um CPF válido (com dígitos verificadores) já formatado como 000.000.000-00.
+    /// </summary>
+    private static string BuildCpf(Bogus.Randomizer rng)
+    {
+        var n = new int[9];
+        for (int i = 0; i < 9; i++) n[i] = rng.Number(0, 9);
+
+        int d1 = CpfCheckDigit(n, 10);
+        int d2 = CpfCheckDigit([.. n, d1], 11);
+
+        var digits = string.Concat(n) + d1 + d2;
+        return $"{digits[..3]}.{digits[3..6]}.{digits[6..9]}-{digits[9..]}";
+    }
+
+    private static int CpfCheckDigit(int[] digits, int startWeight)
+    {
+        int sum = 0;
+        for (int i = 0; i < digits.Length; i++)
+            sum += digits[i] * (startWeight - i);
+
+        int remainder = sum % 11;
+        return remainder < 2 ? 0 : 11 - remainder;
+    }
+
+    private static Exception Innermost(Exception ex)
+    {
+        while (ex.InnerException is not null)
+            ex = ex.InnerException;
+        return ex;
     }
 
     private static string Normalize(string name)

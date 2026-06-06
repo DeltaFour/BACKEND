@@ -66,7 +66,7 @@ public class TimeSheetDocument : IDocument
 
                 table.Header(header =>
                 {
-                    header.Cell().Element(HeaderCellStyle).Text("Data").FontColor(Colors.White).Bold();
+                    header.Cell().Element(HeaderCellStyle).Text("aghata").FontColor(Colors.White).Bold();
                     header.Cell().Element(HeaderCellStyle).Text("Dia").FontColor(Colors.White).Bold();
                     header.Cell().Element(HeaderCellStyle).Text("Entrada").FontColor(Colors.White).Bold();
                     header.Cell().Element(HeaderCellStyle).Text("Saída").FontColor(Colors.White).Bold();
