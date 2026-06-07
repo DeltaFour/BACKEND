@@ -1,4 +1,6 @@
 using DeltaFour.API.Filters;
+using DeltaFour.API.Realtime;
+using DeltaFour.Application.Realtime;
 using DeltaFour.CrossCutting.Ioc;
 using DotNetEnv;
 using FluentValidation;
@@ -43,6 +45,9 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<DeltaFour.Application.Validators.UserRequestValidator>();
+
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddConfigJwt(builder.Configuration);
@@ -99,6 +104,7 @@ app.UseAuthentication();
 app.UseMiddleware<DeltaFour.API.Middleware.SubscriptionValidationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 await app.ApplyMigrationsAndSeedAsync();
 

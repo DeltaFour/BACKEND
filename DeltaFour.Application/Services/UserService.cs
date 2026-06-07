@@ -22,7 +22,8 @@ namespace DeltaFour.Application.Services
         IUnitOfWork unitOfWork,
         IFaceRecognitionIntegration faceRecognitionIntegration,
         IPasswordService passwordService,
-        PunctualityMetricsService punctualityMetricsService
+        PunctualityMetricsService punctualityMetricsService,
+        NotificationService notificationService
         )
     {
         private readonly String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
@@ -272,6 +273,9 @@ namespace DeltaFour.Application.Services
                         }
                     });
 
+                    await NotifyPunchInIfNeeded(dto.Type, userContext.CompanyId, userContext.Id,
+                        userContext.Name, userAttendance.IsLate, userAttendance.PunchTime, userAttendance.Id);
+
                     return PunchInResponse.SCC.Message();
                 }
             }
@@ -310,6 +314,35 @@ namespace DeltaFour.Application.Services
                     Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", dto.UserId);
                 }
             });
+
+            if (dto.Type == PunchType.IN)
+            {
+                var target = await unitOfWork.UserRepository.Find(u => u.Id == dto.UserId);
+                await NotifyPunchInIfNeeded(dto.Type, user.CompanyId, dto.UserId, target?.Name,
+                    userAttendance.IsLate, userAttendance.PunchTime, userAttendance.Id);
+            }
+        }
+
+        ///<summary>
+        ///Cria e dispara a notificação de entrada (apenas para batidas do tipo IN).
+        ///Best-effort: falhas de notificação nunca quebram o registro de ponto.
+        ///</summary>
+        private async Task NotifyPunchInIfNeeded(PunchType type, Guid companyId, Guid userId,
+            String? userName, Boolean isLate, DateTime punchTime, Guid attendanceId)
+        {
+            if (type != PunchType.IN)
+            {
+                return;
+            }
+
+            try
+            {
+                await notificationService.NotifyPunchInAsync(companyId, userId, userName, isLate, punchTime, attendanceId);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Erro ao criar notificação de ponto para usuário {UserId}", userId);
+            }
         }
 
         ///<summary>
@@ -416,6 +449,9 @@ namespace DeltaFour.Application.Services
                             Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
                         }
                     });
+
+                    await NotifyPunchInIfNeeded(dto.Type, userContext.CompanyId, userContext.Id,
+                        userContext.Name, userAttendance.IsLate, userAttendance.PunchTime, userAttendance.Id);
                 }
                 // }
                 // else

@@ -25,6 +25,7 @@ public interface IUnitOfWork
     IUserPunctualityMetricRepository UserPunctualityMetricRepository { get; }
     IClusterCentroidRepository ClusterCentroidRepository { get; }
     IPasswordResetTokenRepository PasswordResetTokenRepository { get; }
+    INotificationRepository NotificationRepository { get; }
 
     Task Save();
 }

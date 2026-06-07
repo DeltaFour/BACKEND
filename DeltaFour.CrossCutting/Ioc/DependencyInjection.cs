@@ -69,9 +69,11 @@ public static class DependencyInjection
         services.AddScoped<IUserPunctualityMetricRepository, UserPunctualityMetricRepository>();
         services.AddScoped<IClusterCentroidRepository, ClusterCentroidRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IUnitOfWork, AllRepositories>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<PunctualityMetricsService>();
+        services.AddScoped<NotificationService>();
 
         var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
 

@@ -28,6 +28,7 @@ namespace DeltaFour.Infrastructure.Repositories
         private IUserPunctualityMetricRepository? _userPunctualityMetricRepository;
         private IClusterCentroidRepository? _clusterCentroidRepository;
         private IPasswordResetTokenRepository? _passwordResetTokenRepository;
+        private INotificationRepository? _notificationRepository;
 
         public IUserRepository UserRepository
         {
@@ -142,6 +143,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public IPasswordResetTokenRepository PasswordResetTokenRepository
         {
             get { return _passwordResetTokenRepository ??= new PasswordResetTokenRepository(context); }
+        }
+
+        public INotificationRepository NotificationRepository
+        {
+            get { return _notificationRepository ??= new NotificationRepository(context); }
         }
 
         public async Task Save()
