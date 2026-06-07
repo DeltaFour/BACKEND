@@ -104,25 +104,27 @@ public class CompanyService
     {
         var company = await _unitOfWork.CompanyRepository.FindWithCoordinates(user.CompanyId);
 
-        Address address = AddressMapper.MapToAddress(dto);
         CompanyGeolocation? geolocation = await
             _unitOfWork.CompanyGeolocationRepository.Find(c => c.CompanyId == user.CompanyId);
         if (company != null)
         {
             CompanyMapper.UpdateCompany(company, dto);
-            company.AddressId = address.Id;
             _unitOfWork.CompanyRepository.Update(company);
             if (company.AddressId != null)
             {
-                _unitOfWork.AddressRepository.Update(address);
+                AddressMapper.UpdateAddress(dto, company.Address!);
+                _unitOfWork.AddressRepository.Update(company.Address!);
             }
             else
             {
+                Address address = AddressMapper.MapToAddress(dto);
                 _unitOfWork.AddressRepository.Create(address);
+                company.AddressId = address.Id;
             }
 
             if (geolocation != null)
             {
+                GeolocationMapper.UpdateGeolocation(dto, geolocation);
                 _unitOfWork.CompanyGeolocationRepository.Update(geolocation);
             }
             else
@@ -130,6 +132,8 @@ public class CompanyService
                 _unitOfWork.CompanyGeolocationRepository.Create(
                     GeolocationMapper.MapToGeolocation(dto, user.CompanyId, user.Id));
             }
+
+            await _unitOfWork.Save();
         }
     }
 
