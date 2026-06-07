@@ -22,8 +22,12 @@ namespace DeltaFour.Infrastructure.Repositories
         private ISubscriptionRepository? _subscriptionRepository;
         private ISubscriptionEventRepository? _subscriptionEventRepository;
         private ITimeSheetRepository? _timeSheetRepository;
+        private ITimeSheetSignatureRepository? _timeSheetSignatureRepository;
+        private ITimeSheetSignatureTokenRepository? _timeSheetSignatureTokenRepository;
+        private ITimeSheetAuditRepository? _timeSheetAuditRepository;
         private IUserPunctualityMetricRepository? _userPunctualityMetricRepository;
         private IClusterCentroidRepository? _clusterCentroidRepository;
+        private IPasswordResetTokenRepository? _passwordResetTokenRepository;
 
         public IUserRepository UserRepository
         {
@@ -110,6 +114,21 @@ namespace DeltaFour.Infrastructure.Repositories
             get { return _timeSheetRepository ??= new TimeSheetRepository(context); }
         }
 
+        public ITimeSheetSignatureRepository TimeSheetSignatureRepository
+        {
+            get { return _timeSheetSignatureRepository ??= new TimeSheetSignatureRepository(context); }
+        }
+
+        public ITimeSheetSignatureTokenRepository TimeSheetSignatureTokenRepository
+        {
+            get { return _timeSheetSignatureTokenRepository ??= new TimeSheetSignatureTokenRepository(context); }
+        }
+
+        public ITimeSheetAuditRepository TimeSheetAuditRepository
+        {
+            get { return _timeSheetAuditRepository ??= new TimeSheetAuditRepository(context); }
+        }
+
         public IUserPunctualityMetricRepository UserPunctualityMetricRepository
         {
             get { return _userPunctualityMetricRepository ??= new UserPunctualityMetricRepository(context); }
@@ -118,6 +137,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public IClusterCentroidRepository ClusterCentroidRepository
         {
             get { return _clusterCentroidRepository ??= new ClusterCentroidRepository(context); }
+        }
+
+        public IPasswordResetTokenRepository PasswordResetTokenRepository
+        {
+            get { return _passwordResetTokenRepository ??= new PasswordResetTokenRepository(context); }
         }
 
         public async Task Save()

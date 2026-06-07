@@ -1,33 +1,33 @@
-﻿namespace DeltaFour.Application.Dtos.Responses.Company
+namespace DeltaFour.Application.Dtos.Responses.Company
 {
     public class CompanyGetSettingsDto
     {
-        public String? RazaoSocial { get; set; }
-        
-        public String? NomeFantasia { get; set; }
-        
-        public String Cnpj { get; set; }
-        
-        public String Email { get; set; }
-        
-        public String? Cep { get; set; }
-        
-        public String? Complemento { get; set; }
-        
-        public String? Rua { get; set; }
-        
-        public String? Numero { get; set; }
-        
-        public String? Bairro { get; set; }
-        
-        public String? Cidade { get; set; }
-        
-        public String? Estado { get; set; }
+        public string? RazaoSocial { get; set; }
 
-        public Double? Latitude { get; set; } = 0;
+        public string? NomeFantasia { get; set; }
 
-        public Double? Longitude { get; set; } = 0;
-        
+        public string Cnpj { get; set; }
+
+        public string Email { get; set; }
+
+        public string? Cep { get; set; }
+
+        public string? Complemento { get; set; }
+
+        public string? Rua { get; set; }
+
+        public string? Numero { get; set; }
+
+        public string? Bairro { get; set; }
+
+        public string? Cidade { get; set; }
+
+        public string? Estado { get; set; }
+
+        public double? Latitude { get; set; } = 0;
+
+        public double? Longitude { get; set; } = 0;
+
         public int? RaioMetros { get; set; }
     }
 }

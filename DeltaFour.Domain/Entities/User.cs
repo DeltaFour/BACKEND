@@ -1,16 +1,18 @@
-﻿namespace DeltaFour.Domain.Entities;
+namespace DeltaFour.Domain.Entities;
 
 public class User : BaseEntity
 {
-    public String Name { get; set; }
+    public string Name { get; set; }
 
     public string Email { get; set; }
 
     public Guid? RoleId { get; set; }
 
-    public String Password { get; set; }
+    public string Password { get; set; }
 
     public string? Cellphone { get; set; }
+
+    public string? Cpf { get; set; }
 
     public Guid CompanyId { get; set; }
 
@@ -21,7 +23,7 @@ public class User : BaseEntity
     public bool IsConfirmed { get; set; }
 
     public bool IsAllowedBypassCoord { get; set; }
-    
+
     public bool IsAllowedBypassFacial { get; set; }
 
     public DateTime? LastLogin { get; set; }

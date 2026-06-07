@@ -50,14 +50,10 @@ public class GlobalExceptionFilter : IExceptionFilter
         {
             StatusCode = (int)statusCode,
             Message = message,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.UtcNow,
+            Details = exception.Message,
+            StackTrace = exception.StackTrace
         };
-
-        if (_environment.IsDevelopment())
-        {
-            response.Details = exception.Message;
-            response.StackTrace = exception.StackTrace;
-        }
 
         return response;
     }

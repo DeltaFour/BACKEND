@@ -1,15 +1,15 @@
-﻿using DeltaFour.Domain.Enum;
+using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.ValueObjects.Dtos;
 
 namespace DeltaFour.Application.Dtos
 {
     public class UserInfoLoginDto
     {
-        public String Name { get; set; }
-        
-        public String Email { get; set; }
+        public string? Name { get; set; }
 
-        public String? CompanyName { get; set; }
+        public string? Email { get; set; }
+
+        public string? CompanyName { get; set; }
 
         public string? Role { get; set; }
 
@@ -21,9 +21,9 @@ namespace DeltaFour.Application.Dtos
 
         public TimeOnly? EndTime { get; set; }
 
-        public Boolean IsAllowedBypassCoord { get; set; }
+        public bool IsAllowedBypassCoord { get; set; }
 
-        public Boolean IsAllowedBypassFace { get; set; }
+        public bool IsAllowedBypassFace { get; set; }
 
         public PunchType? LastPunchType { get; set; }
 

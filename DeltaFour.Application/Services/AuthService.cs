@@ -4,9 +4,12 @@ using DeltaFour.Application.RsaKeys;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
@@ -17,6 +20,13 @@ namespace DeltaFour.Application.Services
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
+
+        private readonly string host = Environment.GetEnvironmentVariable("EMAIL_HOST");
+        private readonly int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
+        private readonly string username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+        private readonly string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+        private readonly string fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
+        private readonly string fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
 
         ///<summary>
         ///Operation for log user
@@ -126,6 +136,140 @@ namespace DeltaFour.Application.Services
                 repositories.UserAuthRepository.Delete(userAuth);
                 await repositories.Save();
             }
+        }
+
+        ///<summary>
+        ///Altera a senha do usuário autenticado, exigindo a senha atual.
+        ///</summary>
+        public async Task ChangePassword(Guid userId, ChangePasswordDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+            {
+                throw new BadHttpRequestException("A nova senha é obrigatória.");
+            }
+
+            var user = await repositories.UserRepository.Find(u => u.Id == userId)
+                ?? throw new BadHttpRequestException("Usuário não encontrado.");
+
+            if (!passwordService.Verify(dto.CurrentPassword, user.Password!))
+            {
+                throw new BadHttpRequestException("Senha atual incorreta.");
+            }
+
+            if (passwordService.Verify(dto.NewPassword, user.Password!))
+            {
+                throw new BadHttpRequestException("A nova senha deve ser diferente da senha atual.");
+            }
+
+            user.Password = passwordService.Hash(dto.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            repositories.UserRepository.Update(user);
+            await repositories.Save();
+        }
+
+        ///<summary>
+        ///Gera um código de recuperação e envia para o e-mail do usuário (se existir).
+        ///</summary>
+        public async Task ForgotPassword(ForgotPasswordDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email))
+            {
+                throw new BadHttpRequestException("O e-mail é obrigatório.");
+            }
+
+            var user = await repositories.UserRepository.Find(u => u.Email == dto.Email);
+
+            // Não revela se o e-mail existe para evitar enumeração de usuários.
+            if (user is not { IsActive: true })
+            {
+                return;
+            }
+
+            var code = GenerateResetCode();
+
+            repositories.PasswordResetTokenRepository.Create(new PasswordResetToken
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                Code = code,
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(30)
+            });
+
+            await repositories.Save();
+
+            await SendPasswordResetEmailAsync(user.Email, code);
+        }
+
+        ///<summary>
+        ///Redefine a senha a partir do código recebido por e-mail.
+        ///</summary>
+        public async Task ResetPassword(ResetPasswordDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+            {
+                throw new BadHttpRequestException("A nova senha é obrigatória.");
+            }
+
+            var user = await repositories.UserRepository.Find(u => u.Email == dto.Email)
+                ?? throw new BadHttpRequestException("Código de recuperação inválido.");
+
+            var resetToken = await repositories.PasswordResetTokenRepository.FindValid(user.Id, dto.Code)
+                ?? throw new BadHttpRequestException("Código de recuperação inválido.");
+
+            if (resetToken.ExpiresAtUtc < DateTime.UtcNow)
+            {
+                throw new BadHttpRequestException("O código de recuperação expirou.");
+            }
+
+            user.Password = passwordService.Hash(dto.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            repositories.UserRepository.Update(user);
+
+            resetToken.UsedAtUtc = DateTime.UtcNow;
+            repositories.PasswordResetTokenRepository.Update(resetToken);
+
+            await repositories.Save();
+        }
+
+        ///<summary>
+        ///Gera um código numérico de 6 dígitos para recuperação de senha.
+        ///</summary>
+        private static string GenerateResetCode()
+        {
+            return RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        }
+
+        ///<summary>
+        ///Envia o código de recuperação de senha por e-mail.
+        ///</summary>
+        private async Task SendPasswordResetEmailAsync(string email, string code)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            message.To.Add(MailboxAddress.Parse(email));
+            message.Subject = "Recuperação de senha";
+
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $"""
+                                <h2>Recuperação de senha</h2>
+
+                                <p>Recebemos uma solicitação para redefinir a sua senha.</p>
+
+                                <p>Utilize o código abaixo para concluir a redefinição:</p>
+
+                                <p><strong>{code}</strong></p>
+
+                                <p>Este código expira em 30 minutos. Se você não solicitou, ignore este e-mail.</p>
+                            """
+            }.ToMessageBody();
+
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(username, emailPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
 
         ///<summary>

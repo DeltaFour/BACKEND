@@ -135,6 +135,7 @@ public class UserControllerTests : IClassFixture<DeltaFourWebApplicationFactory>
             Password = "NewUser@123",
             RoleName = "EMPLOYEE",
             CellPhone = "11999999999",
+            Cpf = "12345678901",
             ImageBase64 = validImageBase64,
             IsAllowedBypassCoord = false,
             IsAllowedBypassFacial = false,

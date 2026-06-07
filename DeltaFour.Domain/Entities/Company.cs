@@ -1,12 +1,12 @@
-﻿namespace DeltaFour.Domain.Entities
+namespace DeltaFour.Domain.Entities
 {
     public class Company : BaseEntity
     {
         public Guid? AddressId { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
         
-        public String LegalName { get; set; }
+        public string? LegalName { get; set; }
 
         public string? Cnpj { get; set; }
 

@@ -15,8 +15,6 @@ using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using Serilog;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace DeltaFour.Application.Services
 {
@@ -60,7 +58,10 @@ namespace DeltaFour.Application.Services
                 Role? role = await unitOfWork.RoleRepository.Find(r => r.Name == dto.RoleName);
                 if (role != null)
                 {
-                    dto.Password = passwordService.Hash(dto.Password!);
+                    // A senha não é mais informada pelo cliente: geramos uma forte,
+                    // persistimos o hash e enviamos a senha em texto claro por e-mail.
+                    var generatedPassword = passwordService.GenerateStrong();
+                    dto.Password = passwordService.Hash(generatedPassword);
 
                     var user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
 
@@ -84,6 +85,16 @@ namespace DeltaFour.Application.Services
                     unitOfWork.UserShiftRepository.CreateAll(userShifts);
 
                     await unitOfWork.Save();
+
+                    // Envio das credenciais não deve derrubar a criação já persistida.
+                    try
+                    {
+                        await SendNewEmployeeCredentialsEmailAsync(dto.Email!, dto.Name!, generatedPassword);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Falha ao enviar e-mail de credenciais para o funcionário {Email}", dto.Email);
+                    }
                 }
             }
         }
@@ -243,6 +254,8 @@ namespace DeltaFour.Application.Services
                                 : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
                                                         TimeOnly.FromDateTime(DateTime.UtcNow)));
 
+                    userAttendance.Status = StatusAttendance.aprovado.ToString();
+
                     unitOfWork.UserAttendanceRepository.Create(userAttendance);
 
                     await unitOfWork.Save();
@@ -323,87 +336,87 @@ namespace DeltaFour.Application.Services
 
                 // if (user.Password.Equals(hashPassowrd.ToString()))
                 // {
-                    var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
+                var workShifts = user.UserShifts?.Find(es => es.IsActive)?.WorkShift;
 
-                    if (workShifts != null)
+                if (workShifts != null)
+                {
+                    Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
+                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+
+                    String? filePath = null;
+
+                    if (!string.IsNullOrWhiteSpace(dto.FileBase64))
                     {
-                        Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                            TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                        string base64 = dto.FileBase64;
+                        string? mimeType = null;
 
-                        String? filePath = null;
-
-                        if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                        if (base64.Contains(","))
                         {
-                            string base64 = dto.FileBase64;
-                            string? mimeType = null;
+                            var parts = base64.Split(',', 2);
 
-                            if (base64.Contains(","))
-                            {
-                                var parts = base64.Split(',', 2);
+                            var metadata = parts[0];
+                            base64 = parts[1];
 
-                                var metadata = parts[0];
-                                base64 = parts[1];
-
-                                mimeType = metadata
-                                    .Replace("data:", "")
-                                    .Replace(";base64", "");
-                            }
-
-                            byte[] fileBytes;
-
-                            fileBytes = Convert.FromBase64String(base64);
-
-                            string extension = mimeType.Split('/')[1];
-
-
-                            string folderName = mimeType == "application/pdf"
-                                ? "pdf"
-                                : "Image";
-
-                            string fileName = $"{Guid.NewGuid()}.{extension}";
-
-                            string folderPath = Path.Combine(
-                                "..",
-                                folderName
-                            );
-
-                            if (!Directory.Exists(folderPath))
-                            {
-                                Directory.CreateDirectory(folderPath);
-                            }
-
-                            string fullPath = Path.Combine(folderPath, fileName);
-
-                            await File.WriteAllBytesAsync(fullPath, fileBytes);
-
-                            filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                            mimeType = metadata
+                                .Replace("data:", "")
+                                .Replace(";base64", "");
                         }
 
-                        var userAttendance =
-                            UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
-                                timeChecked, timeChecked
-                                    ? null
-                                    : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
-                                                            TimeOnly.FromDateTime(DateTime.UtcNow)),
-                                filePath);
+                        byte[] fileBytes;
 
-                        unitOfWork.UserAttendanceRepository.Create(userAttendance);
+                        fileBytes = Convert.FromBase64String(base64);
 
-                        await unitOfWork.Save();
+                        string extension = mimeType.Split('/')[1];
 
-                        // Recalcula métricas de pontualidade automaticamente
-                        _ = Task.Run(async () =>
+
+                        string folderName = mimeType == "application/pdf"
+                            ? "pdf"
+                            : "Image";
+
+                        string fileName = $"{Guid.NewGuid()}.{extension}";
+
+                        string folderPath = Path.Combine(
+                            "..",
+                            folderName
+                        );
+
+                        if (!Directory.Exists(folderPath))
                         {
-                            try
-                            {
-                                await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
-                            }
-                        });
+                            Directory.CreateDirectory(folderPath);
+                        }
+
+                        string fullPath = Path.Combine(folderPath, fileName);
+
+                        await File.WriteAllBytesAsync(fullPath, fileBytes);
+
+                        filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
                     }
+
+                    var userAttendance =
+                        UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
+                            timeChecked, timeChecked
+                                ? null
+                                : TimeOnly.FromTimeSpan(TimeOnly.FromDateTime(dto.TimePunched) -
+                                                        TimeOnly.FromDateTime(DateTime.UtcNow)),
+                            filePath);
+
+                    unitOfWork.UserAttendanceRepository.Create(userAttendance);
+
+                    await unitOfWork.Save();
+
+                    // Recalcula métricas de pontualidade automaticamente
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await punctualityMetricsService.RecalculateMetricsForUser(userContext.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Erro ao recalcular métricas de pontualidade para usuário {UserId}", userContext.Id);
+                        }
+                    });
+                }
                 // }
                 // else
                 // {
@@ -515,9 +528,44 @@ namespace DeltaFour.Application.Services
             return null;
         }
 
-        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto, Guid attendanceId)
+        public async Task UpdateStatusAttendance(UpdateStatusAttendanceDto dto, Guid attendanceId, UserContext userAuthenticated)
         {
-            await unitOfWork.UserAttendanceRepository.UpdateStatusAttendance(attendanceId, dto);
+            var attendance = await unitOfWork.UserAttendanceRepository.Find(a => a.Id == attendanceId);
+            if (attendance == null)
+            {
+                throw new InvalidOperationException("Registro de ponto não encontrado.");
+            }
+
+            var timeSheet = await unitOfWork.TimeSheetRepository.FindByUserMonthYear(
+                attendance.UserId, attendance.PunchTime.Month, attendance.PunchTime.Year);
+
+            if (timeSheet is { SignedByEmployee: true, SignedByHR: true })
+            {
+                throw new InvalidOperationException("A folha de ponto já foi finalizada e não pode ser alterada.");
+            }
+
+            var oldStatus = attendance.Status ?? string.Empty;
+            var newStatus = Enum.GetName(dto.Status) ?? string.Empty;
+
+            attendance.Status = newStatus;
+            attendance.UpdatedAt = DateTime.UtcNow;
+            attendance.UpdatedBy = userAuthenticated.Id;
+            unitOfWork.UserAttendanceRepository.Update(attendance);
+
+            if (timeSheet != null)
+            {
+                unitOfWork.TimeSheetAuditRepository.Create(new TimeSheetAudit
+                {
+                    TimeSheetId = timeSheet.Id,
+                    UserId = userAuthenticated.Id,
+                    UserName = userAuthenticated.Name ?? string.Empty,
+                    Operation = "UpdateAttendanceStatus",
+                    OldValues = oldStatus,
+                    NewValues = newStatus
+                });
+            }
+
+            await unitOfWork.Save();
         }
 
         ///<summary>
@@ -538,6 +586,44 @@ namespace DeltaFour.Application.Services
             }
 
             return true;
+        }
+
+        ///<summary>
+        ///Envia ao novo funcionário a senha de acesso gerada pelo sistema.
+        ///</summary>
+        private async Task SendNewEmployeeCredentialsEmailAsync(String email, String name, String plainPassword)
+        {
+            var message = new MimeMessage();
+
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            message.To.Add(MailboxAddress.Parse(email));
+
+            message.Subject = "Bem-vindo ao DeltaFour - Sua senha de acesso";
+
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $"""
+                                <h2>Bem-vindo(a), {name}!</h2>
+
+                                <p>Sua conta de acesso ao DeltaFour foi criada.</p>
+
+                                <p>Use as credenciais abaixo para entrar:</p>
+
+                                <ul>
+                                    <li><strong>E-mail:</strong> {email}</li>
+                                    <li><strong>Senha:</strong> {plainPassword}</li>
+                                </ul>
+
+                                <p>Por segurança, recomendamos alterar a senha no primeiro acesso.</p>
+                            """
+            }.ToMessageBody();
+
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
 
         private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)

@@ -23,6 +23,7 @@ public class CompanyService
         var company = new Company()
         {
             Name = request.Name,
+            LegalName = request.Name,
             Cnpj = request.Cnpj,
             IsActive = true,
             CreatedBy = userId,

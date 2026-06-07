@@ -4,6 +4,8 @@ namespace DeltaFour.Application.Dtos.PunctualityMetrics
     {
         public Guid UserId { get; set; }
 
+        public Guid CompanyId { get; set; }
+
         public double LatePercentage { get; set; }
 
         public double AverageLateMinutes { get; set; }

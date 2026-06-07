@@ -12,6 +12,8 @@ namespace DeltaFour.Domain.IRepositories
 
         Task<List<UserPunctualityMetric>> GetAllByCompanyId(Guid companyId);
 
+        Task<List<UserPunctualityMetric>> GetAll();
+
         Task UpdateCluster(Guid userId, int cluster);
 
         Task UpdateClusterBatch(List<(Guid UserId, int Cluster)> updates);

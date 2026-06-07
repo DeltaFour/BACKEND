@@ -14,7 +14,7 @@
 
         public int? Number { get; set; }
         
-        public String? Complement { get; set; }
+        public string? Complement { get; set; }
 
         public Company? Company { get; set; }
     }

@@ -41,6 +41,7 @@ namespace DeltaFour.API.Controllers
         /// </summary>
         [HttpGet("pdf/{userId:guid}")]
         [Authorize(Policy = "RH_OR_ADMIN")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> GeneratePdf(
             [FromRoute] Guid userId,
             [FromQuery] int month,
@@ -63,6 +64,7 @@ namespace DeltaFour.API.Controllers
         /// Gera a folha de ponto em PDF para o usuário autenticado
         /// </summary>
         [HttpGet("pdf/me")]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
         public async Task<IActionResult> GenerateMyPdf(
             [FromQuery] int month,
             [FromQuery] int year)
@@ -125,7 +127,7 @@ namespace DeltaFour.API.Controllers
         }
 
         /// <summary>
-        /// Assina a folha de ponto pelo funcionário
+        /// Solicita a assinatura da folha de ponto pelo funcionário, enviando o código por e-mail
         /// </summary>
         /// <param name="timeSheetId">ID da folha de ponto</param>
         [HttpPost("{timeSheetId:guid}/sign/employee")]
@@ -133,13 +135,13 @@ namespace DeltaFour.API.Controllers
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
 
-            await _timeSheetService.SignByEmployeeAsync(timeSheetId, user.Id);
+            await _timeSheetService.RequestEmployeeSignatureAsync(timeSheetId, user.Id);
 
-            return Ok(new { message = "Folha de ponto assinada com sucesso pelo funcionário." });
+            return Ok(new { message = "Código de assinatura enviado para o e-mail do funcionário." });
         }
 
         /// <summary>
-        /// Assina a folha de ponto pelo RH
+        /// Solicita a assinatura da folha de ponto pelo RH, enviando o código por e-mail
         /// </summary>
         /// <param name="timeSheetId">ID da folha de ponto</param>
         [HttpPost("{timeSheetId:guid}/sign/hr")]
@@ -148,9 +150,47 @@ namespace DeltaFour.API.Controllers
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
 
-            await _timeSheetService.SignByHRAsync(timeSheetId, user.Id, user.Name ?? "RH");
+            await _timeSheetService.RequestHRSignatureAsync(timeSheetId, user.Id);
 
-            return Ok(new { message = "Folha de ponto assinada com sucesso pelo RH." });
+            return Ok(new { message = "Código de assinatura enviado para o e-mail do RH." });
+        }
+
+        /// <summary>
+        /// Confirma a assinatura eletrônica da folha de ponto a partir do código recebido por e-mail
+        /// </summary>
+        [HttpPost("sign/confirm")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmSignature([FromBody] ConfirmSignatureDto dto)
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+
+            await _timeSheetService.ConfirmSignatureAsync(dto.Token, ipAddress);
+
+            return Ok(new { message = "Folha de ponto assinada com sucesso." });
+        }
+
+        /// <summary>
+        /// Obtém o histórico de assinaturas da folha de ponto
+        /// </summary>
+        /// <param name="timeSheetId">ID da folha de ponto</param>
+        [HttpGet("{timeSheetId:guid}/signatures")]
+        [Authorize(Policy = "RH_OR_ADMIN")]
+        public async Task<ActionResult<TimeSheetSignatureHistoryDto>> GetSignatureHistory([FromRoute] Guid timeSheetId)
+        {
+            var history = await _timeSheetService.GetSignatureHistoryAsync(timeSheetId);
+            return Ok(history);
+        }
+
+        /// <summary>
+        /// Obtém o histórico de alterações da folha de ponto
+        /// </summary>
+        /// <param name="timeSheetId">ID da folha de ponto</param>
+        [HttpGet("{timeSheetId:guid}/audits")]
+        [Authorize(Policy = "RH_OR_ADMIN")]
+        public async Task<ActionResult<List<TimeSheetAuditDto>>> GetAuditHistory([FromRoute] Guid timeSheetId)
+        {
+            var audits = await _timeSheetService.GetAuditHistoryAsync(timeSheetId);
+            return Ok(audits);
         }
 
         /// <summary>

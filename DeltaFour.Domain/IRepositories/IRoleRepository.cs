@@ -12,5 +12,7 @@ namespace DeltaFour.Domain.IRepositories
         void Delete(Role role);
 
         Task<Boolean> FindAny(Expression<Func<Role, bool>> predicate);
+
+        Task<List<Role>> GetAllByCompany(Guid companyId);
     }
 }

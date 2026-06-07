@@ -39,10 +39,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SubscriptionEvent> SubscriptionEvents { get; set; }
 
     public DbSet<TimeSheet> TimeSheets { get; set; }
-    
+
+    public DbSet<TimeSheetSignature> TimeSheetSignatures { get; set; }
+
+    public DbSet<TimeSheetSignatureToken> TimeSheetSignatureTokens { get; set; }
+
+    public DbSet<TimeSheetAudit> TimeSheetAudits { get; set; }
+
     public DbSet<UserPunctualityMetric> UserPunctualityMetrics { get; set; }
 
     public DbSet<ClusterCentroid> ClusterCentroids { get; set; }
+
+    public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

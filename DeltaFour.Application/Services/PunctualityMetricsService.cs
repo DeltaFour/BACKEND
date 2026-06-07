@@ -127,6 +127,44 @@ namespace DeltaFour.Application.Services
         }
 
         /// <summary>
+        /// Exporta métricas de todos os usuários de todas as empresas para classificação K-Means.
+        /// Cada registro inclui o CompanyId para que a API Python agrupe e classifique por empresa.
+        /// </summary>
+        public async Task<List<PunctualityMetricExportDto>> ExportAllMetrics()
+        {
+            var metrics = await unitOfWork.UserPunctualityMetricRepository.GetAll();
+
+            return metrics.Select(m => new PunctualityMetricExportDto
+            {
+                UserId = m.UserId,
+                CompanyId = m.User!.CompanyId,
+                LatePercentage = m.LatePercentage,
+                AverageLateMinutes = m.AverageLateMinutes,
+                MaxLateMinutes = m.MaxLateMinutes,
+                TotalAbsences = m.TotalAbsences,
+                TotalWorkedDays = m.TotalWorkedDays
+            }).ToList();
+        }
+
+        /// <summary>
+        /// Persiste a classificação K-Means de várias empresas de uma só vez.
+        /// Para cada empresa, atualiza os clusters dos usuários e substitui os centróides.
+        /// </summary>
+        public async Task UpdateClassificationForAllCompanies(UpdateClassificationAllCompaniesDto dto)
+        {
+            foreach (var company in dto.Companies)
+            {
+                await UpdateClustersWithCentroids(
+                    company.CompanyId,
+                    new UpdateClusterWithCentroidsDto
+                    {
+                        UserClusters = company.UserClusters,
+                        Centroids = company.Centroids
+                    });
+            }
+        }
+
+        /// <summary>
         /// Retorna métricas detalhadas de todos os usuários de uma empresa.
         /// </summary>
         public async Task<List<PunctualityMetricResponseDto>> GetMetricsByCompany(Guid companyId)
