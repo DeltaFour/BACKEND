@@ -39,6 +39,26 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
         Guid.Parse("ffffffff-0000-0000-0000-000000000003"),
         Guid.Parse("ffffffff-0000-0000-0000-000000000004"),
         Guid.Parse("ffffffff-0000-0000-0000-000000000005"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000006"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000007"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000008"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000009"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000010"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000011"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000012"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000013"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000014"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000015"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000016"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000017"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000018"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000019"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000020"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000021"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000022"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000023"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000024"),
+        Guid.Parse("ffffffff-0000-0000-0000-000000000025"),
     ];
 
     private const string Password   = "#Admin@123";
@@ -270,26 +290,63 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
         CreatedBy = Guid.Empty
     };
 
+    /// <summary>
+    /// Gera os registros de ponto de Maio/2026 para um usuário, com atrasos que
+    /// variam tanto em FREQUÊNCIA (quantos dias) quanto em DURAÇÃO (quantos minutos).
+    /// Cada usuário cai em um perfil (Pontual / Em Atenção / Crítico) sorteado de
+    /// forma determinística, formando três grupos bem separados nos dois eixos do
+    /// gráfico de dispersão usado pelo K-Means.
+    /// </summary>
     private static List<UserAttendance> BuildAttendances(Guid userId)
     {
+        var weekdays = Enumerable.Range(1, 31)
+            .Where(d => new DateTime(2026, 5, d).DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
+            .ToList();
+
         HashSet<int> absenceDays;
-        HashSet<int> lateDays;
+        Dictionary<int, int> lateMinutesByDay;
 
         if (userId == UserCarlosId)
         {
-            absenceDays = [12, 19];
-            lateDays    = [6, 13, 20, 27];
+            // Perfil "Em Atenção" fixo e conhecido, útil para a demonstração.
+            absenceDays      = [12, 19];
+            lateMinutesByDay = new Dictionary<int, int> { [6] = 18, [13] = 23, [20] = 16, [27] = 27 };
         }
         else
         {
             var rng = new Random(userId.GetHashCode() & 0x7FFFFFFF);
-            var weekdays = Enumerable.Range(1, 31)
-                .Where(d => new DateTime(2026, 5, d).DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
-                .OrderBy(_ => rng.Next())
-                .ToList();
 
-            absenceDays = weekdays.Take(rng.Next(0, 3)).ToHashSet();
-            lateDays    = weekdays.Where(d => !absenceDays.Contains(d)).Take(rng.Next(0, 5)).ToHashSet();
+            var shuffled = weekdays.OrderBy(_ => rng.Next()).ToList();
+            absenceDays   = shuffled.Take(rng.Next(0, 3)).ToHashSet();
+            var available = shuffled.Where(d => !absenceDays.Contains(d)).ToList();
+
+            // Sorteia o perfil de pontualidade do colaborador.
+            var profile = rng.NextDouble();
+            int lateCount;
+            int minLate, maxLate;
+
+            if (profile < 0.45)          // ~45% Pontual: raramente atrasa, e pouco.
+            {
+                lateCount = rng.Next(0, 3);    // 0–2 dias
+                minLate   = 5;
+                maxLate   = 13;
+            }
+            else if (profile < 0.78)     // ~33% Em Atenção: atrasos moderados.
+            {
+                lateCount = rng.Next(4, 8);    // 4–7 dias
+                minLate   = 14;
+                maxLate   = 33;
+            }
+            else                          // ~22% Crítico: atrasos frequentes e longos.
+            {
+                lateCount = rng.Next(9, 15);   // 9–14 dias
+                minLate   = 35;
+                maxLate   = 90;
+            }
+
+            lateMinutesByDay = available
+                .Take(Math.Min(lateCount, available.Count))
+                .ToDictionary(d => d, _ => rng.Next(minLate, maxLate + 1));
         }
 
         var punches = new List<UserAttendance>();
@@ -300,14 +357,16 @@ public class SeedController(AppDbContext db, IPasswordService passwordService) :
             if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) continue;
             if (absenceDays.Contains(day)) continue;
 
-            var isLate  = lateDays.Contains(day);
-            var lateMin = isLate ? 25 : 0;
-            TimeOnly? timeLate = isLate ? new TimeOnly(0, lateMin) : null;
+            bool isLate = lateMinutesByDay.TryGetValue(day, out int lateMin);
+            TimeOnly? timeLate = isLate ? new TimeOnly(lateMin / 60, lateMin % 60) : null;
 
-            punches.Add(Punch(userId, new DateTime(2026, 5, day,  8, lateMin, 0, DateTimeKind.Utc), PunchType.IN,  isLate, timeLate));
-            punches.Add(Punch(userId, new DateTime(2026, 5, day, 12,       0, 0, DateTimeKind.Utc), PunchType.OUT, false,  null));
-            punches.Add(Punch(userId, new DateTime(2026, 5, day, 13,       0, 0, DateTimeKind.Utc), PunchType.IN,  false,  null));
-            punches.Add(Punch(userId, new DateTime(2026, 5, day, 17,       0, 0, DateTimeKind.Utc), PunchType.OUT, false,  null));
+            // Hora de entrada reflete o atraso (8h + atraso); minutos podem passar de 59.
+            var inTime = new DateTime(2026, 5, day, 8, 0, 0, DateTimeKind.Utc).AddMinutes(lateMin);
+
+            punches.Add(Punch(userId, inTime,                                              PunchType.IN,  isLate, timeLate));
+            punches.Add(Punch(userId, new DateTime(2026, 5, day, 12, 0, 0, DateTimeKind.Utc), PunchType.OUT, false,  null));
+            punches.Add(Punch(userId, new DateTime(2026, 5, day, 13, 0, 0, DateTimeKind.Utc), PunchType.IN,  false,  null));
+            punches.Add(Punch(userId, new DateTime(2026, 5, day, 17, 0, 0, DateTimeKind.Utc), PunchType.OUT, false,  null));
         }
 
         return punches;
