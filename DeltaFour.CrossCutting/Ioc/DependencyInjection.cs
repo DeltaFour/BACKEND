@@ -1,4 +1,5 @@
-﻿using DeltaFour.Application.Integrations;
+﻿using DeltaFour.Application.Emails;
+using DeltaFour.Application.Integrations;
 using DeltaFour.Application.Services;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
@@ -72,6 +73,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IUnitOfWork, AllRepositories>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<PunctualityMetricsService>();
         services.AddScoped<NotificationService>();
 
