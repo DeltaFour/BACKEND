@@ -8,10 +8,10 @@ namespace DeltaFour.Application.Dtos.PunctualityMetrics
 
         public double AverageLateMinutes { get; set; }
 
-        public int MaxLateMinutes { get; set; }
+        public double MaxLateMinutes { get; set; }
 
-        public int TotalAbsences { get; set; }
+        public double TotalAbsences { get; set; }
 
-        public int TotalWorkedDays { get; set; }
+        public double TotalWorkedDays { get; set; }
     }
 }
