@@ -103,16 +103,34 @@ public class CompanyService
     public async Task UpdateSettings(CompanyGetSettingsDto dto, UserContext user)
     {
         var company = await _unitOfWork.CompanyRepository.FindWithCoordinates(user.CompanyId);
+
         Address address = AddressMapper.MapToAddress(dto);
-        CompanyGeolocation geolocation = GeolocationMapper.MapToGeolocation(dto, user.CompanyId, user.Id);
+        CompanyGeolocation? geolocation = await
+            _unitOfWork.CompanyGeolocationRepository.Find(c => c.CompanyId == user.CompanyId);
         if (company != null)
         {
             CompanyMapper.UpdateCompany(company, dto);
             company.AddressId = address.Id;
             _unitOfWork.CompanyRepository.Update(company);
+            if (company.AddressId != null)
+            {
+                _unitOfWork.AddressRepository.Update(address);
+            }
+            else
+            {
+                _unitOfWork.AddressRepository.Create(address);
+            }
+
+            if (geolocation != null)
+            {
+                _unitOfWork.CompanyGeolocationRepository.Update(geolocation);
+            }
+            else
+            {
+                _unitOfWork.CompanyGeolocationRepository.Create(
+                    GeolocationMapper.MapToGeolocation(dto, user.CompanyId, user.Id));
+            }
         }
-        _unitOfWork.AddressRepository.Create(address);
-        _unitOfWork.CompanyGeolocationRepository.Update(geolocation);
     }
 
     public async Task<ListCompaniesResponse> List()
