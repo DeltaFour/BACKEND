@@ -1,4 +1,4 @@
-namespace DeltaFour.Application.Dtos.Responses.Company
+﻿namespace DeltaFour.Application.Dtos.Responses.Company
 {
     public class CompanyGetSettingsDto
     {
@@ -16,7 +16,7 @@ namespace DeltaFour.Application.Dtos.Responses.Company
 
         public string? Rua { get; set; }
 
-        public string? Numero { get; set; }
+        public int? Numero { get; set; }
 
         public string? Bairro { get; set; }
 
@@ -28,6 +28,6 @@ namespace DeltaFour.Application.Dtos.Responses.Company
 
         public double? Longitude { get; set; } = 0;
 
-        public int? RaioMetros { get; set; }
+        public int? RaioMetros { get; set; } = 100;
     }
 }

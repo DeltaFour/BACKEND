@@ -4,6 +4,7 @@ using DeltaFour.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 
@@ -12,9 +13,11 @@ using NetTopologySuite.Geometries;
 namespace DeltaFour.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607164043_AddNotifications")]
+    partial class AddNotifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,22 +47,22 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("cfc43594-e5e1-4e96-a1bb-2edeb93efeb4"),
+                            Id = new Guid("41ce06af-7e9a-4bbc-8568-cb2875d26164"),
                             Name = "list"
                         },
                         new
                         {
-                            Id = new Guid("1cad664e-c93d-4918-89d5-d94bed6d9685"),
+                            Id = new Guid("c7a0daed-b3a6-4fdf-8297-bfb4e908175f"),
                             Name = "create"
                         },
                         new
                         {
-                            Id = new Guid("51f07354-c47b-416b-a30d-39510b2968b4"),
+                            Id = new Guid("29fb3896-dcc8-463f-b2d4-bea91140fef5"),
                             Name = "update"
                         },
                         new
                         {
-                            Id = new Guid("22f94e9f-a5e0-4a72-be14-25728affa15d"),
+                            Id = new Guid("9cf34f7f-df9f-4cd4-b7da-973855a23df5"),
                             Name = "delete"
                         });
                 });
@@ -193,7 +196,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 14, DateTimeKind.Utc).AddTicks(9404))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 30, DateTimeKind.Utc).AddTicks(3455))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -295,7 +298,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 16, DateTimeKind.Utc).AddTicks(2809))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 31, DateTimeKind.Utc).AddTicks(5995))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -345,19 +348,84 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("e1b48b2a-bb52-4938-9c8c-25d7e7c05735"),
+                            Id = new Guid("77d1d4c4-7efd-4ca7-bfdb-e53fe67768c0"),
                             Name = "company"
                         },
                         new
                         {
-                            Id = new Guid("5d4f624b-3410-4d1e-9302-d6325f61d842"),
+                            Id = new Guid("65a7ad6b-5c9d-4307-84df-528df5098902"),
                             Name = "employee"
                         },
                         new
                         {
-                            Id = new Guid("4e2aa4a5-b6ca-4c15-a31c-e75ba72771f7"),
+                            Id = new Guid("2bb658ad-2631-4b1c-85a2-335c2890275d"),
                             Name = "work"
                         });
+                });
+
+            modelBuilder.Entity("DeltaFour.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("company_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 32, DateTimeKind.Utc).AddTicks(4470))
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_read");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("message");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("severity");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("type");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("CompanyId", "CreatedAt")
+                        .HasDatabaseName("IX_notifications_company_id_created_at");
+
+                    b.ToTable("notifications", (string)null);
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.PasswordResetToken", b =>
@@ -376,7 +444,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 17, DateTimeKind.Utc).AddTicks(526))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 32, DateTimeKind.Utc).AddTicks(8141))
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -418,7 +486,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 17, DateTimeKind.Utc).AddTicks(4568))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 33, DateTimeKind.Utc).AddTicks(1903))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -495,7 +563,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 18, DateTimeKind.Utc).AddTicks(2814))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 34, DateTimeKind.Utc).AddTicks(287))
                         .HasColumnName("created_at");
 
                     b.Property<string>("CustomerId")
@@ -544,7 +612,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 18, DateTimeKind.Utc).AddTicks(6859))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 34, DateTimeKind.Utc).AddTicks(4645))
                         .HasColumnName("created_at");
 
                     b.Property<string>("EventType")
@@ -579,7 +647,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 19, DateTimeKind.Utc).AddTicks(4290))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 35, DateTimeKind.Utc).AddTicks(3559))
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("EmployeeSignedAt")
@@ -642,7 +710,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 18, DateTimeKind.Utc).AddTicks(9846))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 34, DateTimeKind.Utc).AddTicks(7741))
                         .HasColumnName("created_at");
 
                     b.Property<string>("NewValues")
@@ -692,7 +760,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 19, DateTimeKind.Utc).AddTicks(8734))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 35, DateTimeKind.Utc).AddTicks(7620))
                         .HasColumnName("created_at");
 
                     b.Property<DateTime>("SignedAtUtc")
@@ -760,7 +828,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 20, DateTimeKind.Utc).AddTicks(2445))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 36, DateTimeKind.Utc).AddTicks(1458))
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
@@ -833,7 +901,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 8, 39, 21, DateTimeKind.Utc).AddTicks(7199))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 37, DateTimeKind.Utc).AddTicks(4944))
                         .HasColumnName("created_at");
 
                     b.Property<Guid>("CreatedBy")
@@ -1257,6 +1325,16 @@ namespace DeltaFour.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("DeltaFour.Domain.Entities.Notification", b =>
+                {
+                    b.HasOne("DeltaFour.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DeltaFour.Domain.Entities.PasswordResetToken", b =>
