@@ -27,6 +27,7 @@ namespace DeltaFour.Infrastructure.Repositories
         private ITimeSheetAuditRepository? _timeSheetAuditRepository;
         private IUserPunctualityMetricRepository? _userPunctualityMetricRepository;
         private IClusterCentroidRepository? _clusterCentroidRepository;
+        private IPasswordResetTokenRepository? _passwordResetTokenRepository;
 
         public IUserRepository UserRepository
         {
@@ -136,6 +137,11 @@ namespace DeltaFour.Infrastructure.Repositories
         public IClusterCentroidRepository ClusterCentroidRepository
         {
             get { return _clusterCentroidRepository ??= new ClusterCentroidRepository(context); }
+        }
+
+        public IPasswordResetTokenRepository PasswordResetTokenRepository
+        {
+            get { return _passwordResetTokenRepository ??= new PasswordResetTokenRepository(context); }
         }
 
         public async Task Save()

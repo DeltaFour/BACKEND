@@ -1,5 +1,8 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Services;
+using DeltaFour.CrossCutting.Middleware;
+using DeltaFour.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeltaFour.API.Controllers
@@ -105,6 +108,50 @@ namespace DeltaFour.API.Controllers
             Response.Cookies.Delete("Jwt");
             Response.Cookies.Delete("RefreshToken");
             return NoContent();
+        }
+
+        /// <summary>
+        /// Altera a senha do usuário autenticado, exigindo a senha atual.
+        /// </summary>
+        /// <remarks>
+        /// O usuário precisa estar logado. Informe a senha atual e a nova senha.
+        /// </remarks>
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            await service.ChangePassword(user.Id, dto);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Inicia a recuperação de senha enviando um código por e-mail.
+        /// </summary>
+        /// <remarks>
+        /// Caso o e-mail exista, um código de 6 dígitos válido por 30 minutos é enviado.
+        /// A resposta é sempre a mesma para não revelar se o e-mail está cadastrado.
+        /// </remarks>
+        [AllowAnonymous]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            await service.ForgotPassword(dto);
+            return Ok(new { message = "Se o e-mail estiver cadastrado, um código de recuperação foi enviado." });
+        }
+
+        /// <summary>
+        /// Redefine a senha a partir do código recebido por e-mail.
+        /// </summary>
+        /// <remarks>
+        /// Informe o e-mail, o código recebido e a nova senha.
+        /// </remarks>
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            await service.ResetPassword(dto);
+            return Ok(new { message = "Senha redefinida com sucesso." });
         }
 
         ///<summary>

@@ -24,6 +24,7 @@ public interface IUnitOfWork
     ITimeSheetAuditRepository TimeSheetAuditRepository { get; }
     IUserPunctualityMetricRepository UserPunctualityMetricRepository { get; }
     IClusterCentroidRepository ClusterCentroidRepository { get; }
+    IPasswordResetTokenRepository PasswordResetTokenRepository { get; }
 
     Task Save();
 }

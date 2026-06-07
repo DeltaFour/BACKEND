@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddScoped<IUserFaceRepository, UserFaceRepository>();
         services.AddScoped<IUserPunctualityMetricRepository, UserPunctualityMetricRepository>();
         services.AddScoped<IClusterCentroidRepository, ClusterCentroidRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IUnitOfWork, AllRepositories>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<PunctualityMetricsService>();
