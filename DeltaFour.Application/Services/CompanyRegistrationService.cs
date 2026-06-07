@@ -48,6 +48,7 @@ public class CompanyRegistrationService
             Email = request.User.Email,
             Password = _passwordService.Hash(request.User.Password!),
             CreatedBy = company.Id,
+            Cpf
             CompanyId = company.Id,
             RoleId = role.Id,
             IsActive = true,

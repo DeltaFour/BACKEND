@@ -21,14 +21,6 @@ public class UserCreateDtoValidator : AbstractValidator<UserCreateDto>
             .EmailAddress()
             .WithMessage("Email inválido");
 
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .WithMessage("Senha é obrigatória")
-            .MinimumLength(8)
-            .WithMessage("Senha deve ter no mínimo 8 caracteres")
-            .MaximumLength(32)
-            .WithMessage("Senha deve ter no máximo 32 caracteres");
-
         RuleFor(x => x.CellPhone)
             .NotEmpty()
             .WithMessage("Celular é obrigatório");

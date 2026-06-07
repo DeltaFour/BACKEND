@@ -58,7 +58,10 @@ namespace DeltaFour.Application.Services
                 Role? role = await unitOfWork.RoleRepository.Find(r => r.Name == dto.RoleName);
                 if (role != null)
                 {
-                    dto.Password = passwordService.Hash(dto.Password!);
+                    // A senha não é mais informada pelo cliente: geramos uma forte,
+                    // persistimos o hash e enviamos a senha em texto claro por e-mail.
+                    var generatedPassword = passwordService.GenerateStrong();
+                    dto.Password = passwordService.Hash(generatedPassword);
 
                     var user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
 
@@ -82,6 +85,16 @@ namespace DeltaFour.Application.Services
                     unitOfWork.UserShiftRepository.CreateAll(userShifts);
 
                     await unitOfWork.Save();
+
+                    // Envio das credenciais não deve derrubar a criação já persistida.
+                    try
+                    {
+                        await SendNewEmployeeCredentialsEmailAsync(dto.Email!, dto.Name!, generatedPassword);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Falha ao enviar e-mail de credenciais para o funcionário {Email}", dto.Email);
+                    }
                 }
             }
         }
@@ -573,6 +586,44 @@ namespace DeltaFour.Application.Services
             }
 
             return true;
+        }
+
+        ///<summary>
+        ///Envia ao novo funcionário a senha de acesso gerada pelo sistema.
+        ///</summary>
+        private async Task SendNewEmployeeCredentialsEmailAsync(String email, String name, String plainPassword)
+        {
+            var message = new MimeMessage();
+
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            message.To.Add(MailboxAddress.Parse(email));
+
+            message.Subject = "Bem-vindo ao DeltaFour - Sua senha de acesso";
+
+            message.Body = new BodyBuilder
+            {
+                HtmlBody = $"""
+                                <h2>Bem-vindo(a), {name}!</h2>
+
+                                <p>Sua conta de acesso ao DeltaFour foi criada.</p>
+
+                                <p>Use as credenciais abaixo para entrar:</p>
+
+                                <ul>
+                                    <li><strong>E-mail:</strong> {email}</li>
+                                    <li><strong>Senha:</strong> {plainPassword}</li>
+                                </ul>
+
+                                <p>Por segurança, recomendamos alterar a senha no primeiro acesso.</p>
+                            """
+            }.ToMessageBody();
+
+            using var client = new SmtpClient();
+
+            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            await client.AuthenticateAsync(username, password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
 
         private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)
