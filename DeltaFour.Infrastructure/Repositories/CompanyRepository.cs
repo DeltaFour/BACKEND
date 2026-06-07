@@ -39,12 +39,12 @@ namespace DeltaFour.Infrastructure.Repositories
         {
             return await context.Companies.Where(c => c.Id == id).Select(c => new CompanyGetSettingsDto()
             {
-                RazaoSocial = c.Name,
+                RazaoSocial = c.LegalName,
                 NomeFantasia = c.Name,
                 Cnpj = c.Cnpj!,
                 Cep = c.Address != null ? c.Address.ZipCode : null,
                 Rua = c.Address != null ? c.Address.Street : null,
-                Numero = c.Address != null ? c.Address.Number.ToString() : null,
+                Numero = c.Address != null ? c.Address.Number : null,
                 Bairro = c.Address != null ? c.Address.District : null,
                 Cidade = c.Address != null ? c.Address.City : null,
                 Estado = c.Address != null ? c.Address.State : null,
@@ -62,7 +62,7 @@ namespace DeltaFour.Infrastructure.Repositories
         public async Task<Company?> FindWithCoordinates(Guid id)
         {
             return await context.Companies.Where(c => c.Id == id).Include(c => c.CompanyGeolocation)
-                    .Include(c => c.Address).FirstOrDefaultAsync();
+                .Include(c => c.Address).FirstOrDefaultAsync();
         }
     }
 }

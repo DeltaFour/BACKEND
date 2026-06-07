@@ -16,5 +16,13 @@ namespace DeltaFour.Application.Mappers
                 CreatedBy = userId,
             };
         }
+
+        public static void UpdateGeolocation(CompanyGetSettingsDto dto, CompanyGeolocation geo)
+        {
+            geo.Coord = new Coordinates(dto.Latitude.GetValueOrDefault(0), dto.Longitude.GetValueOrDefault(0));
+            geo.RadiusMeters = dto.RaioMetros.GetValueOrDefault(0);
+            geo.IsActive = true;
+            
+        }
     }
 }

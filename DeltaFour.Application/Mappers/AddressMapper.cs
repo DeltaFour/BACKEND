@@ -14,8 +14,20 @@ namespace DeltaFour.Application.Mappers
                 City = dto.Cidade,
                 State = dto.Estado,
                 ZipCode = dto.Cep,
+                Number = dto.Numero,
                 Complement = dto.Complemento
             };
         }
+
+        public static void UpdateAddress(CompanyGetSettingsDto dto, Address address)
+        {
+            address.Street = dto.Rua;
+            address.District = dto.Bairro;
+            address.City = dto.Cidade;
+            address.State = dto.Estado;
+            address.ZipCode = dto.Cep;
+            address.Number = dto.Numero;
+            address.Complement = dto.Complemento;
+        } 
     }
 }
