@@ -27,4 +27,10 @@ public interface IAuthService
     /// Redefine a senha a partir do código recebido por e-mail.
     /// </summary>
     Task ResetPassword(ResetPasswordDto dto);
+
+    /// <summary>
+    /// Define a senha inicial do funcionário no primeiro acesso.
+    /// Limpa a flag MustChangePassword após a troca.
+    /// </summary>
+    Task SetInitialPassword(Guid userId, string newPassword);
 }

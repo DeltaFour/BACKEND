@@ -25,6 +25,8 @@ namespace DeltaFour.Application.Dtos
 
         public bool IsAllowedBypassFace { get; set; }
 
+        public bool MustChangePassword { get; set; }
+
         public PunchType? LastPunchType { get; set; }
 
         public List<LastUserAttendancesDto>? LastUserAttendances { get; set; }

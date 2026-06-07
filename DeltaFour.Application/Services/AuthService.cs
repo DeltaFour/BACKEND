@@ -273,6 +273,31 @@ namespace DeltaFour.Application.Services
         }
 
         ///<summary>
+        ///Define a senha no primeiro acesso do funcionário e desativa a flag MustChangePassword.
+        ///</summary>
+        public async Task SetInitialPassword(Guid userId, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                throw new BadHttpRequestException("A nova senha é obrigatória.");
+            }
+
+            var user = await repositories.UserRepository.Find(u => u.Id == userId)
+                ?? throw new BadHttpRequestException("Usuário não encontrado.");
+
+            if (!user.MustChangePassword)
+            {
+                throw new BadHttpRequestException("Este usuário não está em modo de primeiro acesso.");
+            }
+
+            user.Password = passwordService.Hash(newPassword);
+            user.MustChangePassword = false;
+            user.UpdatedAt = DateTime.UtcNow;
+            repositories.UserRepository.Update(user);
+            await repositories.Save();
+        }
+
+        ///<summary>
         ///Get id from token
         ///</summary>
         private Guid GetUserIdFromToken(string cookieToken)
