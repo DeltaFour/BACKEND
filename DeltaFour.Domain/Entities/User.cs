@@ -26,6 +26,8 @@ public class User : BaseEntity
 
     public bool IsAllowedBypassFacial { get; set; }
 
+    public bool MustChangePassword { get; set; }
+
     public DateTime? LastLogin { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Dtos.Responses;
+using DeltaFour.Application.Emails;
 using DeltaFour.Application.Integrations;
 using DeltaFour.Application.Integrations.Storage;
 using DeltaFour.Application.Mappers;
@@ -8,10 +9,7 @@ using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using GeoAPI.CoordinateSystems;
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.AspNetCore.Http;
-using MimeKit;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using Serilog;
@@ -25,15 +23,11 @@ namespace DeltaFour.Application.Services
         IPasswordService passwordService,
         PunctualityMetricsService punctualityMetricsService,
         NotificationService notificationService,
-        IStorageService storageService
+        IStorageService storageService,
+        IEmailSender emailSender
         )
     {
-        private readonly String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
-        private readonly int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
-        private readonly String username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-        private readonly String password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-        private readonly String fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
-        private readonly String fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
+        private readonly String allowedHost = Environment.GetEnvironmentVariable("ALLOWED_HOST");
 
         ///<summary>
         ///Operation for get all users from company
@@ -619,71 +613,39 @@ namespace DeltaFour.Application.Services
         ///</summary>
         private async Task SendNewEmployeeCredentialsEmailAsync(String email, String name, String plainPassword)
         {
-            var message = new MimeMessage();
+            var loginUrl = $"{allowedHost}/v1/login";
 
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(MailboxAddress.Parse(email));
+            var html = EmailBuilder.Create()
+                .Preheader("Sua conta de acesso ao DeltaFour foi criada.")
+                .Title($"Bem-vindo(a), {name}!")
+                .Paragraph("Sua conta de acesso ao DeltaFour foi criada com sucesso. Utilize as credenciais abaixo para realizar o seu primeiro acesso:")
+                .InfoRow("E-mail", email)
+                .InfoRow("Senha temporária", plainPassword)
+                .Button("Acessar a plataforma", loginUrl)
+                .Note("Por segurança, no primeiro acesso você será solicitado a criar uma nova senha pessoal.")
+                .Render();
 
-            message.Subject = "Bem-vindo ao DeltaFour - Sua senha de acesso";
-
-            message.Body = new BodyBuilder
-            {
-                HtmlBody = $"""
-                                <h2>Bem-vindo(a), {name}!</h2>
-
-                                <p>Sua conta de acesso ao DeltaFour foi criada.</p>
-
-                                <p>Use as credenciais abaixo para entrar:</p>
-
-                                <ul>
-                                    <li><strong>E-mail:</strong> {email}</li>
-                                    <li><strong>Senha:</strong> {plainPassword}</li>
-                                </ul>
-
-                                <p>Por segurança, recomendamos alterar a senha no primeiro acesso.</p>
-                            """
-            }.ToMessageBody();
-
-            using var client = new SmtpClient();
-
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(username, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            await emailSender.SendAsync(email, "Bem-vindo ao DeltaFour - Sua senha de acesso", html);
         }
 
         private async Task SendEmailRh(List<User> rhUsers, String latestUserName, String latestUserEmail)
         {
-            var message = new MimeMessage();
+            var html = EmailBuilder.Create()
+                .Preheader("Registro de atraso de colaborador.")
+                .Title("Funcionário atrasado")
+                .Paragraph("Identificamos um registro de atraso. Confira os detalhes do colaborador abaixo:")
+                .InfoRow("Nome", latestUserName)
+                .InfoRow("E-mail", latestUserEmail)
+                .Note("Este alerta é gerado automaticamente com base nas regras de tolerância configuradas para o turno.")
+                .Render();
 
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            foreach (var rhUser in rhUsers)
-            {
-                message.To.Add(MailboxAddress.Parse(rhUser.Email));
-            }
+            var recipients = rhUsers
+                .Select(rhUser => rhUser.Email)
+                .Where(emailAddress => !string.IsNullOrWhiteSpace(emailAddress))
+                .Select(emailAddress => emailAddress!)
+                .ToList();
 
-            message.Subject = "Funcionário Atrasado";
-
-            message.Body = new BodyBuilder
-            {
-                HtmlBody = $"""
-                                <h2>Funcionário atrasado</h2>
-
-                                <p>O funcionário abaixo está atrasado:</p>
-
-                                <ul>
-                                    <li><strong>Nome:</strong> {latestUserName}</li>
-                                    <li><strong>Email:</strong> {latestUserEmail}</li>
-                                </ul>
-                            """
-            }.ToMessageBody();
-
-            using var client = new SmtpClient();
-
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(username, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            await emailSender.SendAsync(recipients, "Funcionário Atrasado", html);
         }
 
         ///<summary>

@@ -4,29 +4,20 @@ using DeltaFour.Application.RsaKeys;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
-using MailKit.Net.Smtp;
-using MailKit.Security;
+using DeltaFour.Application.Emails;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using MimeKit;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 
 namespace DeltaFour.Application.Services
 {
-    public class AuthService(IUnitOfWork repositories, IPasswordService passwordService) : IAuthService
+    public class AuthService(IUnitOfWork repositories, IPasswordService passwordService, IEmailSender emailSender) : IAuthService
     {
         private static readonly RSA PrivateKey = GetRsaKeys.GetPrivateKey("../app.key");
         private static readonly RSA PublicKey = GetRsaKeys.GetPublicKey("../app.pub");
-
-        private readonly string host = Environment.GetEnvironmentVariable("EMAIL_HOST");
-        private readonly int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
-        private readonly string username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-        private readonly string emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-        private readonly string fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
-        private readonly string fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
 
         ///<summary>
         ///Operation for log user
@@ -244,32 +235,41 @@ namespace DeltaFour.Application.Services
         ///</summary>
         private async Task SendPasswordResetEmailAsync(string email, string code)
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(MailboxAddress.Parse(email));
-            message.Subject = "Recuperação de senha";
+            var html = EmailBuilder.Create()
+                .Preheader("Seu código de recuperação de senha.")
+                .Title("Recuperação de senha")
+                .Paragraph("Recebemos uma solicitação para redefinir a sua senha.")
+                .Paragraph("Utilize o código abaixo para concluir a redefinição:")
+                .CodeBox(code, "Seu código de verificação")
+                .Note("Este código expira em 30 minutos. Se você não solicitou a recuperação, ignore este e-mail com segurança.")
+                .Render();
 
-            message.Body = new BodyBuilder
+            await emailSender.SendAsync(email, "Recuperação de senha", html);
+        }
+
+        ///<summary>
+        ///Define a senha no primeiro acesso do funcionário e desativa a flag MustChangePassword.
+        ///</summary>
+        public async Task SetInitialPassword(Guid userId, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
             {
-                HtmlBody = $"""
-                                <h2>Recuperação de senha</h2>
+                throw new BadHttpRequestException("A nova senha é obrigatória.");
+            }
 
-                                <p>Recebemos uma solicitação para redefinir a sua senha.</p>
+            var user = await repositories.UserRepository.Find(u => u.Id == userId)
+                ?? throw new BadHttpRequestException("Usuário não encontrado.");
 
-                                <p>Utilize o código abaixo para concluir a redefinição:</p>
+            if (!user.MustChangePassword)
+            {
+                throw new BadHttpRequestException("Este usuário não está em modo de primeiro acesso.");
+            }
 
-                                <p><strong>{code}</strong></p>
-
-                                <p>Este código expira em 30 minutos. Se você não solicitou, ignore este e-mail.</p>
-                            """
-            }.ToMessageBody();
-
-            using var client = new SmtpClient();
-
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(username, emailPassword);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            user.Password = passwordService.Hash(newPassword);
+            user.MustChangePassword = false;
+            user.UpdatedAt = DateTime.UtcNow;
+            repositories.UserRepository.Update(user);
+            await repositories.Save();
         }
 
         ///<summary>

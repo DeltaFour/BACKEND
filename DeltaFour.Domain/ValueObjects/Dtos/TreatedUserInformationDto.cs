@@ -21,6 +21,8 @@ namespace DeltaFour.Domain.ValueObjects.Dtos
         public bool IsActive { get; set; }
         public bool IsConfirmed { get; set; }
 
+        public bool MustChangePassword { get; set; }
+
         public string? Password { get; set; }
 
         public Guid CompanyId { get; set; }

@@ -154,6 +154,22 @@ namespace DeltaFour.API.Controllers
             return Ok(new { message = "Senha redefinida com sucesso." });
         }
 
+        /// <summary>
+        /// Define a senha inicial do funcionário no primeiro acesso.
+        /// </summary>
+        /// <remarks>
+        /// Deve ser chamado somente quando o usuário está logado e mustChangePassword é true.
+        /// Não exige senha atual — o funcionário acabou de entrar com a senha temporária gerada pelo sistema.
+        /// </remarks>
+        [Authorize]
+        [HttpPost("set-initial-password")]
+        public async Task<IActionResult> SetInitialPassword([FromBody] SetInitialPasswordDto dto)
+        {
+            var user = HttpContext.GetUserAuthenticated<UserContext>();
+            await service.SetInitialPassword(user.Id, dto.NewPassword);
+            return NoContent();
+        }
+
         ///<summary>
         ///Internal generalized method for configuration of cookies
         ///</summary>

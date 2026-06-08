@@ -32,4 +32,8 @@
     <None Remove="Utils\extract_embedding.py" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Emails\Assets\deltafour-logo.png" />
+  </ItemGroup>
+
 </Project>

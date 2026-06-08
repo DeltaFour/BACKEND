@@ -20,6 +20,7 @@ namespace DeltaFour.Application.Mappers
                 RoleId = user.RoleId,
                 IsAllowedBypassCoord = user.IsAllowedBypassCoord,
                 CompanyId = user.CompanyId,
+                MustChangePassword = user.MustChangePassword,
             };
         }
 
@@ -57,7 +58,8 @@ namespace DeltaFour.Application.Mappers
                 LastPunchType = dto.LastPunchType!,
                 LastUserAttendances = dto.LastsUserAttendances!,
                 IsAllowedBypassCoord = dto.IsAllowedBypassCoord,
-                IsAllowedBypassFace = dto.IsAllowedBypassFace
+                IsAllowedBypassFace = dto.IsAllowedBypassFace,
+                MustChangePassword = dto.MustChangePassword,
             };
             return teste;
         }

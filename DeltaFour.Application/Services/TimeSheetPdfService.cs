@@ -1,11 +1,9 @@
 using DeltaFour.Application.Documents;
 using DeltaFour.Application.Dtos.TimeSheet;
+using DeltaFour.Application.Emails;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using System.Security.Cryptography;
@@ -79,13 +77,8 @@ public class TimeSheetPdfService : ITimeSheetPdfService
     private readonly ITimeSheetSignatureTokenRepository _timeSheetSignatureTokenRepository;
     private readonly ITimeSheetAuditRepository _timeSheetAuditRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailSender _emailSender;
 
-    private readonly string host = Environment.GetEnvironmentVariable("EMAIL_HOST");
-    private readonly int port = int.Parse(Environment.GetEnvironmentVariable("EMAIL_PORT"));
-    private readonly string username = Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-    private readonly string password = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-    private readonly string fromEmail = Environment.GetEnvironmentVariable("EMAIL_FROM_EMAIL");
-    private readonly string fromName = Environment.GetEnvironmentVariable("EMAIL_FROM_NAME");
     private readonly string allowedHost = Environment.GetEnvironmentVariable("ALLOWED_HOST");
 
     public TimeSheetPdfService(
@@ -97,7 +90,8 @@ public class TimeSheetPdfService : ITimeSheetPdfService
         ITimeSheetSignatureRepository timeSheetSignatureRepository,
         ITimeSheetSignatureTokenRepository timeSheetSignatureTokenRepository,
         ITimeSheetAuditRepository timeSheetAuditRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IEmailSender emailSender)
     {
         _userRepository = userRepository;
         _attendanceRepository = attendanceRepository;
@@ -108,6 +102,7 @@ public class TimeSheetPdfService : ITimeSheetPdfService
         _timeSheetSignatureTokenRepository = timeSheetSignatureTokenRepository;
         _timeSheetAuditRepository = timeSheetAuditRepository;
         _unitOfWork = unitOfWork;
+        _emailSender = emailSender;
 
         QuestPDF.Settings.License = LicenseType.Community;
     }
@@ -483,34 +478,18 @@ public class TimeSheetPdfService : ITimeSheetPdfService
     {
         var link = $"{allowedHost}/folha-ponto/assinatura?token={token}";
 
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(fromName, fromEmail));
-        message.To.Add(MailboxAddress.Parse(email));
-        message.Subject = "Assinatura da Folha de Ponto";
+        var html = EmailBuilder.Create()
+            .Preheader("Código para assinatura eletrônica da folha de ponto.")
+            .Title("Assinatura da Folha de Ponto")
+            .Paragraph("Foi solicitada a sua assinatura eletrônica da folha de ponto.")
+            .Paragraph("Utilize o código abaixo para confirmar a assinatura:")
+            .CodeBox(token, "Seu código de assinatura")
+            .Button("Assinar folha de ponto", link)
+            .LinkFallback(link)
+            .Note("Este código é de uso único e expira em 48 horas.")
+            .Render();
 
-        message.Body = new BodyBuilder
-        {
-            HtmlBody = $"""
-                            <h2>Assinatura da Folha de Ponto</h2>
-
-                            <p>Foi solicitada a sua assinatura eletrônica da folha de ponto.</p>
-
-                            <p>Utilize o código abaixo para confirmar a assinatura:</p>
-
-                            <p><strong>{token}</strong></p>
-
-                            <p>Ou acesse diretamente: <a href="{link}">{link}</a></p>
-
-                            <p>Este código é de uso único e expira em 48 horas.</p>
-                        """
-        }.ToMessageBody();
-
-        using var client = new SmtpClient();
-
-        await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-        await client.AuthenticateAsync(username, password);
-        await client.SendAsync(message);
-        await client.DisconnectAsync(true);
+        await _emailSender.SendAsync(email, "Assinatura da Folha de Ponto", html);
     }
 
     public async Task<TimeSheet?> GetTimeSheetRecordAsync(Guid userId, int month, int year)

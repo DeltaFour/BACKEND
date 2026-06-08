@@ -85,6 +85,7 @@ namespace DeltaFour.Infrastructure.Repositories
                 IsAllowedBypassFace = e.IsAllowedBypassFacial,
                 IsActive = e.IsActive,
                 IsConfirmed = e.IsConfirmed,
+                MustChangePassword = e.MustChangePassword,
                 Password = e.Password!,
                 CompanyId = e.CompanyId,
                 CompanyName = e.Company.Name,

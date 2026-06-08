@@ -374,7 +374,7 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTime(2026, 6, 7, 16, 40, 43, 32, DateTimeKind.Utc).AddTicks(4470))
+                        .HasDefaultValue(new DateTime(2026, 6, 7, 18, 38, 57, 727, DateTimeKind.Utc).AddTicks(4536))
                         .HasColumnName("created_at");
 
                     b.Property<bool>("IsRead")
@@ -934,6 +934,12 @@ namespace DeltaFour.Infrastructure.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("last_login");
+
+                    b.Property<bool>("MustChangePassword")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("must_change_password");
 
                     b.Property<string>("Name")
                         .IsRequired()
