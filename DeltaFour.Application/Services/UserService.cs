@@ -47,50 +47,58 @@ namespace DeltaFour.Application.Services
         ///</summary>
         public async Task Create(UserCreateDto dto, UserContext userAuthenticated)
         {
-            if (await unitOfWork.UserRepository.FindAny(e =>
-                    e.Email == dto.Email && e.CompanyId == userAuthenticated.CompanyId) is false)
+            var emailAlreadyExists = await unitOfWork.UserRepository.FindAny(e =>
+                e.Email == dto.Email && e.CompanyId == userAuthenticated.CompanyId);
+
+            if (emailAlreadyExists)
             {
-                Role? role = await unitOfWork.RoleRepository.Find(r => r.Name == dto.RoleName);
-                if (role != null)
-                {
-                    // A senha não é mais informada pelo cliente: geramos uma forte,
-                    // persistimos o hash e enviamos a senha em texto claro por e-mail.
-                    var generatedPassword = passwordService.GenerateStrong();
-                    dto.Password = passwordService.Hash(generatedPassword);
+                throw new InvalidOperationException(
+                    "Já existe um funcionário cadastrado com este e-mail nesta empresa.");
+            }
 
-                    var user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
+            Role? role = await unitOfWork.RoleRepository.Find(r => r.Name == dto.RoleName);
+            if (role is null)
+            {
+                throw new InvalidOperationException(
+                    "O perfil (cargo) informado é inválido ou não existe.");
+            }
 
-                    unitOfWork.UserRepository.Create(user);
+            // A senha não é mais informada pelo cliente: geramos uma forte,
+            // persistimos o hash e enviamos a senha em texto claro por e-mail.
+            var generatedPassword = passwordService.GenerateStrong();
+            dto.Password = passwordService.Hash(generatedPassword);
 
-                    if (!dto.IsAllowedBypassFacial)
-                    {
-                        var embedding = await faceRecognitionIntegration.GetFaceEmbeddings(dto.ImageBase64);
-                        var userFace = new UserFace(user.Id, embedding, userAuthenticated.Id);
+            var user = UserMapper.FromCreateDto(dto, role.Id, userAuthenticated);
 
-                        unitOfWork.UserFaceRepository.Create(userFace);
-                    }
+            unitOfWork.UserRepository.Create(user);
 
-                    var userShifts = new List<UserShift>();
+            if (!dto.IsAllowedBypassFacial)
+            {
+                var embedding = await faceRecognitionIntegration.GetFaceEmbeddings(dto.ImageBase64);
+                var userFace = new UserFace(user.Id, embedding, userAuthenticated.Id);
 
-                    foreach (var shift in dto.UserShift)
-                    {
-                        userShifts.Add(ShiftMapper.FromCreateUserDto(shift, user.Id, userAuthenticated.Id));
-                    }
+                unitOfWork.UserFaceRepository.Create(userFace);
+            }
 
-                    unitOfWork.UserShiftRepository.CreateAll(userShifts);
+            var userShifts = new List<UserShift>();
 
-                    await unitOfWork.Save();
+            foreach (var shift in dto.UserShift)
+            {
+                userShifts.Add(ShiftMapper.FromCreateUserDto(shift, user.Id, userAuthenticated.Id));
+            }
 
-                    // Envio das credenciais não deve derrubar a criação já persistida.
-                    try
-                    {
-                        await SendNewEmployeeCredentialsEmailAsync(dto.Email!, dto.Name!, generatedPassword);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Falha ao enviar e-mail de credenciais para o funcionário {Email}", dto.Email);
-                    }
-                }
+            unitOfWork.UserShiftRepository.CreateAll(userShifts);
+
+            await unitOfWork.Save();
+
+            // Envio das credenciais não deve derrubar a criação já persistida.
+            try
+            {
+                await SendNewEmployeeCredentialsEmailAsync(dto.Email!, dto.Name!, generatedPassword);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Falha ao enviar e-mail de credenciais para o funcionário {Email}", dto.Email);
             }
         }
 
