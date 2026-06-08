@@ -23,10 +23,15 @@ namespace DeltaFour.API.Controllers
         /// </remarks>
         [HttpGet("list")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<ActionResult<List<UserResponseDto>>> GetAllByCompany()
+        public async Task<ActionResult<PagedResponse<UserResponseDto>>> GetAllByCompany(
+            [FromQuery] string? search,
+            [FromQuery] string? roleName,
+            [FromQuery] string? departmentName,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(await service.GetAllByCompany(user.CompanyId));
+            return Ok(await service.GetAllByCompany(user.CompanyId, search, roleName, departmentName, page, pageSize));
         }
 
         /// <summary>
@@ -155,10 +160,33 @@ namespace DeltaFour.API.Controllers
 
         [HttpGet("get-all-attendances")]
         [Authorize(Policy = "RH_OR_ADMIN")]
-        public async Task<ActionResult<List<AllAttendanceByCompanyResponse>>> GetAllAttendancesByCompany()
+        public async Task<ActionResult<PagedResponse<AllAttendanceByCompanyResponse>>> GetAllAttendancesByCompany(
+            [FromQuery] string? search,
+            [FromQuery] string? date,
+            [FromQuery] string? punchType,
+            [FromQuery] string? lateStatus,
+            [FromQuery] string sort = "recent",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
-            return Ok(await service.GetAllAttendanceByCompany(user.CompanyId));
+
+            DateTime? parsedDate = null;
+            if (!string.IsNullOrWhiteSpace(date) &&
+                DateTime.TryParseExact(date, "yyyy-MM-dd", null,
+                    System.Globalization.DateTimeStyles.None, out var d))
+                parsedDate = d;
+
+            bool? isLate = lateStatus switch
+            {
+                "late" => true,
+                "on-time" => false,
+                _ => null
+            };
+
+            return Ok(await service.GetAllAttendanceByCompany(
+                user.CompanyId, search, parsedDate, punchType, isLate,
+                sortDesc: sort != "oldest", page, pageSize));
         }
 
         [HttpGet("attendance-dashboard")]

@@ -32,16 +32,10 @@ namespace DeltaFour.Application.Services
         ///<summary>
         ///Operation for get all users from company
         ///</summary>
-        public async Task<List<UserResponseDto>> GetAllByCompany(Guid companyId)
+        public async Task<PagedResponse<UserResponseDto>> GetAllByCompany(
+            Guid companyId, string? search, string? roleName, string? departmentName, int page, int pageSize)
         {
-            var users = await unitOfWork.UserRepository.GetAll(companyId);
-
-            if (users.Count != 0)
-            {
-                return users;
-            }
-
-            throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
+            return await unitOfWork.UserRepository.GetAll(companyId, search, roleName, departmentName, page, pageSize);
         }
 
         ///<summary>
@@ -448,9 +442,12 @@ namespace DeltaFour.Application.Services
         ///<summary>
         ///Operation for get all attendance of all employees from company
         ///</summary>
-        public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
+        public async Task<PagedResponse<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(
+            Guid companyId, string? search, DateTime? date, string? punchType,
+            bool? isLate, bool sortDesc, int page, int pageSize)
         {
-            return await unitOfWork.UserRepository.GetAllAttendanceByCompany(companyId);
+            return await unitOfWork.UserRepository.GetAllAttendanceByCompany(
+                companyId, search, date, punchType, isLate, sortDesc, page, pageSize);
         }
 
         ///<summary>

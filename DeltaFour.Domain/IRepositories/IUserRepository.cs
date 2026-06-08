@@ -7,7 +7,8 @@ namespace DeltaFour.Domain.IRepositories
 {
     public interface IUserRepository : IBaseRepository<User>
     {
-        Task<List<UserResponseDto>> GetAll(Guid companyId);
+        Task<PagedResponse<UserResponseDto>> GetAll(
+            Guid companyId, string? search, string? roleName, string? departmentName, int page, int pageSize);
 
         Task<Boolean> FindAny(Expression<Func<User, bool>> predicate);
 
@@ -27,8 +28,10 @@ namespace DeltaFour.Domain.IRepositories
 
         Task<List<User>> GetRhUsers(Guid companyId);
 
-        Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId);
-        
+        Task<PagedResponse<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(
+            Guid companyId, string? search, DateTime? date, string? punchType,
+            bool? isLate, bool sortDesc, int page, int pageSize);
+
         Task<List<User>> GetAllSelect(Guid companyId);
         
         Task<List<User>> GetDashboardUsers(Guid companyId);

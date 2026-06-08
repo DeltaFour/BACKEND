@@ -1,5 +1,6 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Domain.Entities;
+using DeltaFour.Domain.Enum;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Domain.ValueObjects.Dtos;
 using DeltaFour.Infrastructure.Context;
@@ -10,9 +11,26 @@ namespace DeltaFour.Infrastructure.Repositories
 {
     public class UserRepository(AppDbContext context) : IUserRepository
     {
-        public async Task<List<UserResponseDto>> GetAll(Guid companyId)
+        public async Task<PagedResponse<UserResponseDto>> GetAll(
+            Guid companyId, string? search, string? roleName, string? departmentName, int page, int pageSize)
         {
-            return await context.Employees.Where(e => e.IsActive == true && e.CompanyId == companyId)
+            var query = context.Employees.Where(e => e.IsActive && e.CompanyId == companyId);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(e => e.Name.Contains(search) || e.Email.Contains(search));
+
+            if (!string.IsNullOrWhiteSpace(roleName) && roleName != "all")
+                query = query.Where(e => e.Role != null && e.Role.Name == roleName);
+
+            if (!string.IsNullOrWhiteSpace(departmentName) && departmentName != "all")
+                query = query.Where(e => e.Department != null && e.Department.Name == departmentName);
+
+            var total = await query.CountAsync();
+
+            var data = await query
+                .OrderBy(e => e.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(e => new UserResponseDto()
                 {
                     Id = e.Id,
@@ -36,6 +54,15 @@ namespace DeltaFour.Infrastructure.Repositories
                         WorkShiftToleranceMinutes = s.WorkShift.ToleranceMinutes
                     }).ToList()
                 }).ToListAsync();
+
+            return new PagedResponse<UserResponseDto>
+            {
+                Data = data,
+                Total = total,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)total / pageSize)
+            };
         }
 
         public async Task<User?> FindIncludingRole(Expression<Func<User, bool>> predicate)
@@ -130,25 +157,62 @@ namespace DeltaFour.Infrastructure.Repositories
                 .FirstOrDefaultAsync(predicate);
         }
 
-        public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
+        public async Task<PagedResponse<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(
+            Guid companyId, string? search, DateTime? date, string? punchType,
+            bool? isLate, bool sortDesc, int page, int pageSize)
         {
-            var query = from e in context.Employees
-                        join at in context.EmployeeAttendances on e.Id equals at.UserId
-                        where e.IsActive == true && e.CompanyId == companyId
-                        select new AllAttendanceByCompanyResponse()
-                        {
-                            AttendanceId = at.Id,
-                            Name = e.Name,
-                            TimePunched = at.PunchTime,
-                            IsLate = at.IsLate,
-                            Type = at.PunchType,
-                            ShiftType = at.ShiftType,
-                            Status = at.Status,
-                            Justification = at.Justification,
-                            Observation = at.Observation,
-                            FilePath = at.FilePath,
-                        };
-            return await query.ToListAsync();
+            var query = context.EmployeeAttendances
+                .Join(context.Employees,
+                      at => at.UserId,
+                      e => e.Id,
+                      (at, e) => new { at, e })
+                .Where(x => x.e.IsActive && x.e.CompanyId == companyId);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(x => x.e.Name.Contains(search));
+
+            if (date.HasValue)
+                query = query.Where(x => x.at.PunchTime >= date.Value.Date
+                                      && x.at.PunchTime < date.Value.Date.AddDays(1));
+
+            if (!string.IsNullOrWhiteSpace(punchType) && Enum.TryParse<PunchType>(punchType, true, out var pt))
+                query = query.Where(x => x.at.PunchType == pt);
+
+            if (isLate.HasValue)
+                query = query.Where(x => x.at.IsLate == isLate.Value);
+
+            var total = await query.CountAsync();
+
+            query = sortDesc
+                ? query.OrderByDescending(x => x.at.PunchTime)
+                : query.OrderBy(x => x.at.PunchTime);
+
+            var data = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new AllAttendanceByCompanyResponse
+                {
+                    AttendanceId = x.at.Id,
+                    Name = x.e.Name,
+                    TimePunched = x.at.PunchTime,
+                    IsLate = x.at.IsLate,
+                    Type = x.at.PunchType,
+                    ShiftType = x.at.ShiftType,
+                    Status = x.at.Status,
+                    Justification = x.at.Justification,
+                    Observation = x.at.Observation,
+                    FilePath = x.at.FilePath,
+                })
+                .ToListAsync();
+
+            return new PagedResponse<AllAttendanceByCompanyResponse>
+            {
+                Data = data,
+                Total = total,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)total / pageSize)
+            };
         }
 
         public Task<List<User>> GetAllSelect(Guid companyId)
