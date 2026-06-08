@@ -11,6 +11,8 @@ services:
       - "8080:8080"
     env_file:
       - ./DeltaFour.API/.env
+    volumes:
+      - C:\deltafour-495323-b36ef3f96064.json:/secrets/gcs-key.json:ro
     depends_on:
       mysql-db:
         condition: service_healthy

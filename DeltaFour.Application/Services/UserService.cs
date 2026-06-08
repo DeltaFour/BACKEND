@@ -1,6 +1,7 @@
 ﻿using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Application.Integrations;
+using DeltaFour.Application.Integrations.Storage;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
@@ -23,7 +24,8 @@ namespace DeltaFour.Application.Services
         IFaceRecognitionIntegration faceRecognitionIntegration,
         IPasswordService passwordService,
         PunctualityMetricsService punctualityMetricsService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        IStorageService storageService
         )
     {
         private readonly String host = Environment.GetEnvironmentVariable("EMAIL_HOST");
@@ -378,51 +380,39 @@ namespace DeltaFour.Application.Services
 
                     String? filePath = null;
 
-                    if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                    if (dto.File != null && dto.File.Length > 0)
                     {
-                        string base64 = dto.FileBase64;
-                        string? mimeType = null;
+                        var file = dto.File;
 
-                        if (base64.Contains(","))
+                        string contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                            ? "application/octet-stream"
+                            : file.ContentType;
+
+                        // Extensão a partir do nome original; se não houver, infere do content type.
+                        string extension = Path.GetExtension(file.FileName);
+                        if (string.IsNullOrWhiteSpace(extension))
                         {
-                            var parts = base64.Split(',', 2);
-
-                            var metadata = parts[0];
-                            base64 = parts[1];
-
-                            mimeType = metadata
-                                .Replace("data:", "")
-                                .Replace(";base64", "");
+                            string? subType = contentType.Contains('/')
+                                ? contentType.Split('/')[1]
+                                : null;
+                            extension = string.IsNullOrWhiteSpace(subType)
+                                ? string.Empty
+                                : $".{subType}";
                         }
 
-                        byte[] fileBytes;
-
-                        fileBytes = Convert.FromBase64String(base64);
-
-                        string extension = mimeType.Split('/')[1];
-
-
-                        string folderName = mimeType == "application/pdf"
+                        string folderName = contentType == "application/pdf"
                             ? "pdf"
                             : "Image";
 
-                        string fileName = $"{Guid.NewGuid()}.{extension}";
+                        string objectName = $"{folderName}/{Guid.NewGuid()}{extension}";
 
-                        string folderPath = Path.Combine(
-                            "..",
-                            folderName
-                        );
+                        await using Stream stream = file.OpenReadStream();
 
-                        if (!Directory.Exists(folderPath))
-                        {
-                            Directory.CreateDirectory(folderPath);
-                        }
+                        string savedName =
+                            await storageService.SalvarArquivo(stream, objectName, contentType);
 
-                        string fullPath = Path.Combine(folderPath, fileName);
-
-                        await File.WriteAllBytesAsync(fullPath, fileBytes);
-
-                        filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                        // Salva a URL pública do bucket para o anexo ser acessado pelo frontend.
+                        filePath = $"{storageService.GetBaseUrl()}/{savedName}";
                     }
 
                     var userAttendance =

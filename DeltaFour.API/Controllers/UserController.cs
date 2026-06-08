@@ -145,7 +145,8 @@ namespace DeltaFour.API.Controllers
         }
 
         [HttpPost("punch-by-email")]
-        public async Task<IActionResult> PunchByEmail([FromBody] PunchByEmailDto dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> PunchByEmail([FromForm] PunchByEmailDto dto)
         {
             var user = HttpContext.GetUserAuthenticated<UserContext>();
             await service.PunchByEmail(dto, user);

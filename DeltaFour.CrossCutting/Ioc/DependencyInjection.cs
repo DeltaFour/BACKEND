@@ -1,4 +1,5 @@
 ﻿using DeltaFour.Application.Integrations;
+using DeltaFour.Application.Integrations.Storage;
 using DeltaFour.Application.Services;
 using DeltaFour.Domain.IRepositories;
 using DeltaFour.Infrastructure.Context;
@@ -74,6 +75,9 @@ public static class DependencyInjection
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<PunctualityMetricsService>();
         services.AddScoped<NotificationService>();
+
+        // Google Cloud Storage (upload de anexos do ponto)
+        services.AddScoped<IStorageService, GoogleCloudStorageService>();
 
         var faceRecocnitionBaseUrl = Environment.GetEnvironmentVariable("FACE_RECOGNITION_BASE_URL");
 
