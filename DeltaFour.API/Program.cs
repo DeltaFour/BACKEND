@@ -40,6 +40,8 @@ builder.Services.AddControllers(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new NullableUtcDateTimeJsonConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 

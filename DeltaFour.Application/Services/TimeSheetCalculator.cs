@@ -1,3 +1,4 @@
+using DeltaFour.Application.Common;
 using DeltaFour.Application.Dtos.TimeSheet;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
@@ -118,7 +119,7 @@ public static class TimeSheetCalculator
     {
         return attendances
             .Where(a => IsApproved(a.Status))
-            .GroupBy(a => DateOnly.FromDateTime(a.PunchTime))
+            .GroupBy(a => DateOnly.FromDateTime(AppClock.ToLocal(a.PunchTime)))
             .ToDictionary(g => g.Key, g => g.OrderBy(a => a.PunchTime).ToList());
     }
 
@@ -132,7 +133,7 @@ public static class TimeSheetCalculator
             .OrderBy(a => a.PunchTime)
             .FirstOrDefault();
 
-        return firstIn != null ? TimeOnly.FromDateTime(firstIn.PunchTime) : null;
+        return firstIn != null ? TimeOnly.FromDateTime(AppClock.ToLocal(firstIn.PunchTime)) : null;
     }
 
     /// <summary>
@@ -145,7 +146,7 @@ public static class TimeSheetCalculator
             .OrderByDescending(a => a.PunchTime)
             .FirstOrDefault();
 
-        return lastOut != null ? TimeOnly.FromDateTime(lastOut.PunchTime) : null;
+        return lastOut != null ? TimeOnly.FromDateTime(AppClock.ToLocal(lastOut.PunchTime)) : null;
     }
 
     /// <summary>

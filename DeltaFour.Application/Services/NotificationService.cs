@@ -1,3 +1,4 @@
+using DeltaFour.Application.Common;
 using DeltaFour.Application.Dtos.Notifications;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Application.Realtime;
@@ -50,7 +51,7 @@ namespace DeltaFour.Application.Services
             Guid companyId, Guid userId, string? userName, bool isLate, DateTime punchTime, Guid attendanceId)
         {
             var name = string.IsNullOrWhiteSpace(userName) ? "Funcionário" : userName.Trim();
-            var time = punchTime.ToString("HH:mm");
+            var time = AppClock.ToLocal(punchTime).ToString("HH:mm");
 
             var notification = new Notification
             {

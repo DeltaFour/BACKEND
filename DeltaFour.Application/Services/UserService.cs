@@ -1,4 +1,5 @@
-﻿using DeltaFour.Application.Dtos;
+﻿using DeltaFour.Application.Common;
+using DeltaFour.Application.Dtos;
 using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Application.Emails;
 using DeltaFour.Application.Integrations;
@@ -244,7 +245,7 @@ namespace DeltaFour.Application.Services
                 if (workShifts != null)
                 {
                     Boolean timeCheked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                        TimeOnly.FromDateTime(AppClock.ToLocal(dto.TimePunched)), dto.Type);
 
                     var userAttendance =
                         UserAttendanceMapper.UserAttendanceFromDto(dto, userContext.Id,
@@ -372,7 +373,7 @@ namespace DeltaFour.Application.Services
                 if (workShifts != null)
                 {
                     Boolean timeChecked = CheckTime(WorkShiftMapper.FromWorkShift(workShifts),
-                        TimeOnly.FromDateTime(dto.TimePunched), dto.Type);
+                        TimeOnly.FromDateTime(AppClock.ToLocal(dto.TimePunched)), dto.Type);
 
                     String? filePath = null;
 
@@ -537,11 +538,13 @@ namespace DeltaFour.Application.Services
                 throw new BadHttpRequestException("Ocorreu um erro");
             }
 
-            if (user is { IsAllowedBypassFacial: false, UserFaces: not null })
+            var faceTemplate = user.UserFaces?.FirstOrDefault()?.FaceTemplate;
+
+            if (!user.IsAllowedBypassFacial && faceTemplate != null)
             {
                 var faceMatchs = await faceRecognitionIntegration.ChecksIfFaceMatchs(
                     dto.ImageBase64,
-                    user.UserFaces.First().FaceTemplate
+                    faceTemplate
                 );
 
                 if (!faceMatchs)

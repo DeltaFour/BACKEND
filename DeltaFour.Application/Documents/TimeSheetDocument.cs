@@ -1,3 +1,4 @@
+using DeltaFour.Application.Common;
 using DeltaFour.Application.Dtos.TimeSheet;
 using DeltaFour.Application.Services;
 using QuestPDF.Fluent;
@@ -338,7 +339,7 @@ public class TimeSheetDocument : IDocument
                     info.Item().PaddingTop(3).Row(r =>
                     {
                         r.AutoItem().Text("Data/Hora: ").FontSize(7).FontColor(Colors.Grey.Darken1);
-                        r.AutoItem().Text(signedAt.Value.ToString("dd/MM/yyyy HH:mm")).FontSize(7);
+                        r.AutoItem().Text(AppClock.ToLocal(signedAt.Value).ToString("dd/MM/yyyy HH:mm")).FontSize(7);
                     });
                 }
                 else
