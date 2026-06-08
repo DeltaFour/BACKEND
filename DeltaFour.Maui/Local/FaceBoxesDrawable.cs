@@ -78,7 +78,7 @@ namespace DeltaFour.Maui.Local
 
             canvas.SaveState();
 
-            canvas.StrokeColor = Color.FromArgb("#F5F8FB");
+            canvas.StrokeColor = Color.FromArgb("#E9D5FF");
             canvas.StrokeSize = 3;
             canvas.Alpha = 0.9f;
 

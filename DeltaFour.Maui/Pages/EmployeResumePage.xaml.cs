@@ -183,7 +183,7 @@ public partial class EmployeResume : ContentPage
         var app = (App)Application.Current;
         app.MainPage = new ContentPage
         {
-            BackgroundColor = Color.FromArgb("#F5F8FB"),
+            BackgroundColor = Color.FromArgb("#0D0D0F"),
             Content = new Grid
             {
                 Children =
@@ -191,12 +191,14 @@ public partial class EmployeResume : ContentPage
                 new ActivityIndicator
                 {
                     IsRunning = true,
+                    Color = Color.FromArgb("#E9D5FF"),
                     VerticalOptions = LayoutOptions.Center,
                     HorizontalOptions = LayoutOptions.Center
                 },
                 new Label
                 {
                     Text = "Saindo...",
+                    TextColor = Color.FromArgb("#E9D5FF"),
                     VerticalOptions = LayoutOptions.End,
                     HorizontalOptions = LayoutOptions.Center,
                     Margin = new Thickness(0,0,0,40)
@@ -447,11 +449,11 @@ public partial class EmployeResume : ContentPage
 
         var fsLast = new FormattedString();
         fsLast.Spans.Add(new Span { Text = "Às ",
-            TextColor = Color.FromArgb("#8EA0B3")        
+            TextColor = Color.FromArgb("#BDA9D8")
         });
         fsLast.Spans.Add(new Span
         {
-            TextColor = Color.FromArgb("#8EA0B3"),
+            TextColor = Color.FromArgb("#BDA9D8"),
             Text = lastTime.ToString("HH:mm:ss", PtBr),
             FontAttributes = FontAttributes.Bold
         });
@@ -497,8 +499,8 @@ public partial class EmployeResume : ContentPage
     {
         var nowBrt = GetSnapshotNowBrt();
         var mesUpper = nowBrt.ToString("MMM", PtBr).ToUpper(PtBr);
-        Color primary = Colors.Black;
-        if (Application.Current.Resources.TryGetValue("Primary", out var v))
+        Color primary = Color.FromArgb("#E9D5FF");
+        if (Application.Current.Resources.TryGetValue("LogoOnDark", out var v))
             primary = v is SolidColorBrush b ? b.Color : (Color)v;
         LblHoje.FormattedText = new FormattedString
         {
@@ -839,7 +841,7 @@ public partial class EmployeResume : ContentPage
         {
             _ring.ProgressStartAngleDeg = NormalizeAngle(startDial + entryU);
             _ring.ProgressEndAngleDeg = NormalizeAngle(startDial + insideEndU);
-            _ring.ProgressColor = _shiftCompleted ? _ring.CompletedColor : Color.FromArgb("#1e2d69");
+            _ring.ProgressColor = _shiftCompleted ? _ring.CompletedColor : Color.FromArgb("#E9D5FF");
             _ring.ShowProgress = true;
         }
         else
@@ -861,7 +863,7 @@ public partial class EmployeResume : ContentPage
             {
                 _ring.OvertimeStartAngleDeg = NormalizeAngle(startDial + overtimeStartU);
                 _ring.OvertimeEndAngleDeg = NormalizeAngle(startDial + overtimeEndU);
-                var baseColor = _shiftCompleted ? _ring.CompletedColor : Color.FromArgb("#1e2d69");
+                var baseColor = _shiftCompleted ? _ring.CompletedColor : Color.FromArgb("#E9D5FF");
                 _ring.OvertimeColor = baseColor.WithAlpha(0.2f);
                 _ring.ShowOvertime = true;
             }
@@ -1034,7 +1036,7 @@ public partial class EmployeResume : ContentPage
         {
             FontAttributes = FontAttributes.Bold,
             Text = isIn ? "Entrada" : "Saída",
-            TextColor = Colors.Black
+            TextColor = Colors.White
         });
         if (_user is not null)
         {

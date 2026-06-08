@@ -6,8 +6,8 @@
     xmlns:local="clr-namespace:DeltaFour.Maui"
     xmlns:pages="clr-namespace:DeltaFour.Maui.Pages"
     Shell.FlyoutBehavior="Disabled"
-    Shell.TabBarBackgroundColor="#F5F8FB"
-    Shell.TabBarTitleColor="#1e2d69"
+    Shell.TabBarBackgroundColor="{StaticResource Surface}"
+    Shell.TabBarTitleColor="{StaticResource LogoOnDark}"
     Title="DeltaFour.Maui">
         <ShellContent
         Title="L\/"

@@ -24,13 +24,13 @@ public sealed class ShiftRingDrawable : IDrawable
 
     // Barra de progresso (entre entrada e horário atual ou saída)
     public bool ShowProgress { get; set; }
-    public Color ProgressColor { get; set; } = Color.FromArgb("#1e2d69");
+    public Color ProgressColor { get; set; } = Color.FromArgb("#E9D5FF");
     public float ProgressStartAngleDeg { get; set; }
     public float ProgressEndAngleDeg { get; set; }
 
     // Estado de expediente encerrado (ponteiro + barra + marcadores cinza)
     public bool ShiftCompleted { get; set; }
-    public Color CompletedColor { get; set; } = Color.FromArgb("#c8c8c8");
+    public Color CompletedColor { get; set; } = Color.FromArgb("#BDA9D8");
     public bool ShowOvertime { get; set; } = false;
     public float OvertimeStartAngleDeg { get; set; }
     public float OvertimeEndAngleDeg { get; set; }
@@ -39,8 +39,8 @@ public sealed class ShiftRingDrawable : IDrawable
     // Aparência geral
     public float Stroke { get; set; } = 8f;
     public float PointerSize { get; set; } = 10f;
-    public Color TrackColor { get; set; } = Color.FromArgb("#F5F8FB");
-    public Color HandColor { get; set; } = Color.FromArgb("#1e2d69");
+    public Color TrackColor { get; set; } = Color.FromArgb("#2F1A4C");
+    public Color HandColor { get; set; } = Color.FromArgb("#E9D5FF");
 
     public ShiftRingDrawable()
     {

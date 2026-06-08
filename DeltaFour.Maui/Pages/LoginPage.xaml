@@ -6,10 +6,11 @@
              NavigationPage.HasNavigationBar="False"
              Title="Login">
 
-    <Grid RowSpacing="0" Padding="0" BackgroundColor="#F5F8FB">
+    <Grid RowSpacing="0" Padding="0" BackgroundColor="{StaticResource Surface}">
         <Grid.Resources>
-            <Color x:Key="PrimaryBlue">#1e2d69</Color>
-            <Color x:Key="Ink">#1A1A1A</Color>
+            <Color x:Key="PrimaryBlue">#251241</Color>
+            <Color x:Key="Ink">#FFFFFF</Color>
+            <Color x:Key="FieldMuted">#BDA9D8</Color>
         </Grid.Resources>
 
         <Grid.RowDefinitions>
@@ -21,10 +22,25 @@
             <Path VerticalOptions="End"
               HorizontalOptions="Fill"
               HeightRequest="120"
-              Fill="#F5F8FB"
+              Fill="{StaticResource Surface}"
               Aspect="Fill"
               Margin="-2,0,-2,-1"
+              ZIndex="1"
               Data="M24,40 H336 A24,24 0 0 1 360,64 V120 H0 V64 A24,24 0 0 1 24,40 Z"/>
+
+            <Grid
+              HeightRequest="160"
+              HorizontalOptions="Fill"
+              VerticalOptions="Start"
+              ZIndex="2">
+                <Image
+                  Source="file.png"
+                  WidthRequest="320"
+                  HeightRequest="180"
+                  Aspect="AspectFit"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Center"/>
+            </Grid>
         </Grid>
 
         <Grid Grid.Row="1"
@@ -53,35 +69,60 @@
                TextColor="{StaticResource Ink}"
                VerticalOptions="Start"/>
 
-            <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Grid Grid.Row="2" HorizontalOptions="Fill">
                 <Entry x:Name="UsernameEntry"
                    Visual="Default"
                    Placeholder="E-mail"
                    Keyboard="Email"
                    ReturnType="Next"
                    TextColor="{StaticResource Ink}"
-                   PlaceholderColor="#9AA0A6"/>
+                   PlaceholderColor="{StaticResource FieldMuted}"
+                   HorizontalOptions="Fill"/>
             </Grid>
 
-            <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Grid Grid.Row="3" HorizontalOptions="Fill">
                 <Entry x:Name="PasswordEntry"
                    Visual="Default"
                    Placeholder="Senha"
                    IsPassword="True"
                    ReturnType="Done"
                    TextColor="{StaticResource Ink}"
-                   PlaceholderColor="#9AA0A6"/>
-                <Button x:Name="TogglePasswordButton"
-                    Grid.Column="1"
-                    Text="Mostrar"
-                    Clicked="OnTogglePassword"
-                    SemanticProperties.Hint="Mostrar ou ocultar senha"
+                   PlaceholderColor="{StaticResource FieldMuted}"
+                   HorizontalOptions="Fill"/>
+                <Grid x:Name="TogglePasswordButton"
+                    Padding="8"
+                    Margin="0,0,8,0"
+                    HeightRequest="38"
+                    WidthRequest="38"
                     BackgroundColor="Transparent"
-                    TextColor="{StaticResource PrimaryBlue}"
-                    Padding="10,6"
-                    CornerRadius="18"
-                    BorderColor="Transparent"
-                    VerticalOptions="Center"/>
+                    HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    SemanticProperties.Description="Mostrar senha"
+                    SemanticProperties.Hint="Mostrar ou ocultar senha"
+                    ZIndex="1">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTogglePassword"/>
+                    </Grid.GestureRecognizers>
+
+                    <Path x:Name="EyeClosedIcon"
+                        Aspect="Uniform"
+                        Fill="{StaticResource LogoOnDark}"
+                        HeightRequest="22"
+                        WidthRequest="22"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Data="m644-428-58-58q9-47-27-88.5T466-606l-58-58q17-8 35-12t37-4q75 0 127.5 52.5T660-500q0 19-4 37t-12 35Zm128 126-58-56q38-29 67.5-65T832-500q-50-101-144.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84.5-25.5T480-800q146 0 264 83t176 217q-23 53-60 99.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-146 0-264-83T40-500q21-49 53.5-92.5T170-670L56-784l56-56 736 728-56 56ZM226-614q-30 25-54.5 54.5T128-500q50 101 144.5 160.5T480-280q20 0 39.5-2.5T558-290l-62-62q-4 1-8 1.5t-8 .5q-75 0-127.5-52.5T300-500q0-4 .5-8t1.5-8l-76-76Zm320 54Zm-138 138Z"/>
+
+                    <Path x:Name="EyeOpenIcon"
+                        Aspect="Uniform"
+                        Fill="{StaticResource LogoOnDark}"
+                        HeightRequest="22"
+                        WidthRequest="22"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        IsVisible="False"
+                        Data="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-264-83T40-500q58-134 176-217t264-83q146 0 264 83t176 217q-58 134-176 217t-264 83Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/>
+                </Grid>
             </Grid>
 
             <Grid Grid.Row="4"
@@ -92,8 +133,8 @@
                   >
                 
                 <CheckBox x:Name="RememberCheck"
-                         Color="{StaticResource PrimaryBlue}"
-                          BackgroundColor="#F5F8FB"
+                         Color="{StaticResource LogoOnDark}"
+                          BackgroundColor="{StaticResource Surface}"
                          VerticalOptions="Center"/>
                 <Label Grid.Column="1"
                          Text="Lembrar-me"
@@ -109,14 +150,14 @@
                 HeightRequest="50"
                 CornerRadius="16"
                 BackgroundColor="{StaticResource PrimaryBlue}"
-                TextColor="White"
+                TextColor="{StaticResource LogoOnDark}"
                 FontAttributes="Bold"/>
 
             <ActivityIndicator Grid.Row="7"
                            x:Name="BusyIndicator"
                            IsVisible="False"
                            IsRunning="False"
-                           Color="{StaticResource PrimaryBlue}"/>
+                           Color="{StaticResource LogoOnDark}"/>
         </Grid>
     </Grid>
 

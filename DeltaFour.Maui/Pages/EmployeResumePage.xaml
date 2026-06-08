@@ -9,16 +9,31 @@
     Shell.BackgroundColor="{StaticResource Surface}"
         >
     <Shell.TitleView>
-        <Grid Padding="0,15,0,0">
-            <Label Style="{StaticResource CardTitle}">
+        <Grid
+            Padding="17.5,3,56,0"
+            RowDefinitions="Auto,Auto"
+            RowSpacing="1"
+            HeightRequest="52"
+            HorizontalOptions="Fill"
+            VerticalOptions="Center">
+            <Label Grid.Row="0" Style="{StaticResource CardTitle}">
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="{Binding GreetingPrefix}" />
-                        <Span Text="{Binding GreetingText}" TextColor="{StaticResource Primary}" FontAttributes="Bold"/>
+                        <Span Text="{Binding GreetingText}" TextColor="{StaticResource LogoOnDark}" FontAttributes="Bold"/>
                         <Span Text="!" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+            <Label
+                Grid.Row="1"
+                Text="{Binding CompanyNameText}"
+                TextColor="{StaticResource Muted}"
+                FontSize="12"
+                HeightRequest="16"
+                MaxLines="1"
+                LineBreakMode="TailTruncation"
+                VerticalTextAlignment="Center" />
         </Grid>
     </Shell.TitleView>
 
@@ -72,7 +87,7 @@
                         Grid.Column="1"
                         Aspect="Fill"
                         Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
-                        Fill="{StaticResource Primary}"
+                        Fill="{StaticResource LogoOnDark}"
                         HeightRequest="24"
                         WidthRequest="24"
                         HorizontalOptions="End"
@@ -113,7 +128,7 @@
                         Grid.Column="1"
                         Aspect="Fill"
                         Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5-23.5T840-760v280h-80v-280H200v560h280v80H200Zm360 0v-80h144L332-572l56-56 372 371v-143h80v280H560Z"
-                        Fill="{StaticResource Primary}"
+                        Fill="{StaticResource LogoOnDark}"
                         HeightRequest="24"
                         WidthRequest="24"
                         HorizontalOptions="End"
@@ -156,7 +171,7 @@
                         Grid.Column="1"
                         Aspect="Fill"
                         Data="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z"
-                        Fill="{StaticResource Primary}"
+                        Fill="{StaticResource LogoOnDark}"
                         HeightRequest="24"
                         WidthRequest="24"
                         HorizontalOptions="End"
@@ -198,7 +213,7 @@
                         Grid.Column="1"
                         Aspect="Fill"
                         Data="M200-640h560v-80H200v80Zm0 0v-80 80Zm0 560q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v227q-19-9-39-15t-41-9v-43H200v400h252q7 22 16.5 42T491-80H200Zm520 40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Zm67-105 28-28-75-75v-112h-40v128l87 87Z"
-                        Fill="{StaticResource Primary}"
+                        Fill="{StaticResource LogoOnDark}"
                         HeightRequest="24"
                         WidthRequest="24"
                         HorizontalOptions="End"
@@ -219,137 +234,90 @@
         </Grid>
 
         <Frame Grid.Row="2" Style="{StaticResource CardFrame}" Margin="0,6">
-            <Grid ColumnDefinitions="*,Auto,*"
-        RowDefinitions="Auto,Auto,*,Auto,Auto"
-        ColumnSpacing="12"
-        RowSpacing="8">
+            <Grid
+                RowDefinitions="Auto,Auto"
+                RowSpacing="16">
 
-                <Label Grid.Row="0" Grid.Column="2"
-           Padding="6,2"
-           FontSize="12"
-           Text="Trabalhando em"
-           TextColor="{StaticResource Muted}"
-           HorizontalTextAlignment="End"/>
+                <Grid
+                    Grid.Row="0"
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="12"
+                    VerticalOptions="Center">
 
-                <HorizontalStackLayout Grid.Row="0"
-                       Grid.Column="0"
-                       HorizontalOptions="Start"
-                       VerticalOptions="Center">
+                    <Frame
+                        Padding="6,2"
+                        BackgroundColor="{Binding StatusFrameBackground}"
+                        BorderColor="{StaticResource CardBorder}"
+                        CornerRadius="8"
+                        HasShadow="False"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Center">
 
-                    <Frame Padding="6,2"
-           BackgroundColor="{Binding StatusFrameBackground}"
-           BorderColor="#0505050F"
-           CornerRadius="8"
-           HasShadow="False"
-           VerticalOptions="Center">
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="4"
+                            VerticalOptions="Center">
 
-                        <Grid ColumnDefinitions="Auto,*"
-              ColumnSpacing="4"
-              VerticalOptions="Center">
+                            <Path
+                                Grid.Column="0"
+                                Aspect="Fill"
+                                Data="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+                                Fill="{Binding StatusColor}"
+                                HeightRequest="6"
+                                WidthRequest="6"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
 
-                            <Path Grid.Column="0"
-                  Aspect="Fill"
-                  Data="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
-                  Fill="{Binding StatusColor}"
-                  HeightRequest="6"
-                  WidthRequest="6"
-                  HorizontalOptions="Center"
-                  VerticalOptions="Center" />
-
-                            <Label Grid.Column="1"
-                   Text="{Binding StatusText}"
-                   FontAttributes="Bold"
-                   FontSize="12"
-                                   
-                   TextColor="{Binding StatusColor}"
-                   VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding StatusText}"
+                                FontAttributes="Bold"
+                                FontSize="12"
+                                TextColor="{Binding StatusColor}"
+                                VerticalOptions="Center" />
                         </Grid>
                     </Frame>
 
-                </HorizontalStackLayout>
-
-                <Grid Grid.RowSpan="3" Grid.Column="1"
-          WidthRequest="80"
-          HorizontalOptions="Center"
-          VerticalOptions="Start">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <BoxView Grid.Row="0"
-               WidthRequest="1"
-               HorizontalOptions="Center"
-               VerticalOptions="Fill"
-               Color="#EEF1F5"/>
-
-                    <Grid Grid.Row="1" WidthRequest="80" HeightRequest="80">
-                        <GraphicsView x:Name="ShiftRing"/>
-                        <Label x:Name="NowBrtLabel"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               FontSize="12.5"
-               FontAttributes="Bold"/>
-                        <Label Text="BRT"
-               HorizontalOptions="Center"
-               VerticalOptions="End"
-               Margin="0,0,0,15"
-               FontSize="12"
-               TextColor="{StaticResource Muted}"/>
-                    </Grid>
-
-                    <BoxView Grid.Row="2"
-               WidthRequest="1"
-               HorizontalOptions="Center"
-               VerticalOptions="Fill"
-               Color="#EEF1F5"/>
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        Spacing="6"
+                        HorizontalOptions="End"
+                        VerticalOptions="Center">
+                        <Path
+                            Aspect="Uniform"
+                            Data="m612-292 56-56-148-148v-184h-80v216l172 172ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-400Zm0 320q133 0 226.5-93.5T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 133 93.5 226.5T480-160Z"
+                            Fill="{StaticResource LogoOnDark}"
+                            HeightRequest="18"
+                            WidthRequest="18"
+                            VerticalOptions="Center" />
+                        <Label
+                            x:Name="NowBrtLabel"
+                            Text="--:--:--"
+                            FontAttributes="Bold"
+                            FontSize="18"
+                            TextColor="{StaticResource LogoOnDark}"
+                            VerticalTextAlignment="Center" />
+                    </HorizontalStackLayout>
                 </Grid>
-                <Label Grid.Row="1" Grid.Column="0"
-       Padding="6,2"
-       FontSize="12"
-       TextColor="{StaticResource Muted}"
-       VerticalTextAlignment="Center">
-                    <Label.FormattedText>
-                        <Binding Path="LastPunchFormatted" />
-                    </Label.FormattedText>
-                </Label>
 
-                <Label Grid.Row="1" Grid.Column="2"
-           Padding="6,2"
-           FontAttributes="Bold"
-           FontSize="13"
-           Text="{Binding CompanyNameText}"
-           LineBreakMode="TailTruncation"
-           HorizontalTextAlignment="End"
-           VerticalTextAlignment="Center"/>
-                <ImageButton Grid.Row="2" Grid.Column="2"
-                        HorizontalOptions="Start"
-                        Source="chevron"
-                        HeightRequest="20"
-                        WidthRequest="20"
-                        Pressed="OnActionButtonPressed"
-                        Released="OnActionButtonReleased"
-                        CornerRadius="16"
-                        />
-                <BoxView Grid.Row="2" Grid.ColumnSpan="3"
-             Color="#F5F8FB"
-             HeightRequest="1"        
-             HorizontalOptions="Fill"
-             Margin="0,25,0,0"/>
+                <Button
+                    Grid.Row="1"
+                    BackgroundColor="{Binding ActionButtonBackground}"
+                    IsEnabled="{Binding IsActionButtonEnabled}"
+                    CornerRadius="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    Text="{Binding ActionButtonText}"
+                    TextColor="White"
+                    TranslationY="5"
+                    Clicked="OnActionButtonClicked"
+                    VerticalOptions="End" />
 
-                <Button Grid.Row="3" Grid.ColumnSpan="3"
-                        BackgroundColor="{Binding ActionButtonBackground}"
-                        IsEnabled="{Binding IsActionButtonEnabled}"
-                        CornerRadius="16"
-                        FontAttributes="Bold"
-                        HeightRequest="50"
-                        Text="{Binding ActionButtonText}"
-                        TextColor="White"
-                        TranslationY="5"
-                        Clicked="OnActionButtonClicked"
-                        VerticalOptions="End"
-                        />   
+                <GraphicsView
+                    x:Name="ShiftRing"
+                    IsVisible="False"
+                    HeightRequest="1"
+                    WidthRequest="1" />
             </Grid>
         </Frame>
 
@@ -378,7 +346,7 @@
                 <Grid>
                     <Label HorizontalTextAlignment="Center" 
                            Text="Não há registros para exibir no momento."
-                           TextColor="#6B7280"
+                           TextColor="{StaticResource Muted}"
                            />
                 </Grid>
             </CollectionView.EmptyView>
@@ -400,15 +368,19 @@
                                 Grid.RowSpan="2"
                                 WidthRequest="36"
                                 HeightRequest="36"
-                                BackgroundColor="#c4e3f5"
-                                BorderColor="#0505050f"
+                                BackgroundColor="{StaticResource Primary}"
+                                BorderColor="{StaticResource CardBorder}"
+                                Padding="0"
+                                CornerRadius="8"
                                 HasShadow="False">
 
                                 <Path
-                                    Aspect="Fill"
-                                    Fill="{StaticResource Primary}"
+                                    Aspect="Uniform"
+                                    Fill="{StaticResource LogoOnDark}"
                                     HeightRequest="20"
                                     WidthRequest="20"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
                                     Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z">
 
                                     <Path.Triggers>

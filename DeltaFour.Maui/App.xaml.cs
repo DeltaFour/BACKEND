@@ -26,7 +26,7 @@ namespace DeltaFour.Maui
             _sp = sp;
             MainPage = new ContentPage
             {
-                BackgroundColor = Color.FromArgb("#F5F8FB"),
+                BackgroundColor = Color.FromArgb("#0D0D0F"),
                 Content = new Grid
                 {
                     Children =
@@ -34,12 +34,14 @@ namespace DeltaFour.Maui
                         new ActivityIndicator
                         {
                             IsRunning = true,
+                            Color = Color.FromArgb("#E9D5FF"),
                             VerticalOptions = LayoutOptions.Center,
                             HorizontalOptions = LayoutOptions.Center
                         },
                         new Label
                         {
                             Text = "Carregando...",
+                            TextColor = Color.FromArgb("#E9D5FF"),
                             VerticalOptions = LayoutOptions.End,
                             HorizontalOptions = LayoutOptions.Center,
                             Margin = new Thickness(0,0,0,40)

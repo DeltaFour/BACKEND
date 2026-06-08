@@ -172,7 +172,7 @@ namespace DeltaFour.Maui.Services
                 var dto = PunchMapper.FromBrtTime(timeBrt, punchingOut);
                 var json = JsonSerializer.Serialize(dto);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
-                using var response = await _httpClient.PostAsync("api/v1/user/allowed-punch", content, cancellationToken);
+                using var response = await _httpClient.PostAsync("api/v1/user/allowed-punch-web", content, cancellationToken);
                 if (!response.IsSuccessStatusCode)
                     return false;
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);

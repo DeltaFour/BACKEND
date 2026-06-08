@@ -78,7 +78,9 @@ namespace DeltaFour.Maui
         {
             _hidePassword = !_hidePassword;
             PasswordEntry.IsPassword = _hidePassword;
-            TogglePasswordButton.Text = _hidePassword ? "Mostrar" : "Ocultar";
+            EyeClosedIcon.IsVisible = _hidePassword;
+            EyeOpenIcon.IsVisible = !_hidePassword;
+            SemanticProperties.SetDescription(TogglePasswordButton, _hidePassword ? "Mostrar senha" : "Ocultar senha");
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using DeltaFour.Maui;
 using DeltaFour.Maui.Services;
 using DeltaFour.Maui.Controls;
-#if ANDROID
+#if ANDROID || WINDOWS || MACCATALYST
 using DeltaFour.Maui.Handlers;
 #endif
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ public static class MauiProgram
             }).Logging.AddDebug();
         builder.ConfigureMauiHandlers(handlers =>
         {
-#if ANDROID
+#if ANDROID || WINDOWS || MACCATALYST
             handlers.AddHandler(typeof(CameraView), typeof(CameraViewHandler));
 #endif
         });
@@ -53,7 +53,7 @@ public static class MauiProgram
             var client = new HttpClient(handler)
             {
                
-                BaseAddress = new Uri("https://zb3467wz-5212.brs.devtunnels.ms/"),
+                BaseAddress = new Uri("https://q91g3sf3-5212.brs.devtunnels.ms/"),
                 Timeout = TimeSpan.FromSeconds(30)
             };
             return client;
