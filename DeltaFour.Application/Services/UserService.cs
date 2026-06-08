@@ -2,6 +2,7 @@
 using DeltaFour.Application.Dtos.Responses;
 using DeltaFour.Application.Emails;
 using DeltaFour.Application.Integrations;
+using DeltaFour.Application.Integrations.Storage;
 using DeltaFour.Application.Mappers;
 using DeltaFour.Domain.Entities;
 using DeltaFour.Domain.Enum;
@@ -22,6 +23,7 @@ namespace DeltaFour.Application.Services
         IPasswordService passwordService,
         PunctualityMetricsService punctualityMetricsService,
         NotificationService notificationService,
+        IStorageService storageService,
         IEmailSender emailSender
         )
     {
@@ -30,16 +32,10 @@ namespace DeltaFour.Application.Services
         ///<summary>
         ///Operation for get all users from company
         ///</summary>
-        public async Task<List<UserResponseDto>> GetAllByCompany(Guid companyId)
+        public async Task<PagedResponse<UserResponseDto>> GetAllByCompany(
+            Guid companyId, string? search, string? roleName, string? departmentName, int page, int pageSize)
         {
-            var users = await unitOfWork.UserRepository.GetAll(companyId);
-
-            if (users.Count != 0)
-            {
-                return users;
-            }
-
-            throw new InvalidOperationException("Erro interno! Comunique o Suporte.");
+            return await unitOfWork.UserRepository.GetAll(companyId, search, roleName, departmentName, page, pageSize);
         }
 
         ///<summary>
@@ -380,51 +376,39 @@ namespace DeltaFour.Application.Services
 
                     String? filePath = null;
 
-                    if (!string.IsNullOrWhiteSpace(dto.FileBase64))
+                    if (dto.File != null && dto.File.Length > 0)
                     {
-                        string base64 = dto.FileBase64;
-                        string? mimeType = null;
+                        var file = dto.File;
 
-                        if (base64.Contains(","))
+                        string contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                            ? "application/octet-stream"
+                            : file.ContentType;
+
+                        // Extensão a partir do nome original; se não houver, infere do content type.
+                        string extension = Path.GetExtension(file.FileName);
+                        if (string.IsNullOrWhiteSpace(extension))
                         {
-                            var parts = base64.Split(',', 2);
-
-                            var metadata = parts[0];
-                            base64 = parts[1];
-
-                            mimeType = metadata
-                                .Replace("data:", "")
-                                .Replace(";base64", "");
+                            string? subType = contentType.Contains('/')
+                                ? contentType.Split('/')[1]
+                                : null;
+                            extension = string.IsNullOrWhiteSpace(subType)
+                                ? string.Empty
+                                : $".{subType}";
                         }
 
-                        byte[] fileBytes;
-
-                        fileBytes = Convert.FromBase64String(base64);
-
-                        string extension = mimeType.Split('/')[1];
-
-
-                        string folderName = mimeType == "application/pdf"
+                        string folderName = contentType == "application/pdf"
                             ? "pdf"
                             : "Image";
 
-                        string fileName = $"{Guid.NewGuid()}.{extension}";
+                        string objectName = $"{folderName}/{Guid.NewGuid()}{extension}";
 
-                        string folderPath = Path.Combine(
-                            "..",
-                            folderName
-                        );
+                        await using Stream stream = file.OpenReadStream();
 
-                        if (!Directory.Exists(folderPath))
-                        {
-                            Directory.CreateDirectory(folderPath);
-                        }
+                        string savedName =
+                            await storageService.SalvarArquivo(stream, objectName, contentType);
 
-                        string fullPath = Path.Combine(folderPath, fileName);
-
-                        await File.WriteAllBytesAsync(fullPath, fileBytes);
-
-                        filePath = Path.Combine(folderName, fileName).Replace("\\", "/");
+                        // Salva a URL pública do bucket para o anexo ser acessado pelo frontend.
+                        filePath = $"{storageService.GetBaseUrl()}/{savedName}";
                     }
 
                     var userAttendance =
@@ -466,9 +450,12 @@ namespace DeltaFour.Application.Services
         ///<summary>
         ///Operation for get all attendance of all employees from company
         ///</summary>
-        public async Task<List<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(Guid companyId)
+        public async Task<PagedResponse<AllAttendanceByCompanyResponse>> GetAllAttendanceByCompany(
+            Guid companyId, string? search, DateTime? date, string? punchType,
+            bool? isLate, bool sortDesc, int page, int pageSize)
         {
-            return await unitOfWork.UserRepository.GetAllAttendanceByCompany(companyId);
+            return await unitOfWork.UserRepository.GetAllAttendanceByCompany(
+                companyId, search, date, punchType, isLate, sortDesc, page, pageSize);
         }
 
         ///<summary>
