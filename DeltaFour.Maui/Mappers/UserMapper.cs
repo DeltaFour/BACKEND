@@ -54,7 +54,8 @@ namespace DeltaFour.Maui.Mappers
 
             return new RecentActivity
             {
-                PunchTime = BrtTime.ToBrt(src.PunchTime),
+                // punchDate vem como UTC real da batida; punchTime pode vir em BRT/local marcado com Z.
+                PunchTime = BrtTime.ToBrt(src.PunchDate),
                 PunchType = src.PunchType,
                 ShiftType = src.ShiftType
             };
