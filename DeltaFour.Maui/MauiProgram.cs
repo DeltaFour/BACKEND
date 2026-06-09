@@ -53,7 +53,7 @@ public static class MauiProgram
             var client = new HttpClient(handler)
             {
                
-                BaseAddress = new Uri("https://q91g3sf3-5212.brs.devtunnels.ms/"),
+                BaseAddress = new Uri("https://backend-1077705392725.southamerica-east1.run.app/"),
                 Timeout = TimeSpan.FromSeconds(30)
             };
             return client;
