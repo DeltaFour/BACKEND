@@ -29,6 +29,8 @@ public partial class EmployeResume : ContentPage
     public string GreetingText { get; private set; } = "";
     public string StartTimeBrt { get; private set; } = "";
     public string EndTimeBrt { get; private set; } = "";
+    public double HeaderTimeFontSize { get; private set; } = 20d;
+    public double CurrentClockFontSize { get; private set; } = 18d;
     public string ShiftTypeText { get; private set; } = "";
     public string GreetingPrefix { get; private set; } = "Olá ";
     public string StartedOnDate { get; private set; } = "";
@@ -70,6 +72,30 @@ public partial class EmployeResume : ContentPage
         BindingContext = this;
         HandlerChanged += OnHandlerChanged;
         ShiftRing.Drawable = _ring;
+    }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        ApplyResponsiveTimeFonts(width);
+    }
+
+    private void ApplyResponsiveTimeFonts(double width)
+    {
+        if (width <= 0)
+            return;
+
+        var headerSize = width < 360 ? 18d : width < 430 ? 20d : 22d;
+        var clockSize = width < 360 ? 15d : width < 430 ? 17d : 18d;
+
+        if (Math.Abs(HeaderTimeFontSize - headerSize) < 0.1 &&
+            Math.Abs(CurrentClockFontSize - clockSize) < 0.1)
+            return;
+
+        HeaderTimeFontSize = headerSize;
+        CurrentClockFontSize = clockSize;
+        OnPropertyChanged(nameof(HeaderTimeFontSize));
+        OnPropertyChanged(nameof(CurrentClockFontSize));
     }
 
     #region Helpers de “now” (DEBUG vs normal)
@@ -171,6 +197,13 @@ public partial class EmployeResume : ContentPage
         if (UseDemoClock && session?.DemoNowBrt is not null)
             return session.DemoNowBrt.Value;
         return BrtTime.Now;
+    }
+
+    private static string FormatBrtTimeText(DateTime value, bool includeSeconds)
+    {
+        var brt = BrtTime.ToBrt(value);
+        var format = includeSeconds ? "HH:mm:ss 'BRT'" : "HH:mm 'BRT'";
+        return brt.ToString(format, PtBr);
     }
 
     #endregion
@@ -400,11 +433,11 @@ public partial class EmployeResume : ContentPage
         var windowStart = shiftStartToday - tol;
         var lateLimit = shiftEndToday + tol + TimeSpan.FromHours(12);
         GreetingText = GetFirstName(_user.Name);
-        StartTimeBrt = startTemplate.ToString("HH:mm 'BRT'", PtBr);
-        EndTimeBrt = endTemplate.ToString("HH:mm 'BRT'", PtBr);
+        StartTimeBrt = FormatBrtTimeText(startTemplate, includeSeconds: false);
+        EndTimeBrt = FormatBrtTimeText(endTemplate, includeSeconds: false);
         ShiftTypeText = _user.ShiftType;
         StartedOnDate = startTemplate.ToString("dd/MM/yy", PtBr);
-        WorkWindowText = $"Das {startTemplate:HH:mm} Até as {endTemplate:HH:mm}";
+        WorkWindowText = $"Das {FormatBrtTimeText(startTemplate, includeSeconds: false)} até as {FormatBrtTimeText(endTemplate, includeSeconds: false)}";
         CompanyNameText = _user.CompanyName;
         _isInNow = false;
         _shiftCompleted = false;
@@ -430,7 +463,7 @@ public partial class EmployeResume : ContentPage
             .ToList();
         var lastOverall = actsWithBrt.Last();
         var lastTime = lastOverall.TimeBrt;
-        LastPunchText = lastTime.ToString("'Às' HH:mm:ss", PtBr);
+        LastPunchText = $"Às {FormatBrtTimeText(lastTime, includeSeconds: true)}";
 
         var fsLast = new FormattedString();
         fsLast.Spans.Add(new Span { Text = "Às ",
@@ -439,7 +472,7 @@ public partial class EmployeResume : ContentPage
         fsLast.Spans.Add(new Span
         {
             TextColor = Color.FromArgb("#BDA9D8"),
-            Text = lastTime.ToString("HH:mm:ss", PtBr),
+            Text = FormatBrtTimeText(lastTime, includeSeconds: true),
             FontAttributes = FontAttributes.Bold
         });
         LastPunchFormatted = fsLast; var todaysActs = actsWithBrt
@@ -985,7 +1018,7 @@ public partial class EmployeResume : ContentPage
         var nowBrtReal = GetNowBrt();
         bool completedToday = _shiftCompleted && _lastOutBrt.HasValue && _lastOutBrt.Value.Date == nowBrtReal.Date;
         var visualNow = completedToday ? _lastOutBrt!.Value : nowBrtReal;
-        NowBrtLabel.Text = visualNow.ToString("HH:mm:ss", PtBr);
+        NowBrtLabel.Text = FormatBrtTimeText(visualNow, includeSeconds: true);
         UpdateRing(nowBrtReal);
         UpdateActionButtonState(nowBrtReal);
         if (completedToday)
@@ -1012,6 +1045,8 @@ public partial class EmployeResume : ContentPage
         OnPropertyChanged(nameof(GreetingText));
         OnPropertyChanged(nameof(StartTimeBrt));
         OnPropertyChanged(nameof(EndTimeBrt));
+        OnPropertyChanged(nameof(HeaderTimeFontSize));
+        OnPropertyChanged(nameof(CurrentClockFontSize));
         OnPropertyChanged(nameof(ShiftTypeText));
         OnPropertyChanged(nameof(StartedOnDate));
         OnPropertyChanged(nameof(WorkWindowText));
@@ -1041,7 +1076,7 @@ public partial class EmployeResume : ContentPage
         var isIn = a.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
         var vm = new RecentItemVM
         {
-            PunchTimeBrt = t.ToString("HH:mm 'BRT'", PtBr),
+            PunchTimeBrt = FormatBrtTimeText(t, includeSeconds: false),
             ShiftTypeText = a.ShiftType,
             DateShort = t.ToString("dd/MM/yy", PtBr),
             PunchTypeText = isIn ? "Entrada" : "Saída",

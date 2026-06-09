@@ -60,7 +60,7 @@
                 Style="{StaticResource CardFrame}"
                 HorizontalOptions="Fill">
                 <Grid
-                    ColumnDefinitions="106,Auto"
+                    ColumnDefinitions="*,Auto"
                     RowDefinitions="Auto,Auto"
                     ColumnSpacing="8"
                     RowSpacing="4"
@@ -71,6 +71,10 @@
                         Grid.Column="0"
                         Margin="0,-4,0,0"
                         Text="{Binding StartTimeBrt}"
+                        FontSize="{Binding HeaderTimeFontSize}"
+                        MaxLines="1"
+                        LineBreakMode="NoWrap"
+                        FontAutoScalingEnabled="False"
                         Style="{StaticResource CardTitle}" />
 
                     <Label
@@ -101,7 +105,7 @@
                 Style="{StaticResource CardFrame}"
                 HorizontalOptions="Fill">
                 <Grid
-                    ColumnDefinitions="106,Auto"
+                    ColumnDefinitions="*,Auto"
                     RowDefinitions="Auto,Auto"
                     ColumnSpacing="8"
                     RowSpacing="4"
@@ -112,6 +116,10 @@
                         Grid.Column="0"
                         Margin="0,-4,0,0"
                         Text="{Binding EndTimeBrt}"
+                        FontSize="{Binding HeaderTimeFontSize}"
+                        MaxLines="1"
+                        LineBreakMode="NoWrap"
+                        FontAutoScalingEnabled="False"
                         Style="{StaticResource CardTitle}" />
 
                     <Label
@@ -143,7 +151,7 @@
                 Style="{StaticResource CardFrame}"
                 HorizontalOptions="Fill">
                 <Grid
-                    ColumnDefinitions="106,Auto"
+                    ColumnDefinitions="*,Auto"
                     RowDefinitions="Auto,Auto"
                     ColumnSpacing="8"
                     RowSpacing="4"
@@ -155,6 +163,8 @@
                         Text="{Binding ShiftTypeText}"
                         
                         Style="{StaticResource CardTitle}"
+                        MaxLines="1"
+                        LineBreakMode="TailTruncation"
                         Margin="0,-4,0,0"/>
 
                     <Label
@@ -186,7 +196,7 @@
                 Style="{StaticResource CardFrame}"
                 HorizontalOptions="Fill">
                 <Grid
-                    ColumnDefinitions="106,Auto"
+                    ColumnDefinitions="*,Auto"
                     RowDefinitions="Auto,Auto"
                     ColumnSpacing="8"
                     RowSpacing="4"
@@ -197,6 +207,8 @@
                         Grid.Column="0"
                         Margin="0,-4,0,0"
                         Text="{Binding StartedOnDate}"
+                        MaxLines="1"
+                        LineBreakMode="TailTruncation"
                         Style="{StaticResource CardTitle}" />
 
                     <Label
@@ -292,9 +304,12 @@
                             VerticalOptions="Center" />
                         <Label
                             x:Name="NowBrtLabel"
-                            Text="--:--:--"
+                            Text="--:--:-- BRT"
                             FontAttributes="Bold"
-                            FontSize="18"
+                            FontSize="{Binding CurrentClockFontSize}"
+                            MaxLines="1"
+                            LineBreakMode="NoWrap"
+                            FontAutoScalingEnabled="False"
                             TextColor="{StaticResource LogoOnDark}"
                             VerticalTextAlignment="Center" />
                     </HorizontalStackLayout>
@@ -422,6 +437,9 @@
                                 Text="{Binding PunchTimeBrt}"
                                 FontAttributes="Bold"
                                 FontSize="14"
+                                MaxLines="1"
+                                LineBreakMode="NoWrap"
+                                FontAutoScalingEnabled="False"
                                 HorizontalTextAlignment="End" />
 
                             <Label
