@@ -222,8 +222,8 @@ namespace DeltaFour.Maui.Pages
                 }
                 else
                 {
-                    punchTime = DateTime.UtcNow;
-                    Trace.WriteLine($"PunchTime (UTC fallback): {punchTime:o}");
+                    punchTime = BrtTime.Now;
+                    Trace.WriteLine($"PunchTime (BRT fallback): {punchTime:o}");
                 }
                 var shiftType = session?.CurrentUser?.ShiftType ?? "DEFAULT";
                 FaceStatusText = "Isso pode demorar um pouco...";

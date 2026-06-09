@@ -110,7 +110,7 @@ namespace DeltaFour.Maui
                     await DisplayAlert("Erro", "Usuário ou senha inválidos.", "ok");
                     return;
                 }
-                var nowBrt = ToBrt(DateTime.UtcNow);
+                var nowBrt = BrtTime.Now;
                 var startBrt = new DateTime(
                     nowBrt.Year, nowBrt.Month, nowBrt.Day,
                     16, 16, 0,
@@ -173,30 +173,5 @@ namespace DeltaFour.Maui
             }
         }
 
-        /// <summary>
-        /// Obtém a timezone de BRT (Brasil) com fallback de ID.
-        /// </summary>
-        /// <returns>Instância de TimeZoneInfo representando BRT.</returns>
-        private static TimeZoneInfo GetBrt()
-        {
-            try { return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"); }
-            catch { return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo"); }
-        }
-
-        /// <summary>
-        /// Converte um DateTime para o fuso horário BRT.
-        /// </summary>
-        /// <returns>Data/hora convertida para BRT.</returns>
-        private static DateTime ToBrt(DateTime dt)
-        {
-            var tz = GetBrt();
-            return dt.Kind switch
-            {
-                DateTimeKind.Utc => TimeZoneInfo.ConvertTimeFromUtc(dt, tz),
-                DateTimeKind.Local => TimeZoneInfo.ConvertTime(dt, tz),
-                DateTimeKind.Unspecified => TimeZoneInfo.ConvertTime(dt, tz, tz),
-                _ => TimeZoneInfo.ConvertTime(dt, tz)
-            };
-        }
     }
 }

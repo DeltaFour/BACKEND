@@ -1,10 +1,7 @@
-﻿using DeltaFour.Maui.Dto;
+using DeltaFour.Maui.Dto;
+using DeltaFour.Maui.Local;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeltaFour.Maui.Mappers
 {
@@ -46,33 +43,7 @@ namespace DeltaFour.Maui.Mappers
             if (normalizedType is not ("IN" or "OUT"))
                 throw new ArgumentException("type deve ser IN ou OUT.", nameof(type));
 
-            TimeZoneInfo brtTz;
-            try
-            {
-                brtTz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
-            }
-            catch
-            {
-                brtTz = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
-            }
-
-            DateTime brt;
-
-            switch (timeBrt.Kind)
-            {
-                case DateTimeKind.Utc:
-                    brt = TimeZoneInfo.ConvertTimeFromUtc(timeBrt, brtTz);
-                    break;
-
-                case DateTimeKind.Local:
-                    brt = TimeZoneInfo.ConvertTime(timeBrt, brtTz);
-                    break;
-
-                case DateTimeKind.Unspecified:
-                default:
-                    brt = timeBrt;
-                    break;
-            }
+            var brt = BrtTime.ToBrt(timeBrt);
 
             var isoBrt = brt.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture);
 

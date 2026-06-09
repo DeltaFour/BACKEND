@@ -36,8 +36,8 @@ namespace DeltaFour.Maui.Mappers
                 Name = dto.Name ?? string.Empty,
                 CompanyName = dto.CompanyName ?? string.Empty,
                 ShiftType = dto.ShiftType ?? string.Empty,
-                StartTime = start,
-                EndTime = end,
+                StartTime = BrtTime.ToBrt(start),
+                EndTime = BrtTime.ToBrt(end),
                 ToleranceMinutes = 10,
                 RecentActivities = dto.LastUserAttendances?
                     .Where(a => a != null)
@@ -54,7 +54,7 @@ namespace DeltaFour.Maui.Mappers
 
             return new RecentActivity
             {
-                PunchTime = src.PunchTime,
+                PunchTime = BrtTime.ToBrt(src.PunchTime),
                 PunchType = src.PunchType,
                 ShiftType = src.ShiftType
             };
@@ -108,8 +108,8 @@ namespace DeltaFour.Maui.Mappers
                 if (end <= start)
                     end = end.AddDays(1);
 
-                target.StartTime = start;
-                target.EndTime = end;
+                target.StartTime = BrtTime.ToBrt(start);
+                target.EndTime = BrtTime.ToBrt(end);
             }
 
             if (refresh.LastUserAttendances == null ||

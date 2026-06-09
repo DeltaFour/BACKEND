@@ -358,16 +358,18 @@
                 <DataTemplate>
                     <Frame
                         Style="{StaticResource CardFrame}"
-                        Margin="0,6">
+                        Margin="0,4"
+                        Padding="10,9">
                         <Grid
                             ColumnDefinitions="Auto,*,Auto"
                             RowDefinitions="Auto,Auto"
-                            ColumnSpacing="12">
+                            ColumnSpacing="10"
+                            RowSpacing="1">
 
                             <Frame
                                 Grid.RowSpan="2"
-                                WidthRequest="36"
-                                HeightRequest="36"
+                                WidthRequest="32"
+                                HeightRequest="32"
                                 BackgroundColor="{StaticResource Primary}"
                                 BorderColor="{StaticResource CardBorder}"
                                 Padding="0"
@@ -377,8 +379,8 @@
                                 <Path
                                     Aspect="Uniform"
                                     Fill="{StaticResource LogoOnDark}"
-                                    HeightRequest="20"
-                                    WidthRequest="20"
+                                    HeightRequest="18"
+                                    WidthRequest="18"
                                     HorizontalOptions="Center"
                                     VerticalOptions="Center"
                                     Data="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z">
@@ -410,26 +412,30 @@
                             <Label
                                 Grid.Column="1"
                                 FormattedText="{Binding PunchTypeFormatted}"
-                                FontAttributes="Bold" />
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                MaxLines="1"
+                                LineBreakMode="TailTruncation" />
 
                             <Label
                                 Grid.Column="2"
                                 Text="{Binding PunchTimeBrt}"
                                 FontAttributes="Bold"
+                                FontSize="14"
                                 HorizontalTextAlignment="End" />
 
                             <Label
                                 Grid.Row="1"
                                 Grid.Column="1"
                                 Text="{Binding ShiftTypeText}"
-                                FontSize="12"
+                                FontSize="11"
                                 TextColor="{StaticResource Muted}" />
 
                             <Label
                                 Grid.Row="1"
                                 Grid.Column="2"
                                 Text="{Binding DateShort}"
-                                FontSize="12"
+                                FontSize="11"
                                 TextColor="{StaticResource Muted}"
                                 HorizontalTextAlignment="End" />
                         </Grid>

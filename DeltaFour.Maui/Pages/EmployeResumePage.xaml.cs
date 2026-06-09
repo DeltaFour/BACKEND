@@ -149,7 +149,7 @@ public partial class EmployeResume : ContentPage
         {
             if (session.DemoNowBrt is null)
             {
-                session.DemoNowBrt = ToBrt(DateTime.UtcNow);
+                session.DemoNowBrt = BrtTime.Now;
             }
             else
             {
@@ -158,7 +158,7 @@ public partial class EmployeResume : ContentPage
             _currentNowBrt = session.DemoNowBrt.Value;
             return _currentNowBrt;
         }
-        _currentNowBrt = ToBrt(DateTime.UtcNow);
+        _currentNowBrt = BrtTime.Now;
         return _currentNowBrt;
     }
 
@@ -170,7 +170,7 @@ public partial class EmployeResume : ContentPage
     {
         if (UseDemoClock && session?.DemoNowBrt is not null)
             return session.DemoNowBrt.Value;
-        return ToBrt(DateTime.UtcNow);
+        return BrtTime.Now;
     }
 
     #endregion
@@ -368,18 +368,6 @@ public partial class EmployeResume : ContentPage
         if (session?.CurrentUser is not LocalUser u || ReferenceEquals(_user, u))
             return;
         _user = u;
-        Trace.WriteLine($"{_user.StartTime} == {_user.EndTime}");
-        Trace.WriteLine($"{ToBrt(_user.StartTime)} == {ToBrt(_user.EndTime)}");
-        _user.StartTime = ToUtcAssumingBrt(_user.StartTime);
-        _user.EndTime = ToUtcAssumingBrt(_user.EndTime);
-        if (_user.RecentActivities is not null)
-        {
-            for (int i = 0; i < _user.RecentActivities.Count; i++)
-            {
-                var a = _user.RecentActivities[i];
-                a.PunchTime = ToUtcAssumingBrt(a.PunchTime);
-            }
-        }
         var nowBrt = _currentNowBrt != default ? _currentNowBrt : GetSnapshotNowBrt();
         FillAllFromUser(nowBrt);
     }
@@ -403,8 +391,8 @@ public partial class EmployeResume : ContentPage
     {
         if (_user is null)
             return;
-        var startTemplate = ToBrt(_user.StartTime);
-        var endTemplate = ToBrt(_user.EndTime);
+        var startTemplate = BrtTime.ToBrt(_user.StartTime);
+        var endTemplate = BrtTime.ToBrt(_user.EndTime);
         var rawStart = startTemplate;
         var rawEnd = endTemplate;
         GetShiftWindowForNow(nowBrt, out var shiftStartToday, out var shiftEndToday);
@@ -437,13 +425,10 @@ public partial class EmployeResume : ContentPage
             return;
         }
         var actsWithBrt = _user.RecentActivities
-            .Select(a => new { Act = a, TimeBrt = ToBrt(a.PunchTime) })
+            .Select(a => new { Act = a, TimeBrt = BrtTime.ToBrt(a.PunchTime) })
             .OrderBy(x => x.TimeBrt)
             .ToList();
         var lastOverall = actsWithBrt.Last();
-        _hasLastPunch = true;
-        _lastWasIn = lastOverall.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
-        _lastWasOut = lastOverall.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase);
         var lastTime = lastOverall.TimeBrt;
         LastPunchText = lastTime.ToString("'Às' HH:mm:ss", PtBr);
 
@@ -465,6 +450,9 @@ public partial class EmployeResume : ContentPage
             var lastToday = todaysActs.Last();
             var lastTodayIsIn = lastToday.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
             var lastTodayIsOut = lastToday.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase);
+            _hasLastPunch = true;
+            _lastWasIn = lastTodayIsIn;
+            _lastWasOut = lastTodayIsOut;
             var lastInToday = todaysActs
                 .Where(x => x.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase))
                 .LastOrDefault();
@@ -528,8 +516,8 @@ public partial class EmployeResume : ContentPage
             return;
         }
         var tol = GetTolerance();
-        var rawStart = ToBrt(_user.StartTime);
-        var rawEnd = ToBrt(_user.EndTime);
+        var rawStart = BrtTime.ToBrt(_user.StartTime);
+        var rawEnd = BrtTime.ToBrt(_user.EndTime);
         DateTime shiftStart;
         DateTime shiftEnd;
         if (_isInNow && _entryBrt.HasValue)
@@ -615,8 +603,8 @@ public partial class EmployeResume : ContentPage
             return false;
 
         var tol = GetTolerance();
-        var rawStart = ToBrt(_user.StartTime);
-        var rawEnd = ToBrt(_user.EndTime);
+        var rawStart = BrtTime.ToBrt(_user.StartTime);
+        var rawEnd = BrtTime.ToBrt(_user.EndTime);
 
         if (punchingOut)
         {
@@ -725,8 +713,8 @@ public partial class EmployeResume : ContentPage
     {
         if (_user is null)
             return;
-        var rawStart = ToBrt(_user.StartTime);
-        var rawEnd = ToBrt(_user.EndTime);
+        var rawStart = BrtTime.ToBrt(_user.StartTime);
+        var rawEnd = BrtTime.ToBrt(_user.EndTime);
         var nowBrt = nowBrtOpt ?? GetNowBrt();
         bool completedToday = _shiftCompleted && _lastOutBrt.HasValue && _lastOutBrt.Value.Date == nowBrt.Date;
         DateTime visualNow = completedToday ? _lastOutBrt!.Value : nowBrt;
@@ -810,11 +798,11 @@ public partial class EmployeResume : ContentPage
             return;
         }
         var entryBrt = _entryBrt.Value;
-        var rawStart = ToBrt(_user.StartTime);
-        var rawEnd = ToBrt(_user.EndTime);
+        var rawStart = BrtTime.ToBrt(_user.StartTime);
+        var rawEnd = BrtTime.ToBrt(_user.EndTime);
         bool overnight = rawEnd.TimeOfDay <= rawStart.TimeOfDay;
-        var entryDay = ToBrt(entryBrt).Date;
-        var visualDay = ToBrt(visualNow).Date;
+        var entryDay = BrtTime.ToBrt(entryBrt).Date;
+        var visualDay = BrtTime.ToBrt(visualNow).Date;
         if ((!overnight && visualDay > entryDay) || (overnight && visualDay > entryDay.AddDays(1)))
         {
             _ring.ShowProgress = false;
@@ -1049,7 +1037,7 @@ public partial class EmployeResume : ContentPage
     /// <returns>View model preenchido para a lista de atividades.</returns>
     private RecentItemVM MapActivityToVM(RecentActivity a)
     {
-        var t = ToBrt(a.PunchTime);
+        var t = BrtTime.ToBrt(a.PunchTime);
         var isIn = a.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase);
         var vm = new RecentItemVM
         {
@@ -1068,14 +1056,15 @@ public partial class EmployeResume : ContentPage
         });
         if (_user is not null)
         {
-            var rawStart = ToBrt(_user.StartTime);
-            var rawEnd = ToBrt(_user.EndTime);
+            var rawStart = BrtTime.ToBrt(_user.StartTime);
+            var rawEnd = BrtTime.ToBrt(_user.EndTime);
             var tol = GetTolerance();
             if (isIn)
             {
                 var shiftStart = GetShiftStartForHit(rawStart, rawEnd, t);
+                var shiftEnd = GetShiftEndForHit(rawStart, rawEnd, t);
                 var startLimit = shiftStart + tol;
-                if (t > startLimit)
+                if (t > startLimit && t <= shiftEnd)
                 {
                     var delayMinutes = (int)Math.Round((t - startLimit).TotalMinutes);
                     if (delayMinutes < 1)
@@ -1113,54 +1102,6 @@ public partial class EmployeResume : ContentPage
     }
 
     /// <summary>
-    /// Obtém a TimeZoneInfo correspondente ao fuso BRT.
-    /// </summary>
-    /// <returns>TimeZoneInfo de BRT.</returns>
-    private static TimeZoneInfo GetBrt()
-    {
-        try
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
-        }
-        catch
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
-        }
-    }
-
-    /// <summary>
-    /// Converte um DateTime para BRT respeitando o Kind.
-    /// </summary>
-    /// <returns>Instante convertido para BRT.</returns>
-    private static DateTime ToBrt(DateTime dt)
-    {
-        var tz = GetBrt();
-        return dt.Kind switch
-        {
-            DateTimeKind.Utc => TimeZoneInfo.ConvertTimeFromUtc(dt, tz),
-            DateTimeKind.Local => TimeZoneInfo.ConvertTime(dt, tz),
-            DateTimeKind.Unspecified => TimeZoneInfo.ConvertTime(dt, tz, tz),
-            _ => TimeZoneInfo.ConvertTime(dt, tz)
-        };
-    }
-
-    /// <summary>
-    /// Interpreta um DateTime como BRT e converte para UTC.
-    /// </summary>
-    /// <returns>Instante convertido para UTC.</returns>
-    private static DateTime ToUtcAssumingBrt(DateTime dt)
-    {
-        var tz = GetBrt();
-        return dt.Kind switch
-        {
-            DateTimeKind.Utc => dt,
-            DateTimeKind.Local => dt.ToUniversalTime(),
-            DateTimeKind.Unspecified => TimeZoneInfo.ConvertTimeToUtc(dt, tz),
-            _ => dt
-        };
-    }
-
-    /// <summary>
     /// Obtém o TimeSpan de tolerância configurado no usuário.
     /// </summary>
     /// <returns>Tolerância em minutos convertida para TimeSpan.</returns>
@@ -1180,13 +1121,13 @@ public partial class EmployeResume : ContentPage
     {
         if (_user is null || _user.RecentActivities is null || _user.RecentActivities.Count == 0)
             return false;
-        var startBrt = ToBrt(_user.StartTime);
-        var endBrt = ToBrt(_user.EndTime);
+        var startBrt = BrtTime.ToBrt(_user.StartTime);
+        var endBrt = BrtTime.ToBrt(_user.EndTime);
         if (endBrt.TimeOfDay <= startBrt.TimeOfDay)
             return false;
         var today = nowBrt.Date;
         var acts = _user.RecentActivities
-            .Select(a => new { Act = a, TimeBrt = ToBrt(a.PunchTime) })
+            .Select(a => new { Act = a, TimeBrt = BrtTime.ToBrt(a.PunchTime) })
             .ToList();
         var groups = acts
             .GroupBy(x => x.TimeBrt.Date)
@@ -1202,10 +1143,9 @@ public partial class EmployeResume : ContentPage
                 continue;
             var shiftDay = g.Key;
             var outBrt = new DateTime(shiftDay.Year, shiftDay.Month, shiftDay.Day, 23, 59, 0, DateTimeKind.Unspecified);
-            var outUtc = ToUtcAssumingBrt(outBrt);
             var activity = new RecentActivity
             {
-                PunchTime = outUtc,
+                PunchTime = outBrt,
                 PunchType = "OUT",
                 ShiftType = _user.ShiftType
             };
@@ -1220,8 +1160,8 @@ public partial class EmployeResume : ContentPage
     /// </summary>
     private void GetShiftWindowForNow(DateTime nowBrt, out DateTime shiftStartToday, out DateTime shiftEndToday)
     {
-        var templateStart = ToBrt(_user.StartTime);
-        var templateEnd = ToBrt(_user.EndTime);
+        var templateStart = BrtTime.ToBrt(_user.StartTime);
+        var templateEnd = BrtTime.ToBrt(_user.EndTime);
         var baseDate = nowBrt.Date;
         var startToday = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day, templateStart.Hour, templateStart.Minute, templateStart.Second, DateTimeKind.Unspecified);
         var endSameDay = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day, templateEnd.Hour, templateEnd.Minute, templateEnd.Second, DateTimeKind.Unspecified);
@@ -1268,7 +1208,10 @@ public partial class EmployeResume : ContentPage
         var candidate = new DateTime(t.Year, t.Month, t.Day, rawStart.Hour, rawStart.Minute, rawStart.Second, DateTimeKind.Unspecified);
         if (!overnight)
             return candidate;
-        if (t.TimeOfDay < rawStart.TimeOfDay)
+
+        var previousShiftEnd = new DateTime(t.Year, t.Month, t.Day, rawEnd.Hour, rawEnd.Minute, rawEnd.Second, DateTimeKind.Unspecified);
+        var previousLateExitLimit = previousShiftEnd + GetTolerance() + TimeSpan.FromHours(12);
+        if (t.TimeOfDay < rawStart.TimeOfDay && t <= previousLateExitLimit)
             candidate = candidate.AddDays(-1);
         return candidate;
     }
