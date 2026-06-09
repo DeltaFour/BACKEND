@@ -486,23 +486,18 @@ public partial class EmployeResume : ContentPage
             _hasLastPunch = true;
             _lastWasIn = lastTodayIsIn;
             _lastWasOut = lastTodayIsOut;
+
             var lastInToday = todaysActs
                 .Where(x => x.Act.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase))
                 .LastOrDefault();
-            if (lastTodayIsOut && lastInToday is not null)
-            {
-                _isInNow = false;
-                _shiftCompleted = true;
-                _entryBrt = lastInToday.TimeBrt;
-                _lastOutBrt = lastToday.TimeBrt;
-            }
-            else if (lastTodayIsIn)
-            {
-                _isInNow = true;
-                _shiftCompleted = false;
-                _entryBrt = lastToday.TimeBrt;
-                _lastOutBrt = null;
-            }
+            var lastOutToday = todaysActs
+                .Where(x => x.Act.PunchType.Equals("OUT", StringComparison.OrdinalIgnoreCase))
+                .LastOrDefault();
+
+            _isInNow = lastTodayIsIn;
+            _shiftCompleted = false;
+            _entryBrt = lastInToday?.TimeBrt;
+            _lastOutBrt = lastOutToday?.TimeBrt;
         }
         RecentItems.Clear();
         foreach (var x in actsWithBrt.OrderByDescending(x => x.TimeBrt))
@@ -548,114 +543,34 @@ public partial class EmployeResume : ContentPage
             NotifyActionButtonBindings();
             return;
         }
-        var tol = GetTolerance();
-        var rawStart = BrtTime.ToBrt(_user.StartTime);
-        var rawEnd = BrtTime.ToBrt(_user.EndTime);
-        DateTime shiftStart;
-        DateTime shiftEnd;
-        if (_isInNow && _entryBrt.HasValue)
-        {
-            shiftStart = GetShiftStartForHit(rawStart, rawEnd, _entryBrt.Value);
-            shiftEnd = GetShiftEndForHit(rawStart, rawEnd, _entryBrt.Value);
-        }
-        else
-        {
-            GetShiftWindowForNow(nowBrt, out shiftStart, out shiftEnd);
-        }
 
-        var entryAllowedStart = shiftStart - tol;
-        var exitWinStart = shiftEnd - tol;
-        var exitWinEnd = shiftEnd + tol;
-        var lateExitLimit = shiftEnd + tol + TimeSpan.FromHours(12);
-        bool beforeEntryAllowed = nowBrt < entryAllowedStart;
-        bool canEnterNow = nowBrt >= entryAllowedStart && nowBrt <= shiftEnd;
-        bool inExitWindow = nowBrt >= exitWinStart && nowBrt <= exitWinEnd;
-        bool afterExitWin = nowBrt > exitWinEnd;
-        bool beforeExitWin = nowBrt < exitWinStart;
-
-        if (_shiftCompleted)
+        if (!IsPunchAllowedByLocalSchedule(nowBrt))
         {
             IsActionButtonEnabled = false;
-            ActionButtonText = "Expediente Encerrado";
+            ActionButtonText = "Aguardar Expediente";
             ActionButtonBackground = Color.FromArgb("#a1a1a1");
+            NotifyActionButtonBindings();
+            return;
         }
-        else if (!_isInNow)
-        {
-            if (beforeEntryAllowed)
-            {
-                IsActionButtonEnabled = false;
-                ActionButtonText = "Aguardar Expediente";
-                ActionButtonBackground = Color.FromArgb("#a1a1a1");
-            }
-            else if (canEnterNow)
-            {
-                IsActionButtonEnabled = true;
-                ActionButtonText = "Dar Entrada";
-                ActionButtonBackground = Color.FromArgb("#4D9C24");
-            }
-            else
-            {
-                IsActionButtonEnabled = false;
-                ActionButtonText = "Expediente Encerrado";
-                ActionButtonBackground = Color.FromArgb("#a1a1a1");
-            }
-        }
-        else
-        {
-            if (beforeExitWin)
-            {
-                IsActionButtonEnabled = false;
-                ActionButtonText = "Aguardar Saída";
-                ActionButtonBackground = Color.FromArgb("#a1a1a1");
-            }
-            else if (inExitWindow)
-            {
-                IsActionButtonEnabled = true;
-                ActionButtonText = "Dar Saída";
-                ActionButtonBackground = Color.FromArgb("#962020");
-            }
-            else if (afterExitWin && nowBrt <= lateExitLimit)
-            {
-                IsActionButtonEnabled = true;
-                ActionButtonText = "Dar Saída (Tardia)";
-                ActionButtonBackground = Color.FromArgb("#962020");
-            }
-            else
-            {
-                IsActionButtonEnabled = false;
-                ActionButtonText = "Expediente Encerrado";
-                ActionButtonBackground = Color.FromArgb("#a1a1a1");
-            }
-        }
+
+        var punchingOut = _lastWasIn;
+        IsActionButtonEnabled = true;
+        ActionButtonText = punchingOut ? "Dar Saída" : "Dar Entrada";
+        ActionButtonBackground = punchingOut
+            ? Color.FromArgb("#962020")
+            : Color.FromArgb("#4D9C24");
+
         NotifyActionButtonBindings();
     }
 
-    private bool IsPunchAllowedByLocalSchedule(DateTime nowBrt, bool punchingOut)
+    private bool IsPunchAllowedByLocalSchedule(DateTime nowBrt)
     {
-        if (_user is null || _shiftCompleted)
+        if (_user is null)
             return false;
 
-        var tol = GetTolerance();
-        var rawStart = BrtTime.ToBrt(_user.StartTime);
-        var rawEnd = BrtTime.ToBrt(_user.EndTime);
-
-        if (punchingOut)
-        {
-            if (!_isInNow || !_entryBrt.HasValue)
-                return false;
-
-            var shiftEnd = GetShiftEndForHit(rawStart, rawEnd, _entryBrt.Value);
-            var exitAllowedStart = shiftEnd - tol;
-            var exitAllowedEnd = shiftEnd + tol + TimeSpan.FromHours(12);
-            return nowBrt >= exitAllowedStart && nowBrt <= exitAllowedEnd;
-        }
-
-        if (_isInNow)
-            return false;
-
-        GetShiftWindowForNow(nowBrt, out var shiftStart, out var shiftEndForEntry);
-        var entryAllowedStart = shiftStart - tol;
-        return nowBrt >= entryAllowedStart && nowBrt <= shiftEndForEntry;
+        GetShiftWindowForNow(nowBrt, out var shiftStart, out var shiftEnd);
+        var allowedStart = shiftStart - GetTolerance();
+        return nowBrt >= allowedStart && nowBrt <= shiftEnd;
     }
 
     /// <summary>
@@ -667,36 +582,23 @@ public partial class EmployeResume : ContentPage
             return;
         if (!TryResolveDependencies())
             return;
+
         var nowBrt = GetNowBrt();
-        var punchingOut = _isInNow;
-        if (!IsPunchAllowedByLocalSchedule(nowBrt, punchingOut))
+        var punchingOut = _lastWasIn;
+        if (!IsPunchAllowedByLocalSchedule(nowBrt))
         {
             UpdateActionButtonState(nowBrt);
             await DisplayAlert("Aviso", "No momento não é permitido registrar o ponto.", "OK");
             return;
         }
+
         var newType = punchingOut ? "OUT" : "IN";
-        bool canPunch;
-        try
-        {
-            canPunch = await apiService!.CanPunchAsync(nowBrt, punchingOut);
-        }
-        catch (Exception ex)
-        {
-            Trace.WriteLine($"Erro ao validar ponto: {ex}");
-            await DisplayAlert("Erro", "Não foi possível validar o registro de ponto.", "OK");
-            return;
-        }
-        if (!canPunch)
-        {
-            await DisplayAlert("Aviso", "No momento não é permitido registrar o ponto.", "OK");
-            return;
-        }
         var typeParam = System.Uri.EscapeDataString(newType);
         var timeParam = System.Uri.EscapeDataString(nowBrt.ToString("yyyy-MM-dd'T'HH:mm:ss.fff", CultureInfo.InvariantCulture));
         var route = $"//MainTabs/FaceRegisterPage?punchType={typeParam}&timeBrt={timeParam}";
         await Shell.Current.GoToAsync(route);
     }
+
     /// <summary>
     /// Acelera o relógio quando o botão principal é pressionado.
     /// </summary>
@@ -1099,7 +1001,7 @@ public partial class EmployeResume : ContentPage
                 var shiftStart = GetShiftStartForHit(rawStart, rawEnd, t);
                 var shiftEnd = GetShiftEndForHit(rawStart, rawEnd, t);
                 var startLimit = shiftStart + tol;
-                if (t > startLimit && t <= shiftEnd)
+                if (IsFirstEntryForShift(t, rawStart, rawEnd) && t > startLimit && t <= shiftEnd)
                 {
                     var delayMinutes = (int)Math.Round((t - startLimit).TotalMinutes);
                     if (delayMinutes < 1)
@@ -1135,6 +1037,21 @@ public partial class EmployeResume : ContentPage
         vm.PunchTypeFormatted = fs;
         return vm;
     }
+    private bool IsFirstEntryForShift(DateTime entryBrt, DateTime rawStart, DateTime rawEnd)
+    {
+        if (_user?.RecentActivities is null)
+            return true;
+
+        var shiftStart = GetShiftStartForHit(rawStart, rawEnd, entryBrt);
+        var shiftEnd = GetShiftEndForHit(rawStart, rawEnd, entryBrt);
+        var allowedStart = shiftStart - GetTolerance();
+
+        return !_user.RecentActivities
+            .Where(a => a.PunchType.Equals("IN", StringComparison.OrdinalIgnoreCase))
+            .Select(a => BrtTime.ToBrt(a.PunchTime))
+            .Any(t => t >= allowedStart && t <= shiftEnd && t < entryBrt);
+    }
+
 
     /// <summary>
     /// Obtém o TimeSpan de tolerância configurado no usuário.
