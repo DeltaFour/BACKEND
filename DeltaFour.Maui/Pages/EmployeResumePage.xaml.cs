@@ -541,16 +541,17 @@ public partial class EmployeResume : ContentPage
         {
             GetShiftWindowForNow(nowBrt, out shiftStart, out shiftEnd);
         }
-        var entryWinStart = shiftStart - tol;
-        var entryWinEnd = shiftStart + tol;
+
+        var entryAllowedStart = shiftStart - tol;
         var exitWinStart = shiftEnd - tol;
         var exitWinEnd = shiftEnd + tol;
-        bool inEntryWindow = nowBrt >= entryWinStart && nowBrt <= entryWinEnd;
-        bool afterEntryWin = nowBrt > entryWinEnd;
-        bool beforeEntryWin = nowBrt < entryWinStart;
+        var lateExitLimit = shiftEnd + tol + TimeSpan.FromHours(12);
+        bool beforeEntryAllowed = nowBrt < entryAllowedStart;
+        bool canEnterNow = nowBrt >= entryAllowedStart && nowBrt <= shiftEnd;
         bool inExitWindow = nowBrt >= exitWinStart && nowBrt <= exitWinEnd;
         bool afterExitWin = nowBrt > exitWinEnd;
         bool beforeExitWin = nowBrt < exitWinStart;
+
         if (_shiftCompleted)
         {
             IsActionButtonEnabled = false;
@@ -559,28 +560,22 @@ public partial class EmployeResume : ContentPage
         }
         else if (!_isInNow)
         {
-            if (beforeEntryWin)
+            if (beforeEntryAllowed)
             {
                 IsActionButtonEnabled = false;
                 ActionButtonText = "Aguardar Expediente";
                 ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
-            else if (inEntryWindow)
+            else if (canEnterNow)
             {
                 IsActionButtonEnabled = true;
                 ActionButtonText = "Dar Entrada";
                 ActionButtonBackground = Color.FromArgb("#4D9C24");
             }
-            else if (afterEntryWin && nowBrt <= exitWinEnd)
-            {
-                IsActionButtonEnabled = true;
-                ActionButtonText = "Dar Entrada (Atraso)";
-                ActionButtonBackground = Color.FromArgb("#4D9C24");
-            }
             else
             {
                 IsActionButtonEnabled = false;
-                ActionButtonText = "Aguardar Expediente";
+                ActionButtonText = "Expediente Encerrado";
                 ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
         }
@@ -598,7 +593,7 @@ public partial class EmployeResume : ContentPage
                 ActionButtonText = "Dar Saída";
                 ActionButtonBackground = Color.FromArgb("#962020");
             }
-            else if (afterExitWin && nowBrt <= shiftEnd + tol + TimeSpan.FromHours(12))
+            else if (afterExitWin && nowBrt <= lateExitLimit)
             {
                 IsActionButtonEnabled = true;
                 ActionButtonText = "Dar Saída (Tardia)";
@@ -607,11 +602,39 @@ public partial class EmployeResume : ContentPage
             else
             {
                 IsActionButtonEnabled = false;
-                ActionButtonText = "Aguardar Expediente";
+                ActionButtonText = "Expediente Encerrado";
                 ActionButtonBackground = Color.FromArgb("#a1a1a1");
             }
         }
         NotifyActionButtonBindings();
+    }
+
+    private bool IsPunchAllowedByLocalSchedule(DateTime nowBrt, bool punchingOut)
+    {
+        if (_user is null || _shiftCompleted)
+            return false;
+
+        var tol = GetTolerance();
+        var rawStart = ToBrt(_user.StartTime);
+        var rawEnd = ToBrt(_user.EndTime);
+
+        if (punchingOut)
+        {
+            if (!_isInNow || !_entryBrt.HasValue)
+                return false;
+
+            var shiftEnd = GetShiftEndForHit(rawStart, rawEnd, _entryBrt.Value);
+            var exitAllowedStart = shiftEnd - tol;
+            var exitAllowedEnd = shiftEnd + tol + TimeSpan.FromHours(12);
+            return nowBrt >= exitAllowedStart && nowBrt <= exitAllowedEnd;
+        }
+
+        if (_isInNow)
+            return false;
+
+        GetShiftWindowForNow(nowBrt, out var shiftStart, out var shiftEndForEntry);
+        var entryAllowedStart = shiftStart - tol;
+        return nowBrt >= entryAllowedStart && nowBrt <= shiftEndForEntry;
     }
 
     /// <summary>
@@ -625,6 +648,12 @@ public partial class EmployeResume : ContentPage
             return;
         var nowBrt = GetNowBrt();
         var punchingOut = _isInNow;
+        if (!IsPunchAllowedByLocalSchedule(nowBrt, punchingOut))
+        {
+            UpdateActionButtonState(nowBrt);
+            await DisplayAlert("Aviso", "No momento não é permitido registrar o ponto.", "OK");
+            return;
+        }
         var newType = punchingOut ? "OUT" : "IN";
         bool canPunch;
         try
@@ -647,7 +676,6 @@ public partial class EmployeResume : ContentPage
         var route = $"//MainTabs/FaceRegisterPage?punchType={typeParam}&timeBrt={timeParam}";
         await Shell.Current.GoToAsync(route);
     }
-
     /// <summary>
     /// Acelera o relógio quando o botão principal é pressionado.
     /// </summary>
@@ -1195,17 +1223,38 @@ public partial class EmployeResume : ContentPage
         var templateStart = ToBrt(_user.StartTime);
         var templateEnd = ToBrt(_user.EndTime);
         var baseDate = nowBrt.Date;
-        var start = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day, templateStart.Hour, templateStart.Minute, templateStart.Second, DateTimeKind.Unspecified);
+        var startToday = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day, templateStart.Hour, templateStart.Minute, templateStart.Second, DateTimeKind.Unspecified);
         var endSameDay = new DateTime(baseDate.Year, baseDate.Month, baseDate.Day, templateEnd.Hour, templateEnd.Minute, templateEnd.Second, DateTimeKind.Unspecified);
-        if (templateEnd.TimeOfDay <= templateStart.TimeOfDay)
+        bool overnight = templateEnd.TimeOfDay <= templateStart.TimeOfDay;
+        if (!overnight)
         {
-            shiftStartToday = start;
-            shiftEndToday = endSameDay.AddDays(1);
+            shiftStartToday = startToday;
+            shiftEndToday = endSameDay;
+            return;
+        }
+
+        var currentShiftStart = startToday;
+        var currentShiftEnd = endSameDay.AddDays(1);
+        var previousShiftStart = startToday.AddDays(-1);
+        var previousShiftEnd = endSameDay;
+        var tol = GetTolerance();
+        var currentEntryAllowedStart = currentShiftStart - tol;
+        var previousLateExitLimit = previousShiftEnd + tol + TimeSpan.FromHours(12);
+
+        if (nowBrt >= currentEntryAllowedStart)
+        {
+            shiftStartToday = currentShiftStart;
+            shiftEndToday = currentShiftEnd;
+        }
+        else if (nowBrt <= previousLateExitLimit)
+        {
+            shiftStartToday = previousShiftStart;
+            shiftEndToday = previousShiftEnd;
         }
         else
         {
-            shiftStartToday = start;
-            shiftEndToday = endSameDay;
+            shiftStartToday = currentShiftStart;
+            shiftEndToday = currentShiftEnd;
         }
     }
 
